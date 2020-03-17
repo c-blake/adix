@@ -53,6 +53,8 @@ when defined(lpWarn) or not defined(danger):
 # distinct home addr locations that are at least as independent as `hashAddr`.
 proc hashHc[A](s: LPSet[A], hc: Hash): Hash {.inline.} =
 # if s.rehash: Hash(rotateLeftBits(hc * s.salt, 32)) else: hc
+#XXX May be better to call this hash2, allow importing environment to override&
+#    just default it to hashRoMu1, maybe providing salt as an extra argument?
   if s.rehash: hashRoMu1(hc) xor Hash(s.salt) else: hc
 
 proc hash[A](s: LPSet[A], i: int): Hash {.inline.} =
