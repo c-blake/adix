@@ -70,3 +70,10 @@ when int.sizeof == int64.sizeof:
 else:
   proc hashRoMu1*(x: int|uint): Hash {.inline.} = hashRoMu1(uint32(x))
   proc hashRevFib*(x: int|uint): Hash {.inline.} = hashRevFib(uint32(x))
+
+when defined(unstableHashHash):
+  proc hash*(hashValue, salt: Hash): Hash {.inline.} =
+    hashRoMu1(hashValue) xor Hash(salt)
+else:
+  proc hash*(hashValue, salt: Hash): Hash {.inline.} =
+    hashRoMu1(hashValue)

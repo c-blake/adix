@@ -52,11 +52,10 @@ when defined(tsWarn) or not defined(danger):
   var tsMaxWarn* = 10   ## Most warnings per program invocation
   var tsWarnCnt = 0     # Running counter of warnings issued
 
-# s.salt here is just a hash of the VM address of data[] giving distinct tabs
-# distinct home addr locations that are at least as independent as `hashAddr`.
+# s.salt here is just a hash of the VM address of data[] that can give distinct
+# tabs distinct home addr locations at least as independent as `hashAddr`.
 proc hashHc[A](s: TSSet[A], hc: Hash): Hash {.inline.} =
-# if s.rehash: Hash(rotateLeftBits(hc * s.salt, 32)) else: hc
-  if s.rehash: hashRoMu1(hc) xor Hash(s.salt) else: hc
+  if s.rehash: hash(hc, s.salt) else: hc
 
 proc hash0[A](item: A): Hash {.inline.} =
   result = hash(item)   # Account for hash() returning zero, our FREE sentinel.

@@ -41,11 +41,10 @@ proc hash0[A; z: static[int]](s: ILSet[A,z], item: A): Hash {.inline.} =
   if result == z:       # Rarely taken branch very predictable
     result = 314159265  # Value matters little; More bits spread while enlarging
 
-# s.salt here is just a hash of the VM address of data[] giving distinct tabs
-# distinct home addr locations that are at least as independent as `hashAddr`.
+# s.salt here is just a hash of the VM address of data[] that can give distinct
+# tabs distinct home addr locations at least as independent as `hashAddr`.
 proc hashHc[A; z: static[int]](s: ILSet[A,z], hc: Hash): Hash {.inline.} =
-# if s.rehash: Hash(rotateLeftBits(hc * s.salt, 32)) else: hc
-  if s.rehash: hashRoMu1(hc) xor Hash(s.salt) else: hc
+  if s.rehash: hash(hc, s.salt) else: hc
 
 proc hash[A; z: static[int]](s: ILSet[A,z], i: int): Hash {.inline.} =
   s.hashHc s.hash0(s.data[i])
