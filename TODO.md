@@ -32,23 +32,21 @@
      The idea is replacing the lower bits of the hash code which recapitulate
      the table index after its computed with the probe depth (after Amble&Knuth
      1973).  The benefit is that the `isUsed and d > depth` check can be folded
-     into just one test.
-
-     The main trade off unmentioned in that blog post is that pushUp/pullDn must
-     update depths in the back half of the cluster, however large that is and
-     one cannot just do (only) memmove shifting.  So, you save 1/3 not so
-     predictable branches in the find loop per cluster element, but also create
-     like 5 ops per cluster element for mutation operations (load, mask out,
-     inc/dec, mask in, store) for the cluster upper half.  The extra ops are
-     more predictable work, but very non-negligible compared to the (hc-i)and
-     mask kind of ILP work it is saving.  For mutations it is probably close to
-     a net wash.  For "read-only after build mostly miss" workloads it could
-     help 1.5x (e.g. near empty set intersects).  That's also when Robin Hood is
-     *already* a big winner from its half-depth search.  The extra boost could
-     constitute good advertising.  Given that memory layout is identical to not
-     saving depths, this could also be a run-time/per-tab option { like Robin
-     re-org itself is }, not necessarily on by default.  It would even be
-     possible to do quick "bulk conversions" of hcodes to combos & back.
+     into just one test.  The main trade off (unmentioned in that blog post) is
+     that pushUp/pullDn must update depths in the back half of the cluster,
+     however large that is, and one cannot just do (only) memmove shifting.
+     So, you save 1/3 not so predictable branches in the find loop per cluster
+     element, but also create like 5 ops per cluster element for mutation ops
+     (load, mask out, inc/dec, mask in, store) for the cluster upper half.  The
+     extra ops are more predictable work, but non-negligible compared to the
+     (hc-i)and mask kind of ILP work it is saving.  For mutations it is probably
+     close to a net wash.  For "read-only after build mostly miss" workloads it
+     could help 1.5x (e.g. near empty set intersects).  That's also when Robin
+     Hood is *already* a big winner from its half-depth search.  The extra boost
+     could constitute good advertising.  Given that memory layout is identical
+     to *not* saving depths, this could also be a run-time/per-tab option { like
+     Robin re-org itself is }, not necessarily on by default.  It would even be
+     possible to do fast "bulk conversions" of hcodes to combos & back.
 
   c) Can simplify rawPut/rawDel a lot if assume a strong enough hash by keeping
      an overflow area at the high end of s.data, i.e., s.data is longer than `1
