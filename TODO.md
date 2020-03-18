@@ -20,8 +20,6 @@
    loop over data[] inserting.  Maybe add after `sort` (to be more drop-in for
    the stdlib's ordered tables).
 
-5) Make `ilset` work with non-zero sentinels.  Very easy;  Kind of the whole point
-
 6) Look into other well vetted integer hashes for althash.
 
 7) Possible lpset/ilset/olset micro-optimizations most relevant for L1/L2 cases:
