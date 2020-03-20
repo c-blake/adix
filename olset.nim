@@ -151,6 +151,7 @@ proc tooFull[A](s: var OLSet[A], d: int; newSize: var int): bool {.inline.} =
         newSize = s.idx.len
     else:                       # Turn on Robin Hood
       s.robin = true
+      newSize = s.idx.len
       ext = "; Adapting by Robin Hood re-org"
     when defined(olWarn) or not defined(danger):
       olWarnCnt.inc

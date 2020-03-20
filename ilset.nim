@@ -136,6 +136,7 @@ proc tooFull[A; z: static[int]](s: var ILSet[A,z]; d: int;
         newSize = s.data.len
     else:                       # Turn on Robin Hood
       s.robin = true
+      newSize = s.data.len
       ext = "; Adapting by Robin Hood re-org"
     when defined(ilWarn) or not defined(danger):
       ilWarnCnt.inc

@@ -150,6 +150,7 @@ proc tooFull[A](s: var LPSet[A]; d: int; newSize: var int): bool {.inline.} =
         newSize = s.data.len
     else:                       # Turn on Robin Hood
       s.robin = true
+      newSize = s.data.len
       ext = "; Adapting by Robin Hood re-org"
     when defined(lpWarn) or not defined(danger):
       lpWarnCnt.inc
