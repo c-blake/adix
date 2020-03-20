@@ -9,8 +9,7 @@ when defined(stdlibTab):
   proc initSet*[A](sz=4, numer=1, denom=1, minFree=1, growPow2=1, rehash=false,
                    robinhood=false): Set[A] {.inline.} =
     initHashSet[A](sz)
-  proc rightSz*(x: Natural): int {.inline.} =
-    tables.rightSize(x)
+  proc rightSz*(x: Natural): int {.inline.} = tables.rightSize(x)
   export tables, sets
 elif defined(tombstone):
   import tstab, tsset
@@ -22,8 +21,7 @@ elif defined(tombstone):
   proc initSet*[A](sz=4, numer=tsNumer, denom=tsDenom, minFree=tsMinFree,
       growPow2=tsGrowPow2, rehash=tsRehash, robinhood=false): Set[A] {.inline.}=
     initTSSet[A](sz, numer, denom, minFree, growPow2, rehash, robinhood)
-  proc rightSz*(x: Natural): int {.inline.} =
-    tsset.rightSize(x)
+  proc rightSz*(x: Natural): int {.inline.} = tsset.rightSize(x)
   export tstab, tsset
 elif defined(orderedTombstone):
   import ottab, otset
@@ -35,8 +33,7 @@ elif defined(orderedTombstone):
   proc initSet*[A](sz=4, numer=otNumer, denom=otDenom, minFree=otMinFree,
       growPow2=otGrowPow2, rehash=otRehash, robinhood=false): Set[A] {.inline.}=
     initOTSet[A](sz, numer, denom, minFree, growPow2, rehash, robinhood)
-  proc rightSz*(x: Natural): int {.inline.} =
-    otset.rightSize(x)
+  proc rightSz*(x: Natural): int {.inline.} = otset.rightSize(x)
   export ottab, otset
 elif defined(orderedLinear):
   import oltab, olset
@@ -48,8 +45,7 @@ elif defined(orderedLinear):
   proc initSet*[A](sz=4, numer=olNumer, denom=olDenom, minFree=olMinFree,
       growPow2=olGrowPow2, rehash=olRehash, robinhood=olRobinHood): Set[A] {.inline.}=
     initOLSet[A](sz, numer, denom, minFree, growPow2, rehash, robinhood)
-  proc rightSz*(x: Natural): int {.inline.} =
-    olset.rightSize(x)
+  proc rightSz*(x: Natural): int {.inline.} = olset.rightSize(x)
   export oltab, olset
 elif defined(noRehash):
   import lptab, lpset
@@ -61,8 +57,7 @@ elif defined(noRehash):
   proc initSet*[A](sz=4, numer=lpNumer, denom=lpDenom, minFree=lpMinFree,
       growPow2=lpGrowPow2, rehash=false, robinhood=olRobinHood): Set[A] {.inline.}=
     initLPSet[A](sz, numer, denom, minFree, growPow2, rehash, robinhood)
-  proc rightSz*(x: Natural): int {.inline.} =
-    lpset.rightSize(x)
+  proc rightSz*(x: Natural): int {.inline.} = lpset.rightSize(x)
   export lptab, lpset
 elif defined(noRobinHood):
   import lptab, lpset
@@ -74,8 +69,7 @@ elif defined(noRobinHood):
   proc initSet*[A](sz=4, numer=lpNumer, denom=lpDenom, minFree=lpMinFree,
       growPow2=lpGrowPow2, rehash=lpRehash, robinhood=false): Set[A] {.inline.}=
     initLPSet[A](sz, numer, denom, minFree, growPow2, rehash, robinhood)
-  proc rightSz*(x: Natural): int {.inline.} =
-    lpset.rightSize(x)
+  proc rightSz*(x: Natural): int {.inline.} = lpset.rightSize(x)
   export lptab, lpset
 elif defined(directIndex):
   import ditab, diset
@@ -87,8 +81,7 @@ elif defined(directIndex):
   proc initSet*[A](sz=0, numer=diNumer, denom=diDenom, minFree=diMinFree,
       growPow2=diGrowPow2, rehash=diRehash, robinhood=false): Set[A] {.inline.}=
     initDISet[A](0, numer, denom, minFree, growPow2, rehash, robinhood)
-  proc rightSz*(x: Natural): int {.inline.} =
-    diset.rightSize(x)
+  proc rightSz*(x: Natural): int {.inline.} = diset.rightSize(x)
   export ditab, diset
 elif defined(integerTab0):
   import iltab, ilset
@@ -100,8 +93,7 @@ elif defined(integerTab0):
   proc initSet*[A](sz=4, numer=ilNumer, denom=ilDenom, minFree=ilMinFree,
       growPow2=ilGrowPow2, rehash=ilRehash, robinhood=ilRobinHood): Set[A] {.inline.}=
     initILSet[A,0](sz, numer, denom, minFree, growPow2, rehash, robinhood)
-  proc rightSz*(x: Natural): int {.inline.} =
-    ilset.rightSize(x)
+  proc rightSz*(x: Natural): int {.inline.} = ilset.rightSize(x)
   export iltab, ilset
 elif defined(integerTabM1):
   import iltab, ilset
@@ -113,8 +105,7 @@ elif defined(integerTabM1):
   proc initSet*[A](sz=4, numer=ilNumer, denom=ilDenom, minFree=ilMinFree,
       growPow2=ilGrowPow2, rehash=ilRehash, robinhood=ilRobinHood): Set[A] {.inline.}=
     initILSet[A,-1](sz, numer, denom, minFree, growPow2, rehash, robinhood)
-  proc rightSz*(x: Natural): int {.inline.} =
-    ilset.rightSize(x)
+  proc rightSz*(x: Natural): int {.inline.} = ilset.rightSize(x)
   export iltab, ilset
 else:
   import lptab, lpset
@@ -128,6 +119,5 @@ else:
                    growPow2=lpGrowPow2, rehash=lpRehash,
                    robinhood=lpRobinHood): Set[A] {.inline.} =
     initLPSet[A](sz, numer, denom, minFree, growPow2, rehash, robinhood)
-  proc rightSz*(x: Natural): int {.inline.} =
-    lpset.rightSize(x)
+  proc rightSz*(x: Natural): int {.inline.} = lpset.rightSize(x)
   export lptab, lpset
