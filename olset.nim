@@ -225,7 +225,7 @@ template getPut(present: untyped, missing: untyped) {.dirty.} =
   if i < 0:
     var j = s.rawPut1(-1 - i, d)
     if s.tooFull(d, newSize):
-      s.setCap
+      s.setCap newSize
       d = 0
       i = s.rawGet(item, hc, d)
       j = s.rawPut1(-1 - i, d)

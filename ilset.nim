@@ -325,7 +325,7 @@ proc add*[A; z: static[int]](s: var ILSet[A,z], item: A) {.inline.} =
   var i = s.rawGetDeep(item, hc, d)
   var j = s.rawPut1(i, d)
   if s.tooFull(d, newSize):
-    s.setCap
+    s.setCap newSize
     d = 0
     i = s.rawGetDeep(item, hc, d)
     j = s.rawPut1(i, d)
