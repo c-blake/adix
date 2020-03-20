@@ -234,8 +234,8 @@ proc init*[A; z: static[int]](s: var ILSet[A,z], initialSize=ilInitialSize,
                               growPow2=ilGrowPow2, rehash=ilRehash,
                               robinhood=ilRobinHood) {.inline.} =
   s.data     = newSeq[A](initialSize)
-# if z != 0:
-#   for i in 0..<initialSize: s.data[i].setKey z
+  if z != 0:
+    for i in 0..<initialSize: s.data[i].setKey z
   s.salt     = getSalt(s.data[0].addr)
   s.numer    = numer.uint8
   s.denom    = denom.uint8
