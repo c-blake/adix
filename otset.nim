@@ -54,13 +54,17 @@ iterator probeSeq(hc, mask: Hash, d: var Hash, sz: int): int =
   d = 0
   while true:
     yield i
-    if d * sz < 192:        # Linear probe for 192 bytes which is v.local on..
-      i = (i + 1) and mask  # ..idx BUT non-local on ins-order data itself.
-    else:                   # Then v.non-local rotated hcode-perturbed probing.
+    when defined(otHybridProbe):
+      if d * sz < 192:        # Linear probe for 192 bytes which is v.local
+        i = (i + 1) and mask
+      else:                   # Then non-local rotated hcode-perturbed probing.
+        i = Hash((i.uint * 5 + 1 + pert) and mask.uint)
+        pert = pert shr 5                     # Decay to 0 => check whole table
+    else:
       i = Hash((i.uint * 5 + 1 + pert) and mask.uint)
-    pert = pert shr 5                         # Decay to 0 => check whole table
+      pert = pert shr 5                       # Decay to 0 => check whole table
     d.inc
-    ifStats otDepth.inc
+    ifStats tsDepth.inc
 
 proc rawGet[A](s: OTSet[A], item: A, hc0: Hash, d: var Hash): int {.inline.} =
   assert(s.idx.len > 0, "Uninitialized OTSet")      # Adjust *caller* not here
@@ -354,7 +358,7 @@ iterator allItems*[A](s: OTSet[A]; item: A): A =
 proc debugDump*[A](s: OTSet[A], label="") =
   if label.len > 0: echo label
   echo s.len, " items"
-  echo "index: ", s.idx
+  echo "data: ", s.data
   for i, j in s.idx:
     echo "i: ", i, " depth: ",
          if j == 0: 0   elif j == tomb: -1  else: s.depth(s.data[j-1].item)," ",

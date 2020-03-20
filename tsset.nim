@@ -84,11 +84,12 @@ iterator probeSeq(hc, mask: Hash, d: var Hash, sz: int): int =
     when defined(tsHybridProbe):
       if d * sz < 192:        # Linear probe for 192 bytes which is v.local
         i = (i + 1) and mask
-      else:                   # Then v.non-local rotated hcode-perturbed probing.
+      else:                   # Then non-local rotated hcode-perturbed probing.
         i = Hash((i.uint * 5 + 1 + pert) and mask.uint)
+        pert = pert shr 5                     # Decay to 0 => check whole table
     else:
       i = Hash((i.uint * 5 + 1 + pert) and mask.uint)
-    pert = pert shr 5                         # Decay to 0 => check whole table
+      pert = pert shr 5                       # Decay to 0 => check whole table
     d.inc
     ifStats tsDepth.inc
 
@@ -263,9 +264,10 @@ proc setCap*[A](s: var TSSet[A], newSize = -1) =
     dbg echo(" NEW SALT: ", s.salt)
   swap(s.data, old)
   for i, cell in old:
-    d = 0
-    let j = s.rawGetDeep(cell.item, cell.hcode, d)
-    s.data[s.rawPut(j)] = move(old[i])
+    if cell.hcode.isUsed:
+      d = 0
+      let j = s.rawGetDeep(cell.item, cell.hcode, d)
+      s.data[s.rawPut(j)] = move(old[i])
 
 proc contains*[A](s: TSSet[A], item: A): bool {.inline.} =
   if s.data.len == 0: return false
@@ -344,25 +346,25 @@ iterator items*[A](s: TSSet[A]): A =
   let L = s.len
   for cell in s.data:
     assert(s.len == L, "cannot change a set while iterating over it")
-    yield cell.item
+    if cell.hcode.isUsed: yield cell.item
 
 iterator mitems*[A](s: var TSSet[A]): var A =
   let L = s.len
   for i in 0 ..< s.data.len:
     assert(s.len == L, "cannot change a set while iterating over it")
-    yield s.data[i].item
+    if s.data[i].hcode.isUsed: yield s.data[i].item
 
 iterator pairs*[A](s: TSSet[A]): tuple[a: int, b: A] =
   let L = s.len
   for i, cell in s.data:
     assert(s.len == L, "cannot change a set while iterating over it")
-    yield (i, cell.item)
+    if cell.hcode.isUsed: yield (i, cell.item)
 
 iterator hcodes*[A](s: TSSet[A]): tuple[i: int, hc: Hash] =
   let L = s.len
-  for i in 0 ..< s.data.len:
+  for i, cell in s.data:
     assert(s.len == L, "cannot change a set while iterating over it")
-    if s.data[i].hcode.isUsed: yield (i, s.data[i].hcode)
+    if cell.hcode.isUsed: yield (i, cell.hcode)
 
 iterator allItems*[A](s: TSSet[A]; item: A): A =
   let L = s.len
