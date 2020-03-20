@@ -72,7 +72,10 @@ proc equal[A](s: OLSet[A], i: uint32, item: A, hc: Hash): bool {.inline.} =
     s.data[i].hcode == hc and s.data[i].item == item
 
 proc depth(i, hc, mask: Hash): Hash {.inline.} =
-  (i - hc) and mask                       # Search depth of entry w/hcode @ix`i`
+  let i = uint(i)
+  let hc = uint(hc)
+  let mask = uint(mask)
+  Hash((i - hc) and mask)                 # Search depth of entry w/hcode @ix`i`
 
 iterator probeSeq(hc, mask: Hash): int =  # WTF generic over A caused codegenbug
   var i: Hash = hc and mask               # Start w/home address
