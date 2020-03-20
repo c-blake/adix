@@ -1,3 +1,5 @@
+00) Fix olset bug; Maybe add rerehash?
+
 0) Make the "mitigation sequence" user-adjustable somehow...E.g., first
    rehash, then robinhood, then maybe randomization/a different rehash/Btree.
 
