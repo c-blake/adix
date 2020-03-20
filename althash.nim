@@ -71,7 +71,7 @@ proc vmaddrSalt*(x: pointer): Hash {.inline.} =
 
 proc zeroSalt*(x: pointer): Hash {.inline.} = 0
 
-var getSalt* = zeroSalt
+var getSalt* = vmaddrSalt
 
 when int.sizeof == int64.sizeof:
   proc hashRoMu1*(x: int|uint): Hash {.inline.} = hashRoMu1(uint64(x))
@@ -80,7 +80,7 @@ else:
   proc hashRoMu1*(x: int|uint): Hash {.inline.} = hashRoMu1(uint32(x))
   proc hashRevFib*(x: int|uint): Hash {.inline.} = hashRevFib(uint32(x))
 
-when defined(unstableHashHash):
+when defined(danger):
   proc hash*(hashValue, salt: Hash): Hash {.inline.} =
     hashRoMu1(hashValue) xor Hash(salt)
 else:
