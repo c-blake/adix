@@ -53,7 +53,7 @@ when defined(tsWarn) or not defined(danger):
   var tsWarnCnt = 0     # Running counter of warnings issued
 
 # s.salt here is just a hash of the VM address of data[] that can give distinct
-# tabs distinct home addr locations at least as independent as `hashAddr`.
+# tabs distinct home addr locations at least as independent as `getSalt`.
 proc hashHc[A](s: TSSet[A], hc: Hash): Hash {.inline.} =
   if s.rehash: hash(hc, s.salt) else: hc
 
@@ -215,7 +215,7 @@ proc init*[A](s: var TSSet[A], initialSize=tsInitialSize, numer=tsNumer,
               rehash=tsRehash, robinhood=tsRobinHood) {.inline.} =
   s.data     = newSeq[HCell[A]](initialSize)
   s.count    = 0
-  s.salt     = hashAddr(s.data[0].addr)
+  s.salt     = getSalt(s.data[0].addr)
   s.numer    = numer.uint8
   s.denom    = denom.uint8
   s.minFree  = max(1, minFree).uint8 # Block user allowing inf loop possibility
@@ -260,7 +260,7 @@ proc setCap*[A](s: var TSSet[A], newSize = -1) =
   var old: seq[HCell[A]]
   var d: Hash
   newSeq(old, newSz)
-  if s.rehash: s.salt = hashAddr(old[0].addr)
+  if s.rehash: s.salt = getSalt(old[0].addr)
   dbg echo(" NEW SALT: ", s.salt)
   swap(s.data, old)
   for i, cell in old:

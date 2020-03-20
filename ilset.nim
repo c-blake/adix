@@ -42,7 +42,7 @@ proc hash0[A; z: static[int]](s: ILSet[A,z], item: A): Hash {.inline.} =
     result = 314159265  # Value matters little; More bits spread while enlarging
 
 # s.salt here is just a hash of the VM address of data[] that can give distinct
-# tabs distinct home addr locations at least as independent as `hashAddr`.
+# tabs distinct home addr locations at least as independent as `getSalt`.
 proc hashHc[A; z: static[int]](s: ILSet[A,z], hc: Hash): Hash {.inline.} =
   if s.rehash: hash(hc, s.salt) else: hc
 
@@ -234,9 +234,9 @@ proc init*[A; z: static[int]](s: var ILSet[A,z], initialSize=ilInitialSize,
                               growPow2=ilGrowPow2, rehash=ilRehash,
                               robinhood=ilRobinHood) {.inline.} =
   s.data     = newSeq[A](initialSize)
-  if z != 0:
-    for i in 0..<initialSize: s.data[i].setKey z
-  s.salt     = hashAddr(s.data[0].addr)
+# if z != 0:
+#   for i in 0..<initialSize: s.data[i].setKey z
+  s.salt     = getSalt(s.data[0].addr)
   s.numer    = numer.uint8
   s.denom    = denom.uint8
   s.minFree  = max(1, minFree).uint8 # Block user allowing inf loop possibility
@@ -286,7 +286,7 @@ proc setCap*[A; z: static[int]](s: var ILSet[A,z], newSize = -1) =
   var old: seq[A]
   var hc, d: Hash
   newSeq(old, newSz)
-  if s.rehash: s.salt = hashAddr(old[0].addr)
+  if s.rehash: s.salt = getSalt(old[0].addr)
   dbg echo(" NEW SALT: ", s.salt)
   swap(s.data, old)
   if z != 0:

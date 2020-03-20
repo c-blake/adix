@@ -11,7 +11,7 @@ import algorithm        # TODO template/mac to make ref variants for sets & tabs
 export SortOrder        # TODO fatten interface for diset
 
 template defTab*(T: untyped, S: untyped, G: untyped) =
-  export Pair, hash, `==`, cmpKey, cmpVal, high, low, getKey, # keys
+  export Pair, hash, `==`, cmpKey, cmpVal, high, low, getKey, setKey, # keys
          rightSize, items  # WTF `mixin` does not work in generic iterators?
 
   type T*[K,V] = object ## KV-wrapper over set reprs amenable to satellite data

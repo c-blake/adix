@@ -1,9 +1,5 @@
-0) Hooks
-   a) Expose a hook for when `s.salt` gets set so that calling code can define a
-      salt setter that uses, e.g. Linux getrandom(2) instead of VM addrs to get
-      truly unpredictable table layouts.
-   b) Make the "mitigation sequence" user-adjustable somehow...E.g., first
-      rehash, then robinhood, then maybe randomization/a different rehash/Btree.
+0) Make the "mitigation sequence" user-adjustable somehow...E.g., first
+   rehash, then robinhood, then maybe randomization/a different rehash/Btree.
 
 1) While things work well in the tests/\*shell.nim's, should add many tests both
    to exercise everything and ensure a compiler changes don't cause regressions.

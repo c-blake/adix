@@ -59,10 +59,19 @@ proc hashRevFib*(x: int64|uint64): Hash {.inline.} =
 #	result = cast[Hash](x xor (x shr 7) xor (x shr 4))
 # Thomas Wang, Jan 1997
 
-# shr until shr shl != self to ditch zero low order bits? Similar high order?
-proc hashAddr*(x: pointer): Hash {.inline.} =
+proc secureSalt*(x: pointer): Hash {.inline.} =
+  proc getrandom(buf: pointer, len: csize_t, flags: cuint): csize {. importc:
+    "getrandom", header: "sys/random.h" .}
+  stderr.write "secure salt\n"
+  discard getrandom(result.addr, csize_t(result.sizeof), cuint(0))
+
+proc vmaddrSalt*(x: pointer): Hash {.inline.} =
   const roMuDuoJr = 15241094284759029579'u64  # selected to pair w/27 bit roll
-  Hash(rotateLeftBits(cast[uint64](x) * roMuDuoJr, 27))
+  Hash(rotateLeftBits((cast[uint64](x) shr 3) * roMuDuoJr, 27))
+
+proc zeroSalt*(x: pointer): Hash {.inline.} = 0
+
+var getSalt* = zeroSalt
 
 when int.sizeof == int64.sizeof:
   proc hashRoMu1*(x: int|uint): Hash {.inline.} = hashRoMu1(uint64(x))

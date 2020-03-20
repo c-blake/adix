@@ -48,7 +48,7 @@ when defined(olWarn) or not defined(danger):
   var olWarnCnt = 0     # Running counter of warnings issued
 
 # s.salt here is just a hash of the VM address of data[] that can give distinct
-# tabs distinct home addr locations at least as independent as `hashAddr`.
+# tabs distinct home addr locations at least as independent as `getSalt`.
 proc hashHc[A](s: OLSet[A], hc: Hash): Hash {.inline.} =
   if s.rehash: hash(hc, s.salt) else: hc
 
@@ -255,7 +255,7 @@ proc init*[A](s: var OLSet[A], initialSize=olInitialSize, numer=olNumer,
               rehash=olRehash, robinhood=olRobinHood) {.inline.} =
   s.data     = newSeqOfCap[HCell[A]]((initialSize div 4 + 1) * 3)
   s.idx      = newSeq[uint32](initialSize) #WTF --gc:arc bug w/incompat structs
-  s.salt     = hashAddr(s.idx[0].addr)
+  s.salt     = getSalt(s.idx[0].addr)
   s.numer    = numer.uint8
   s.denom    = denom.uint8
   s.minFree  = max(1, minFree).uint8 # Block user allow inf loop possibility
@@ -300,7 +300,7 @@ proc setCap*[A](s: var OLSet[A], newSize = -1) =
     return
   dbg echo("RESIZE@ ",s.data.len,"/",s.idx.len," ",s.data.len.float/s.idx.len.float)
   s.idx = newSeq[uint32](newSz)
-  if s.rehash: s.salt = hashAddr(s.idx[0].addr)
+  if s.rehash: s.salt = getSalt(s.idx[0].addr)
   dbg echo(" NEW SALT: ", s.salt)
   for i, cell in s.data:
     var d: Hash = 0
