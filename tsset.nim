@@ -261,7 +261,8 @@ proc setCap*[A](s: var TSSet[A], newSize = -1) =
   var d: Hash
   newSeq(old, newSz)
   if s.rehash: s.salt = getSalt(old[0].addr)
-  dbg echo(" NEW SALT: ", s.salt)
+  when defined(unstableHash):
+    dbg echo(" NEW SALT: ", s.salt)
   swap(s.data, old)
   for i, cell in old:
     d = 0

@@ -238,7 +238,8 @@ proc setCap*[A](s: var OTSet[A], newSize = -1) =
   dbg echo("RESIZE@ ",s.data.len,"/",s.idx.len," ",s.data.len.float/s.idx.len.float)
   s.idx = newSeq[uint32](newSz)
   if s.rehash: s.salt = getSalt(s.idx[0].addr)
-  dbg echo(" NEW SALT: ", s.salt)
+  when defined(unstableHash):
+    dbg echo(" NEW SALT: ", s.salt)
   var d: Hash
   for i, cell in s.data:
     d = 0

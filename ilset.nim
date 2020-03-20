@@ -287,7 +287,8 @@ proc setCap*[A; z: static[int]](s: var ILSet[A,z], newSize = -1) =
   var hc, d: Hash
   newSeq(old, newSz)
   if s.rehash: s.salt = getSalt(old[0].addr)
-  dbg echo(" NEW SALT: ", s.salt)
+  when defined(unstableHash):
+    dbg echo(" NEW SALT: ", s.salt)
   swap(s.data, old)
   if z != 0:
     for i in 0 ..< s.data.len: s.data[i].setKey z
