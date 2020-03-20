@@ -245,7 +245,7 @@ proc rightSize*(count: int, numer=tsNumer, denom=tsDenom, minFree=tsMinFree):
 
 proc len*[A](s: TSSet[A]): int {.inline.} = s.count
 
-proc getCap*[A](s: TSSet[A]): int {.inline.} = s.count
+proc getCap*[A](s: TSSet[A]): int {.inline.} = s.data.len
 
 proc setCap*[A](s: var TSSet[A], newSize = -1) =
   if s.data.len == 0: s.init
