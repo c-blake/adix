@@ -243,9 +243,9 @@ proc setPolicy*[A](s: var TSSet[A], numer=tsNumer, denom=tsDenom,
 proc rightSize*(count: int, numer=tsNumer, denom=tsDenom, minFree=tsMinFree):
     int {.inline.} = ceilPow2(count * 4 div 3 + minFree) # Might have good hash
 
-proc len*[A](s: TSSet[A]): int {.inline.} = s.data.len
+proc len*[A](s: TSSet[A]): int {.inline.} = s.count
 
-proc getCap*[A](s: TSSet[A]): int {.inline.} = s.data.len
+proc getCap*[A](s: TSSet[A]): int {.inline.} = s.count
 
 proc setCap*[A](s: var TSSet[A], newSize = -1) =
   if s.data.len == 0: s.init
