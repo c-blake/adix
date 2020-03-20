@@ -36,7 +36,7 @@ type                  # `A` is Element type; Nim leans toward `item` language.
 
 proc rawGet[A](s: DISet[A], item: A): int {.inline.} =
   assert(s.range > 0, "Uninitialized DISet")  # Adjust *caller* not here
-  let i = item.getKey - item.low.int
+  let i = int(item.getKey) - item.low.int
   if i >= s.range:
     raise newException(RangeError, "Direct Indexed key limit exceeded")
   let j = s.idx[i].int                  # Get idx, cmp item
