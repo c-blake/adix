@@ -26,8 +26,8 @@ import althash, bitop, memutil, setops
 type                  # `A` is Element type; Nim leans toward `item` language.
   HCell[A] = tuple[hcode: Hash, item: A]
   OLSet*[A] = object                          ## Robin Hood Hash Set
-    data*: seq[HCell[A]]                      ## data array; CAUTION!
-    idx*: seq[uint32]                 #TODO optimize to 2B bit (hcode,ix) pairs
+    data: seq[HCell[A]]                       # data array
+    idx: seq[uint32]                  #TODO optimize to 2B bit (hcode,ix) pairs
     salt: Hash
     numer, denom, minFree, growPow2, pow2: uint8 # size policy parameters
     rehash, robin: bool
@@ -123,18 +123,18 @@ proc depth[A](s: OLSet[A]; item: A): int {.inline.} =
 proc tooFull[A](s: var OLSet[A], d: int; newSize: var int): bool {.inline.} =
   result = true                 # Whether to call setCap or not
   if s.idx.len - s.data.len < s.minFree.int + 1:
-#   echo "Too little extra space (", s.idx.len - s.data.len, ") of ", s.idx.len
+    dbg echo("Too little space (",s.idx.len-s.data.len,") of ",s.idx.len)
     ifStats lpTooFull.inc
     newSize = s.idx.len shl s.growPow2
     return
   if s.denom.int * (d - 1) < s.numer.int * s.pow2.int:
     return false                # newSize will not matter
-# echo "Probe too deep: ",d," while lg(sz)=",s.pow2 #," depths: ",s.depths
+  dbg echo("Probe too deep: ",d," while lg(sz)=",s.pow2," depths: ",s.depths)
   ifStats lpTooDeep.inc
   if s.data.len > s.idx.len shr s.growPow2:
     newSize = s.idx.len shl s.growPow2
   else:
-#   echo "Too sparse to grow, ",s.data.len,"/",s.idx.len," depth: ",d
+    dbg echo("Too sparse to grow, ",s.data.len,"/",s.idx.len," depth: ",d)
     ifStats lpTooSparse.inc     # Normal resizing cannot restore performance
     var ext: string             # extra text after primary message
     if s.robin:                 # Robin Hood already active
@@ -298,11 +298,10 @@ proc setCap*[A](s: var OLSet[A], newSize = -1) =
     s.pow2 = uint8(newSz.lg)
   if newSz == s.idx.len and newSize == -1:
     return
-# echo "RESIZE@ ",s.data.len,"/",s.idx.len," ",s.data.len.float/s.idx.len.float,
-#      " MAX DEPTH: ", s.depths.len
+  dbg echo("RESIZE@ ",s.data.len,"/",s.idx.len," ",s.data.len.float/s.idx.len.float)
   s.idx = newSeq[uint32](newSz)
   if s.rehash: s.salt = hashAddr(s.idx[0].addr)
-# echo " NEW SALT: ", s.salt
+  dbg echo(" NEW SALT: ", s.salt)
   for i, cell in s.data:
     var d: Hash = 0
     let j = s.rawGetDeep(cell.item, cell.hcode, d)

@@ -27,7 +27,7 @@ import althash, bitop, setops
 type                  # `A` is Element type; Nim leans toward `item` language.
   HCell[A] = tuple[hcode: Hash, item: A]
   TSSet*[A] = object
-    data*: seq[HCell[A]]  ## Exposed in case you want to sort, reverse, etc.
+    data: seq[HCell[A]]
     count: int            # count of entries
     salt: Hash
     numer, denom, minFree, growPow2, pow2: uint8 # size policy parameters
@@ -136,18 +136,18 @@ proc depth[A](s: TSSet[A]; item: A): int {.inline.} =
 proc tooFull[A](s: TSSet[A], d: int; newSize: var int): bool {.inline.} =
   result = true                 # Whether to call setCap or not
   if s.data.len - s.count < s.minFree.int + 1:
-#   echo "Too little extra space (", s.data.len - s.count, ") of ", s.data.len
+    dbg echo("Too little space (", s.data.len-s.count,") of ",s.data.len)
     ifStats tsTooFull.inc
     newSize = s.data.len shl s.growPow2
     return
   if s.denom.int * (d - 1) < s.numer.int * s.pow2.int:
     return false                # newSize will not matter
-# echo "Probe too deep: ",d," while lg(sz)=",s.pow2 #," depths: ",s.depths
+  dbg echo("Probe too deep: ",d," while lg(sz)=",s.pow2," depths: ",s.depths)
   ifStats tsTooDeep.inc
   if s.count > s.data.len shr s.growPow2:
     newSize = s.data.len shl s.growPow2
   else:
-#   echo "Too sparse to grow, ",s.count,"/",s.data.len," depth: ",d
+    dbg echo("Too sparse to grow, ",s.count,"/",s.data.len," depth: ",d)
     ifStats tsTooSparse.inc     # Normal resizing cannot restore performance
     var ext: string             # extra text after primary message
     if s.rehash:
@@ -256,13 +256,12 @@ proc setCap*[A](s: var TSSet[A], newSize = -1) =
   else:
     newSz = max(newSize, rightSize(s.data.len, minFree=s.minFree.int))
     s.pow2 = uint8(newSz.lg)
-# echo "RESIZE@ ",s.count,"/",s.data.len," ", s.data.len.float/s.data.len.float,
-#      " MAX DEPTH: ", s.depths.len
+  dbg echo("RESIZE@ ",s.count,"/",s.data.len," ",s.data.len.float/s.data.len.float)
   var old: seq[HCell[A]]
   var d: Hash
   newSeq(old, newSz)
   if s.rehash: s.salt = hashAddr(old[0].addr)
-# echo " NEW SALT: ", s.salt
+  dbg echo(" NEW SALT: ", s.salt)
   swap(s.data, old)
   for i, cell in old:
     d = 0

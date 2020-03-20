@@ -12,7 +12,7 @@
 import tabkey, althash, memutil, bitop, setopz
 type                  # `A` is Element type; Nim leans toward `item` language.
   ILSet*[A; z: static[int]] = object  ## RobinHoodLP w/sentinel'd int keys
-    data*: seq[A]               ## data array; CAUTION!
+    data: seq[A]                # data array; CAUTION!
     count: int                  # count of used slots
     salt: Hash
     numer, denom, minFree, growPow2, pow2: uint8 # size policy parameters
@@ -108,18 +108,18 @@ proc tooFull[A; z: static[int]](s: var ILSet[A,z]; d: int;
                                 newSize: var int): bool {.inline.} =
   result = true                 # Whether to call setCap or not
   if s.data.len - s.count < s.minFree.int + 1:
-#   echo "Too little extra space (", s.data.len - s.count, ") of ", s.data.len
+    dbg echo("Too little space (",s.data.len-s.count,") of ",s.data.len)
     ifStats lpTooFull.inc
     newSize = s.data.len shl s.growPow2
     return
   if s.denom.int * (d - 1) < s.numer.int * s.pow2.int:
     return false                # newSize will not matter
-# echo "Probe too deep: ",d," while lg(sz)=",s.pow2 #," depths: ",s.depths
+  dbg echo("Probe too deep: ",d," while lg(sz)=",s.pow2," depths: ",s.depths)
   ifStats lpTooDeep.inc
   if s.count > s.data.len shr s.growPow2:
     newSize = s.data.len shl s.growPow2
   else:
-#   echo "Too sparse to grow, ",s.count,"/",s.data.len," depth: ",d
+    dbg echo("Too sparse to grow, ",s.count,"/",s.data.len," depth: ",d)
     ifStats lpTooSparse.inc     # Normal resizing cannot restore performance
     var ext: string             # extra text after primary message
     if s.robin:                 # Robin Hood already active
@@ -282,13 +282,12 @@ proc setCap*[A; z: static[int]](s: var ILSet[A,z], newSize = -1) =
     s.pow2 = uint8(newSz.lg)
   if newSz == s.data.len and newSize == -1:
     return
-# echo "RESIZE@ ",s.count,"/",s.data.len," ", s.count.float/s.data.len.float,
-#      " MAX DEPTH: ", s.depths.len
+  dbg echo("RESIZE@ ",s.count,"/",s.data.len," ",s.count.float/s.data.len.float)
   var old: seq[A]
   var hc, d: Hash
   newSeq(old, newSz)
   if s.rehash: s.salt = hashAddr(old[0].addr)
-# echo " NEW SALT: ", s.salt
+  dbg echo(" NEW SALT: ", s.salt)
   swap(s.data, old)
   if z != 0:
     for i in 0 ..< s.data.len: s.data[i].setKey z

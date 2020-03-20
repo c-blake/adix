@@ -8,7 +8,7 @@ const tomb = 0xFFFFFFFF'u32     # Could ==1, w/0=free & - 2 vs - 1 idx shift
 type                  # `A` is Element type; Nim leans toward `item` language.
   HCell[A] = tuple[hcode: Hash, item: A]
   OTSet*[A] = object
-    data*: seq[HCell[A]]  ## Exposed in case you want to sort, reverse, etc.
+    data: seq[HCell[A]]
     idx: seq[uint32]      #TODO save space via n-Byte ptrs for idx, n*i..n*i+n-1
     salt: Hash
     numer, denom, minFree, growPow2, pow2: uint8 # size policy parameters
@@ -112,18 +112,18 @@ proc depth[A](s: OTSet[A]; item: A): int {.inline.} =
 proc tooFull[A](s: OTSet[A], d: int; newSize: var int): bool {.inline.} =
   result = true                 # Whether to call setCap or not
   if s.idx.len - s.data.len < s.minFree.int + 1:
-#   echo "Too little extra space (", s.idx.len - s.data.len, ") of ", s.idx.len
+    dbg echo("Too little space (",s.idx.len-s.data.len,") of ",s.idx.len)
     ifStats otTooFull.inc
     newSize = s.idx.len shl s.growPow2
     return
   if s.denom.int * (d - 1) < s.numer.int * s.pow2.int:
     return false                # newSize will not matter
-# echo "Probe too deep: ",d," while lg(sz)=",s.pow2 #," depths: ",s.depths
+  dbg echo("Probe too deep: ",d," while lg(sz)=",s.pow2," depths: ",s.depths)
   ifStats otTooDeep.inc
   if s.data.len > s.idx.len shr s.growPow2:
     newSize = s.idx.len shl s.growPow2
   else:
-#   echo "Too sparse to grow, ",s.data.len,"/",s.idx.len," depth: ",d
+    dbg echo("Too sparse to grow, ",s.data.len,"/",s.idx.len," depth: ",d)
     ifStats otTooSparse.inc     # Normal resizing cannot restore performance
     var ext: string             # extra text after primary message
     if s.rehash:
@@ -235,11 +235,10 @@ proc setCap*[A](s: var OTSet[A], newSize = -1) =
     newSz = max(newSize, rightSize(s.data.len, minFree=s.minFree.int))
 #   if newSz == s.idx.len: return # may still be too full of tombstones
     s.pow2 = uint8(newSz.lg)
-# echo "RESIZE@ ",s.data.len,"/",s.idx.len," ",s.data.len.float/s.idx.len.float,
-#      " MAX DEPTH: ", s.depths.len
+  dbg echo("RESIZE@ ",s.data.len,"/",s.idx.len," ",s.data.len.float/s.idx.len.float)
   s.idx = newSeq[uint32](newSz)
   if s.rehash: s.salt = hashAddr(s.idx[0].addr)
-# echo " NEW SALT: ", s.salt
+  dbg echo(" NEW SALT: ", s.salt)
   var d: Hash
   for i, cell in s.data:
     d = 0

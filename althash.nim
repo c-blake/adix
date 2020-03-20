@@ -77,3 +77,8 @@ when defined(unstableHashHash):
 else:
   proc hash*(hashValue, salt: Hash): Hash {.inline.} =
     hashRoMu1(hashValue)
+
+when defined(hashDebug):
+  template dbg*(x) = x
+else:
+  template dbg*(x) = discard

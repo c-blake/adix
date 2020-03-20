@@ -30,7 +30,7 @@ type                  # `A` is Element type; Nim leans toward `item` language.
 # Python3.6-like indirect OCSet which has a very similar index structure.
   I = uint8
   DISet*[A] = object  ## Alphabet size determines ``A``
-    data*: seq[A]     ## exposed in case you want to sort, reverse, etc.
+    data: seq[A]
     range: int
     idx: ptr UncheckedArray[I]
 
