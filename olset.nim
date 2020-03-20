@@ -139,19 +139,17 @@ proc tooFull[A](s: var OLSet[A], d: int; newSize: var int): bool {.inline.} =
   else:
     dbg echo("Too sparse to grow, ",s.data.len,"/",s.idx.len," depth: ",d)
     ifStats lpTooSparse.inc     # Normal resizing cannot restore performance
+    newSize = s.idx.len
     var ext: string             # extra text after primary message
     if s.robin:                 # Robin Hood already active
       if s.rehash:              # rehashing hash() already active
         ext = "; Switch to tree|seq for dups"
         result = false          # Could potentially auto-convert to B-tree here
-        newSize = s.idx.len     #XXX Try 2nd kind of rehash|maybe a `hash2()`?
       else:
         ext = "; Adapting by re-hashing hash()"
         s.rehash = true
-        newSize = s.idx.len
     else:                       # Turn on Robin Hood
       s.robin = true
-      newSize = s.idx.len
       ext = "; Adapting by Robin Hood re-org"
     when defined(olWarn) or not defined(danger):
       olWarnCnt.inc

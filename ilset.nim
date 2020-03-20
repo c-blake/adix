@@ -124,19 +124,17 @@ proc tooFull[A; z: static[int]](s: var ILSet[A,z]; d: int;
   else:
     dbg echo("Too sparse to grow, ",s.count,"/",s.data.len," depth: ",d)
     ifStats lpTooSparse.inc     # Normal resizing cannot restore performance
+    newSize = s.data.len
     var ext: string             # extra text after primary message
     if s.robin:                 # Robin Hood already active
       if s.rehash:              # rehashing hash() already active
         ext = "; Switch to tree|seq for dups"
         result = false          # Could potentially auto-convert to B-tree here
-        newSize = s.data.len    #XXX Try 2nd kind of rehash|maybe a `hash2()`?
       else:
         ext = "; Adapting by re-hashing hash()"
         s.rehash = true
-        newSize = s.data.len
     else:                       # Turn on Robin Hood
       s.robin = true
-      newSize = s.data.len
       ext = "; Adapting by Robin Hood re-org"
     when defined(ilWarn) or not defined(danger):
       ilWarnCnt.inc
