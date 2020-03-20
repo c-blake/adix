@@ -359,6 +359,7 @@ proc debugDump*[A](s: OTSet[A], label="") =
   if label.len > 0: echo label
   echo s.len, " items"
   echo "data: ", s.data
+  echo "idx:"
   for i, j in s.idx:
     echo "i: ", i, " depth: ",
          if j == 0: 0   elif j == tomb: -1  else: s.depth(s.data[j-1].item)," ",
