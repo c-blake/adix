@@ -116,8 +116,6 @@ proc rawGetDeep[A](s: TSSet[A]; item: A; hc: Hash; d: var Hash): int {.inline.}=
     result = i
     if not s.data[i].hcode.isUsed:
       break
-    d.inc
-    ifStats tsDepth.inc
 
 proc rawGet[A](s: TSSet[A], item: A; hc, d: var Hash): int {.inline.} =
   hc = hash0(item)

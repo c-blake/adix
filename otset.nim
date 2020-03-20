@@ -91,8 +91,6 @@ proc rawGetDeep[A](s: OTSet[A]; item: A; hc: Hash; d: var Hash): int {.inline.}=
     result = i
     if s.idx[i] == 0:
       break
-    d.inc
-    ifStats otDepth.inc
 
 proc rawGetLast[A](s: OTSet[A]): int {.inline.} =
   let hc = s.data[^1].hcode
