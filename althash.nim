@@ -54,10 +54,15 @@ proc hashRevFib*(x: int32|uint32): Hash {.inline.} =
 proc hashRevFib*(x: int64|uint64): Hash {.inline.} =
   Hash(reverseBits(uint64(x) * 15241094284759029579'u64))
 
-# inspired from https://gist.github.com/badboy/6267743
-#	var x = x xor ((x shr 20) xor (x shr 12))
-#	result = cast[Hash](x xor (x shr 7) xor (x shr 4))
-# Thomas Wang, Jan 1997
+proc hashWang*(x: int32|uint32): Hash {.inline.} =
+  let u = uint32(x) # inspired from https://gist.github.com/badboy/6267743
+  let x = u xor ((u shr 20) xor (u shr 12))
+  result = Hash((x xor (x shr 7) xor (x shr 4)))
+
+proc hashWang*(x: int64|uint64): Hash {.inline.} =
+  let u = uint64(x) # inspired from https://gist.github.com/badboy/6267743
+  let x = u xor ((u shr 20) xor (u shr 12))
+  result = Hash((x xor (x shr 7) xor (x shr 4)))
 
 proc secureSalt*(x: pointer): Hash {.inline.} =
   proc getrandom(buf: pointer, len: csize_t, flags: cuint): csize {. importc:
