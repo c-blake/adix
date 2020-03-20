@@ -24,5 +24,7 @@ proc main() =
       of 'D': echo s.depths
       of 'P': s.debugDump
       else: echo "UNKNOWN COMMAND:", c.repr; quit 2
+  echo "nG1: ", nG1, " nG0: ", nG0, " nP1: ", nP1,
+       " nP0: ", nP0, " nD1: ", nD1, " nD0: ", nD0
 
 main()
