@@ -43,10 +43,10 @@ elif defined(orderedLinear):
   type Tab*[K,V] = OLTab[K,V]
   type Set*[A] = OLSet[A]
   proc initTab*[K,V](sz=4, numer=olNumer, denom=olDenom, minFree=olMinFree,
-      growPow2=olGrowPow2, rehash=olRehash, robinhood=false):Tab[K,V]{.inline.}=
+      growPow2=olGrowPow2, rehash=olRehash, robinhood=olRobinHood):Tab[K,V]{.inline.}=
     initOLTab[K,V](sz, numer, denom, minFree, growPow2, rehash, robinhood)
   proc initSet*[A](sz=4, numer=olNumer, denom=olDenom, minFree=olMinFree,
-      growPow2=olGrowPow2, rehash=olRehash, robinhood=false): Set[A] {.inline.}=
+      growPow2=olGrowPow2, rehash=olRehash, robinhood=olRobinHood): Set[A] {.inline.}=
     initOLSet[A](sz, numer, denom, minFree, growPow2, rehash, robinhood)
   proc rightSz*(x: Natural): int {.inline.} =
     olset.rightSize(x)
@@ -56,10 +56,10 @@ elif defined(noRehash):
   type Tab*[K,V] = LPTab[K,V]
   type Set*[A] = LPSet[A]
   proc initTab*[K,V](sz=4, numer=lpNumer, denom=lpDenom, minFree=lpMinFree,
-      growPow2=lpGrowPow2, rehash=false, robinhood=false):Tab[K,V]{.inline.}=
+      growPow2=lpGrowPow2, rehash=false, robinhood=olRobinHood):Tab[K,V]{.inline.}=
     initLPTab[K,V](sz, numer, denom, minFree, growPow2, rehash, robinhood)
   proc initSet*[A](sz=4, numer=lpNumer, denom=lpDenom, minFree=lpMinFree,
-      growPow2=lpGrowPow2, rehash=false, robinhood=false): Set[A] {.inline.}=
+      growPow2=lpGrowPow2, rehash=false, robinhood=olRobinHood): Set[A] {.inline.}=
     initLPSet[A](sz, numer, denom, minFree, growPow2, rehash, robinhood)
   proc rightSz*(x: Natural): int {.inline.} =
     lpset.rightSize(x)
@@ -95,10 +95,10 @@ elif defined(integerTab0):
   type Tab*[K,V] = ILTab[K,V,0]
   type Set*[A] = ILSet[A,0]
   proc initTab*[K,V](sz=4, numer=ilNumer, denom=ilDenom, minFree=ilMinFree,
-      growPow2=ilGrowPow2, rehash=ilRehash, robinhood=false):Tab[K,V]{.inline.}=
+      growPow2=ilGrowPow2, rehash=ilRehash, robinhood=ilRobinHood):Tab[K,V]{.inline.}=
     initILTab[K,V,0](sz, numer, denom, minFree, growPow2, rehash, robinhood)
   proc initSet*[A](sz=4, numer=ilNumer, denom=ilDenom, minFree=ilMinFree,
-      growPow2=ilGrowPow2, rehash=ilRehash, robinhood=false): Set[A] {.inline.}=
+      growPow2=ilGrowPow2, rehash=ilRehash, robinhood=ilRobinHood): Set[A] {.inline.}=
     initILSet[A,0](sz, numer, denom, minFree, growPow2, rehash, robinhood)
   proc rightSz*(x: Natural): int {.inline.} =
     ilset.rightSize(x)
@@ -108,10 +108,10 @@ elif defined(integerTabM1):
   type Tab*[K,V] = ILTab[K,V,-1]
   type Set*[A] = ILSet[A,-1]
   proc initTab*[K,V](sz=4, numer=ilNumer, denom=ilDenom, minFree=ilMinFree,
-      growPow2=ilGrowPow2, rehash=ilRehash, robinhood=false):Tab[K,V]{.inline.}=
+      growPow2=ilGrowPow2, rehash=ilRehash, robinhood=ilRobinHood):Tab[K,V]{.inline.}=
     initILTab[K,V,-1](sz, numer, denom, minFree, growPow2, rehash, robinhood)
   proc initSet*[A](sz=4, numer=ilNumer, denom=ilDenom, minFree=ilMinFree,
-      growPow2=ilGrowPow2, rehash=ilRehash, robinhood=false): Set[A] {.inline.}=
+      growPow2=ilGrowPow2, rehash=ilRehash, robinhood=ilRobinHood): Set[A] {.inline.}=
     initILSet[A,-1](sz, numer, denom, minFree, growPow2, rehash, robinhood)
   proc rightSz*(x: Natural): int {.inline.} =
     ilset.rightSize(x)
