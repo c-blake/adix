@@ -12,4 +12,7 @@ proc high*[K, V](e: Pair[K, V]): K {.inline.} = e.key.high
 proc low*[K, V](e: Pair[K, V]): K {.inline.} = e.key.low
 
 proc getKey*[K, V](e: Pair[K, V]): K {.inline.} = e.key
+proc getKey*(e: SomeInteger): int {.inline.} = int(e)
+
 proc setKey*[K, V](e: var Pair[K, V], f: K) {.inline.} = e.key = K(f)
+proc setKey*(e: var SomeInteger, f: SomeInteger) {.inline.} = e = type(e)(f)
