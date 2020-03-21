@@ -1,7 +1,6 @@
-00) Fix olset bug; Maybe add rerehash?
-
-0) Make the "mitigation sequence" user-adjustable somehow...E.g., first
-   rehash, then robinhood, then maybe randomization/a different rehash/Btree.
+0) Make the "mitigation sequence" user-adjustable somehow...E.g., first rehash,
+   then maybe rerehash, then robinhood, then maybe Btree. (Could maybe also
+   make warnings adjustable just calling some imported tooFull type proc.)
 
 1) While things work well in the tests/\*shell.nim's, should add many tests both
    to exercise everything and ensure a compiler changes don't cause regressions.
@@ -9,14 +8,14 @@
    weak vitanim benchmarks.  Would be nice to do a whole more real suite like
    the probablydance guy & beyond; Unsure I'll have the time/interest.
 
-2) Make a `diset` using sequint, e.g. dcset; Should be easy.
+2) Make a `diset` using `sequint`, e.g. `dcset`; Should be easy.
 
-3) Make o?set using sequint, maybe called c?set if separate types or maybe just
-   a run-time or compile-time option on o?set.  Should be easy.
+3) Make `o?set` using sequint, maybe called `c?set` if separate types or maybe
+   just a run-time or compile-time option on `o?set`.  Should be easy.
 
 4) Add `reindex` proc for o\*set/o\*tab.  Should be easy..just clear idx and
-   loop over data[] inserting.  Maybe add after `sort` (to be more drop-in for
-   the stdlib's ordered tables).
+   loop over `data[]` inserting.  Maybe add after `sort` (to be more drop-in
+   for Nim stdlib's ordered table workings).
 
 6) Look into other well vetted integer hashes for althash.
 
