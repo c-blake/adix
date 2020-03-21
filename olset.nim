@@ -158,9 +158,9 @@ proc tooFull[A](s: var OLSet[A], d: int; newSize: var int): bool {.inline.} =
 
 proc rawPut1[A](s: var OLSet[A], i: Hash; d: var int): int {.inline.} =
   if s.robin:
-    var j = i                           # Linear probe to first empty slot
-    while isUsed(s.idx, j):
-      j = (j + 1) and s.idx.high
+    result = i                         # Linear probe to first empty slot
+    while isUsed(s.idx, result):
+      result = (result + 1) and s.idx.high
       d.inc
 
 proc rawPut2[A](s: var OLSet[A], i, j: Hash): int {.inline.} =
