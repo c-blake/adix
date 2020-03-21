@@ -370,7 +370,7 @@ proc take*[A; z: static[int]](s: var ILSet[A,z], item: var A): bool {.inline.} =
   do: return false
 
 proc pop*[A; z: static[int]](s: var ILSet[A,z]): var A {.inline.} =
-  if s.data.len == 0: raise newException(ILdexError, formatErrorIndexBound(0,0))
+  if s.data.len == 0: raise newException(IndexError, formatErrorIndexBound(0,0))
   for e in s:         # Cheaper than it may look due to early exit, BUT can get
     result = move(e)  #..slow as a set empties out.  Could keep running "min ix"
     s.excl result     #..based on s.flag (cheaply updated by either ins/del.
