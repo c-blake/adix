@@ -1,5 +1,5 @@
 when defined(robinHoodMoveMem):
-  # This branch gets SEGV and I have not yet tracked down why
+  # This branch gets SEGV (with seq[T] vals); I have not yet tracked down why
   proc pushUp*[T](x: var seq[T], i, n: int) {.inline.} =
     ## move n items up 1; i.e. ``x[i+1..i+n] = x[i..i+n-1]``
 #   if n < 1: return
