@@ -97,3 +97,7 @@ proc reverseBits*(x: uint64): uint64 =
            (uint64(revByte[int((x and 0x0000FF0000000000'u64)shr 40)]) shl 16)or
            (uint64(revByte[int((x and 0x00FF000000000000'u64)shr 48)]) shl  8)or
             uint64(revByte[int( x                            shr 56)])
+
+proc isPow2*(x: int): bool =
+  if x == 0: return false
+  (x and (x - 1)) == 0
