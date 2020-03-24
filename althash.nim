@@ -89,7 +89,7 @@ proc hashWY*(x: int64|uint64|Hash): Hash {.inline.} =
   const P1 = 0xe7037ed1a0b428db'u64
   const P5 = 0xeb44accab455d165'u64
   let x = uint64(x)
-  Hash(HiXorLo(HiXorLo(P0, x xor P1), 8 xor P5))
+  Hash(HiXorLo(HiXorLo(P0, x xor P1), 8'u64 xor P5))
 
 proc hashWY0*(x: int64|uint64|Hash): Hash {.inline.} =
   ## A slightly simplified/early version of Wang Yi's hash for 8B ints.
