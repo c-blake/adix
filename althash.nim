@@ -106,10 +106,9 @@ proc hashRevFib*(x: int64|uint64): Hash {.inline.} =
   Hash(reverseBits(uint64(x) * 15241094284759029579'u64))
 
 proc secureSalt*(x: pointer): Hash {.inline.} =
-  proc getrandom(buf: pointer, len: csize_t, flags: cuint): csize {. importc:
+  proc getrandom(buf: pointer, len: uint64, flags: cuint): csize {. importc:
     "getrandom", header: "sys/random.h" .}
-  stderr.write "secure salt\n"
-  discard getrandom(result.addr, csize_t(result.sizeof), cuint(0))
+  discard getrandom(result.addr, uint64(result.sizeof), cuint(0))
 
 proc vmaddrSalt*(x: pointer): Hash {.inline.} =
   const roMuDuoJr = 15241094284759029579'u64  # selected to pair w/27 bit roll
