@@ -19,9 +19,11 @@
 ##
 ## With Robin Hood, performance responds more to your hash() and to rehash=true
 ## than to ``numer, denom, minFree``.  Nevertheless, some very approximate lg(N)
-## depth ratio advice: ``numer/denom`` for *random* (i.e. well hashed) data with
-## a 75% data load (len/getCap) are =~ RH(1/1) => ~71% & rmsDepth 2, RH(4/1) =>
-## ~73%,rmsDepth 2.1 while for vanilla LP (1/1) => ~37% and (4/1) => ~62%.
+## depth ratio advice: ``numer/denom`` for *random* (i.e. well hashed) data are
+## are =~ RH(1/1) => ~71% data load & rmsDepth 2, RH(4/1) => ~73% data load,
+## rmsDepth 2.1 while for vanilla LP (1/1) => ~37% and (4/1) => ~62%.  So, about
+## 2..4/1 is probably most comparable to typical load-based resize rules, but if
+## you have a near perfect hash you can profit greatly from that (100% 1 probe).
 
 import althash, memutil, bitop, setops
 type                  # `A` is Element type; Nim leans toward `item` language.
