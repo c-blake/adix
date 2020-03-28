@@ -17,6 +17,8 @@
    loop over `data[]` inserting.  Maybe add after `sort` (to be more drop-in
    for Nim stdlib's ordered table workings).
 
+5) add `ref` variants, maybe via a `defref.nim`
+
 6) Look into other well vetted integer hashes for althash.
 
 7) Possible lpset/ilset/olset micro-optimizations most relevant for L1/L2 cases:
