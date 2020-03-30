@@ -84,7 +84,8 @@ proc HiXorLo(A, B: uint64): uint64 {.inline.} =
     return hi xor lo
 
 proc hashWY*(x: int64|uint64|Hash): Hash {.inline.} =
-  ## Wang Yi's hash for 8B ints. (Outer HiXorLo(foo, const) may help v.little.)
+  ## Wang Yi's hash for 8B int.  NOTE: it is fine to define
+  ## ``proc(x: int16): Hash {.inline.} = hashWY(Hash(x))``.
   const P0 = 0xa0761d6478bd642f'u64
   const P1 = 0xe7037ed1a0b428db'u64
   const P5 = 0xeb44accab455d165'u64
@@ -93,7 +94,7 @@ proc hashWY*(x: int64|uint64|Hash): Hash {.inline.} =
 
 proc hashWY0*(x: int64|uint64|Hash): Hash {.inline.} =
   ## A slightly simplified/early version of Wang Yi's hash for 8B ints.
-  ## Faster, but less well vetted/tested by e.g. SMHasher.
+  ## Faster, but less scrambling.  Definitely has some easy weak spots.
   const P0 = 0xa0761d6478bd642f'u64
   const P1 = 0xe7037ed1a0b428db'u64
   let x = uint64(x)
