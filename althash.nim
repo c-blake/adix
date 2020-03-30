@@ -89,9 +89,8 @@ proc hashWY*(x: int64|uint64|Hash): Hash {.inline.} =
   ## See https://github.com/aappleby/smhasher for more details.
   const P0 = 0xa0761d6478bd642f'u64
   const P1 = 0xe7037ed1a0b428db'u64
-  const P5 = 0xeb44accab455d165'u64
-  let x = uint64(x)
-  Hash(HiXorLo(HiXorLo(P0, x xor P1), 8'u64 xor P5))
+  const P5x8 = 0xeb44accab455d165'u64 xor 8'u64
+  Hash(HiXorLo(HiXorLo(P0, uint64(x) xor P1), P5x8))
 
 proc hashWY0*(x: int64|uint64|Hash): Hash {.inline.} =
   ## A slightly simplified/early version of Wang Yi's hash for 8B ints.
