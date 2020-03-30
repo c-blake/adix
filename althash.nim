@@ -86,7 +86,7 @@ proc HiXorLo(A, B: uint64): uint64 {.inline.} =
 proc hashWY*(x: int64|uint64|Hash): Hash {.inline.} =
   ## Wang Yi's hash for 8B int.  NOTE: It is fine to define
   ## ``proc(x: int16): Hash {.inline.} = hashWY(Hash(x))``.
-  ## See https://github.com/aappleby/smhasher for more details.
+  ## See https://github.com/rurban/smhasher for more details.
   const P0 = 0xa0761d6478bd642f'u64
   const P1 = 0xe7037ed1a0b428db'u64
   const P5x8 = 0xeb44accab455d165'u64 xor 8'u64
