@@ -60,7 +60,7 @@ proc hashRoMu2*(x: int64|uint64|Hash): Hash {.inline.} =
   Hash(rotateLeftBits(0xD3833E80'u64 * lo  +  hi * 0x4F4C574B'u64, 27))
 
 #XXX should do 1B, 2B, 4B versions as well.
-proc HiXorLo(A, B: uint64): uint64 {.inline.} =
+proc hiXorLo(A, B: uint64): uint64 {.inline.} =
   # Xor of high & low 8B of full 16B product
   when defined(gcc) or defined(llvm_gcc) or defined(clang):
     {.emit: """__uint128_t r = A; r *= B; return (r >> 64) ^ r; """.}
@@ -91,7 +91,7 @@ proc hashWY*(x: int64|uint64|Hash): Hash {.inline.} =
   const P0 = 0xa0761d6478bd642f'u64
   const P1 = 0xe7037ed1a0b428db'u64
   const P5x8 = 0xeb44accab455d165'u64 xor 8'u64
-  Hash(HiXorLo(HiXorLo(P0, uint64(x) xor P1), P5x8))
+  Hash(hiXorLo(hiXorLo(P0, uint64(x) xor P1), P5x8))
 
 proc hashWY0*(x: int64|uint64|Hash): Hash {.inline.} =
   ## A slightly simplified/early version of Wang Yi's hash for 8B ints.
@@ -99,7 +99,7 @@ proc hashWY0*(x: int64|uint64|Hash): Hash {.inline.} =
   const P0 = 0xa0761d6478bd642f'u64
   const P1 = 0xe7037ed1a0b428db'u64
   let x = uint64(x)
-  Hash(HiXorLo(P0, x xor P1))
+  Hash(hiXorLo(P0, x xor P1))
 
 proc hashRevFib*(x: int32|uint32): Hash {.inline.} =
   Hash(reverseBits(uint32(x) * 0xd3833e81'u64))
