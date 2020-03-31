@@ -84,9 +84,8 @@ proc hiXorLo(A, B: uint64): uint64 {.inline.} =
     return hi xor lo
 
 proc hashWY*(x: int64|uint64|Hash): Hash {.inline.} =
-  ## Wang Yi's hash for 8B int.  https://github.com/rurban/smhasher has more
-  ## details.  This is WY's first version.  There has been some evolution, but
-  ## this one passed all smhasher scrambling tests in Spring 2019 and is simple.
+  ## Wang Yi's hash_v1 for 8B int.  https://github.com/rurban/smhasher has more
+  ## details.  This passed all scrambling tests in Spring 2019 and is simple.
   ## NOTE: It's ok to define ``proc(x: int16): Hash = hashWY(Hash(x))``.
   const P0 = 0xa0761d6478bd642f'u64
   const P1 = 0xe7037ed1a0b428db'u64
