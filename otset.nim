@@ -346,11 +346,11 @@ iterator hcodes*[A](s: OTSet[A]): tuple[i: int, hc: Hash] =
 iterator allItems*[A](s: OTSet[A]; item: A): A =
   let L = s.len
   if L > 0:
-    let hc = hash0(item)
+    let hc0 = hash0(item)
     var d: Hash
     var did: seq[Hash]              #probeSeq can yield same i twice or more!
-    for i in probeSeq(hc, s.idx.high, d, s.idx[0].sizeof):
-      if s.equal(s.idx[i] - 1, item, hc) and i notin did:
+    for i in probeSeq(s.hashHc(hc0), s.idx.high, d, s.idx[0].sizeof):
+      if s.equal(s.idx[i] - 1, item, hc0) and i notin did:
         assert(s.len == L, "cannot change a set while iterating over it")
         did.add i
         yield s.data[i].item
