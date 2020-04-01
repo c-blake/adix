@@ -26,8 +26,8 @@
 ## Different hashes will perform more/less well on different data.  So, we just
 ## provide a few here, and one is based upon highly non-linear bit reversal.
 ##
-## The strongest hash is hashWY which passes all of SMHasher's entropy tests
-## and so is the default Hash-rehasher.
+## The strongest hash is hashWangYi1 which passes all of SMHasher's entropy
+## tests and so is the default Hash-rehasher.
 ##
 ## (Incidentally, most "fast in GB/s" hashes are far too slow for just one int.
 ## Even assessing them that way for lookup tables is misleading.  You want time
@@ -59,34 +59,41 @@ proc hashRoMu2*(x: int64|uint64|Hash): Hash {.inline.} =
   let hi = uint64(x) shr 32
   Hash(rotateLeftBits(0xD3833E80'u64 * lo  +  hi * 0x4F4C574B'u64, 27))
 
-#XXX should do 1B, 2B, 4B versions as well.
-proc hiXorLo(A, B: uint64): uint64 {.inline.} =
-  # Xor of high & low 8B of full 16B product
-  when defined(gcc) or defined(llvm_gcc) or defined(clang):
-    {.emit: """__uint128_t r = A; r *= B; return (r >> 64) ^ r; """.}
-  elif defined(windows) and not defined(tcc):
-    {.emit: """A = _umul128(A, B, &B); return A ^ B;""".}
-  else: # Fall back for weaker platforms/compilers, e.g. Nim VM, etc.
-    let
-      ha = A shr 32
-      hb = B shr 32
-      la = A and 0xFFFFFFFF'u64
-      lb = B and 0xFFFFFFFF'u64
-      rh  = ha * hb
-      rm0 = ha * lb
-      rm1 = hb * la
-      rl  = la * lb
-      t   = rl + (rm0 shl 32)
-    var c = if t < rl: 1'u64 else: 0'u64
-    let lo = t + (rm1 shl 32)
-    c += (if lo < t: 1'u64 else: 0'u64)
-    let hi = rh + (rm0 shr 32) + (rm1 shr 32) + c
-    return hi xor lo
+proc hiXorLoFallback64(a, b: uint64): uint64 {.inline.} =
+  let # Fall back in 64-bit arithmetic
+    aH = a shr 32
+    aL = a and 0xFFFFFFFF'u64
+    bH = b shr 32
+    bL = b and 0xFFFFFFFF'u64
+    rHH = aH * bH
+    rHL = aH * bL
+    rLH = aL * bH
+    rLL = aL * bL
+    t = rLL + (rHL shl 32)
+  var c = if t < rLL: 1'u64 else: 0'u64
+  let lo = t + (rLH shl 32)
+  c += (if lo < t: 1'u64 else: 0'u64)
+  let hi = rHH + (rHL shr 32) + (rLH shr 32) + c
+  return hi xor lo
 
-proc hashWY*(x: int64|uint64|Hash): Hash {.inline.} =
+proc hiXorLo(a, b: uint64): uint64 {.inline.} =
+  # Xor of high & low 8B of full 16B product
+  when nimvm:
+    result = hiXorLoFallback64(a, b) # `result =` is necessary here.
+  else:
+    when Hash.sizeof < 8:
+      result = hiXorLoFallback64(a, b)
+    elif defined(gcc) or defined(llvm_gcc) or defined(clang):
+      {.emit: """__uint128_t r = a; r *= b; return (r >> 64) ^ r;""".}
+    elif defined(windows) and not defined(tcc):
+      {.emit: """a = _umul128(a, b, &b); return a ^ b;""".}
+    else:
+      result = hiXorLoFallback64(a, b)
+
+proc hashWangYi1*(x: int64|uint64|Hash): Hash {.inline.} =
   ## Wang Yi's hash_v1 for 8B int.  https://github.com/rurban/smhasher has more
   ## details.  This passed all scrambling tests in Spring 2019 and is simple.
-  ## NOTE: It's ok to define ``proc(x: int16): Hash = hashWY(Hash(x))``.
+  ## NOTE: It's ok to define ``proc(x: int16): Hash = hashWangYi1(Hash(x))``.
   const P0 = 0xa0761d6478bd642f'u64
   const P1 = 0xe7037ed1a0b428db'u64
   const P5x8 = 0xeb44accab455d165'u64 xor 8'u64
@@ -127,11 +134,14 @@ else:
   proc hashRevFib*(x: int|uint): Hash {.inline.} = hashRevFib(uint32(x))
 
 when defined(unstableHash):
-  proc hash*(hsh, salt: Hash): Hash {.inline.} = hashWY(hsh) xor Hash(salt)
+  proc hash*(hsh, salt: Hash): Hash {.inline.} = hashWangYi1(hsh) xor Hash(salt)
 else:
-  proc hash*(hsh, salt: Hash): Hash {.inline.} = hashWY(hsh)
+  proc hash*(hsh, salt: Hash): Hash {.inline.} = hashWangYi1(hsh)
 
 when defined(hashDebug):
   template dbg*(x) = x
 else:
   template dbg*(x) = discard
+
+when isMainModule:
+  echo hashWangYi1(456)
