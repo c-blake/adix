@@ -59,7 +59,6 @@ proc hashRoMu2*(x: int64|uint64|Hash): Hash {.inline.} =
   let hi = uint64(x) shr 32
   Hash(rotateLeftBits(0xD3833E80'u64 * lo  +  hi * 0x4F4C574B'u64, 27))
 
-#import strutils
 proc hiXorLoFallback32(a, b: uint64): uint64 {.inline, used.} =
   let # Fall back in 32-bit arithmetic
     adig = [ uint16(a and 0xFFFF'u64), uint16((a shr 16) and 0xFFFF'u64),
@@ -79,7 +78,6 @@ proc hiXorLoFallback32(a, b: uint64): uint64 {.inline, used.} =
            (uint64(prod[1] xor prod[5]) shl 16) or
            (uint64(prod[2] xor prod[6]) shl 32) or
            (uint64(prod[3] xor prod[7]) shl 48)
-# echo "32-bit: ", toHex(int(result), 16)
 
 proc hiXorLoFallback64(a, b: uint64): uint64 {.inline.} =
   let # Fall back in 64-bit arithmetic
@@ -97,7 +95,6 @@ proc hiXorLoFallback64(a, b: uint64): uint64 {.inline.} =
   c += (if lo < t: 1'u64 else: 0'u64)
   let hi = rHH + (rHL shr 32) + (rLH shr 32) + c
   result = hi xor lo
-# echo "64-bit: ", toHex(int(result), 16)
 
 proc hiXorLo(a, b: uint64): uint64 {.inline.} =
   # Xor of high & low 8B of full 16B product
