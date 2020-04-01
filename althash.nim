@@ -59,6 +59,28 @@ proc hashRoMu2*(x: int64|uint64|Hash): Hash {.inline.} =
   let hi = uint64(x) shr 32
   Hash(rotateLeftBits(0xD3833E80'u64 * lo  +  hi * 0x4F4C574B'u64, 27))
 
+#import strutils
+proc hiXorLoFallback32(a, b: uint64): uint64 {.inline, used.} =
+  let # Fall back in 32-bit arithmetic
+    adig = [ uint16(a and 0xFFFF'u64), uint16((a shr 16) and 0xFFFF'u64),
+             uint16((a shr 32) and 0xFFFF'u64), uint16(a shr 48) ]
+    bdig = [ uint16(b and 0xFFFF'u64), uint16((b shr 16) and 0xFFFF'u64),
+             uint16((b shr 32) and 0xFFFF'u64), uint16(b shr 48) ]
+  var prod: array[8, uint32]
+  for bi in 0..3:                         # for all digits in b
+    var carry = 0'u32
+    for ai in 0..3:                       # for all digits in a
+      let j = ai + bi
+      prod[j] += carry + uint32(adig[ai]) * uint32(bdig[bi])
+      carry = prod[j] shr 16
+      prod[j] = prod[j] and 65535
+    prod[bi + 4] = carry                  # last digit comes from final carry
+  result =  uint64(prod[0] xor prod[4]) or
+           (uint64(prod[1] xor prod[5]) shl 16) or
+           (uint64(prod[2] xor prod[6]) shl 32) or
+           (uint64(prod[3] xor prod[7]) shl 48)
+# echo "32-bit: ", toHex(int(result), 16)
+
 proc hiXorLoFallback64(a, b: uint64): uint64 {.inline.} =
   let # Fall back in 64-bit arithmetic
     aH = a shr 32
@@ -74,14 +96,17 @@ proc hiXorLoFallback64(a, b: uint64): uint64 {.inline.} =
   let lo = t + (rLH shl 32)
   c += (if lo < t: 1'u64 else: 0'u64)
   let hi = rHH + (rHL shr 32) + (rLH shr 32) + c
-  return hi xor lo
+  result = hi xor lo
+# echo "64-bit: ", toHex(int(result), 16)
 
 proc hiXorLo(a, b: uint64): uint64 {.inline.} =
   # Xor of high & low 8B of full 16B product
   when nimvm:
     result = hiXorLoFallback64(a, b) # `result =` is necessary here.
   else:
-    when Hash.sizeof < 8:
+    when Hash.sizeof < 8 or defined(useHiXorLoFallback32):
+      result = hiXorLoFallback32(a, b)
+    elif defined(useHiXorLoFallback64):
       result = hiXorLoFallback64(a, b)
     elif defined(gcc) or defined(llvm_gcc) or defined(clang):
       {.emit: """__uint128_t r = a; r *= b; return (r >> 64) ^ r;""".}
