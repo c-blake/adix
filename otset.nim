@@ -54,15 +54,18 @@ iterator probeSeq(hc, mask: Hash, d: var Hash, sz: int): int =
   d = 0
   while true:
     yield i
+    # tsHybridProbe is @timotheecour's fine idea improved to be in units of
+    # memory rather than number of data slots.  Limit should be several cache
+    # lines and maybe a define/runtime parameter conditioned upon which CPU.
     when defined(otHybridProbe):
       if d * sz < 192:        # Linear probe for 192 bytes which is v.local
         i = (i + 1) and mask
       else:                   # Then non-local rotated hcode-perturbed probing.
         i = Hash((i.uint * 5 + 1 + pert) and mask.uint)
-        pert = pert shr 5                     # Decay to 0 => check whole table
-    else:
+        pert = pert shr 5     # Decay to 0 => check whole table
+    else:                     # The Python probe sequence (up to `pert`)
       i = Hash((i.uint * 5 + 1 + pert) and mask.uint)
-      pert = pert shr 5                       # Decay to 0 => check whole table
+      pert = pert shr 5       # Decay to 0 => check whole table
     d.inc
     ifStats tsDepth.inc
 
