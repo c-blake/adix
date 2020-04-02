@@ -65,14 +65,14 @@ proc hiXorLoFallback32(a, b: uint64): uint64 {.inline, used.} =
              uint16((a shr 32) and 0xFFFF'u64), uint16(a shr 48) ]
     bdig = [ uint16(b and 0xFFFF'u64), uint16((b shr 16) and 0xFFFF'u64),
              uint16((b shr 32) and 0xFFFF'u64), uint16(b shr 48) ]
-  var prod: array[8, uint32]
+  var prod: array[8, uint16]
   for bi in 0..3:                         # for all digits in b
-    var carry = 0'u32
+    var carry = 0'u16
     for ai in 0..3:                       # for all digits in a
-      let j = ai + bi
-      prod[j] += carry + uint32(adig[ai]) * uint32(bdig[bi])
-      carry = prod[j] shr 16
-      prod[j] = prod[j] and 65535
+      let j   = ai + bi
+      let dig = uint32(prod[j])+uint32(carry)+uint32(adig[ai])*uint32(bdig[bi])
+      carry   = uint16(dig shr 16)
+      prod[j] = uint16(dig and 65535)
     prod[bi + 4] = carry                  # last digit comes from final carry
   result =  uint64(prod[0] xor prod[4]) or
            (uint64(prod[1] xor prod[5]) shl 16) or
