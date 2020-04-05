@@ -9,31 +9,42 @@
 ## computer arithmetic is finite anyway).  This propagates entropy in key bits
 ## to the double-width product in a Pascal's Bionomial Triangle sort of pattern.
 ## Middle bits have the most key related entropy (there is even a PRNG method
-## called "middle square" based on this pattern).
+## called "middle square" based on this pattern).  More specifically, consider
+## the product of a pair of 2 digit decimal numbers: (a1*10+a0)*(b1*10+b0) =
+## a1*b1*100 + (a1*b0+b0*a1)*10 + a0*b0.  This shows the "triangle" kind of
+## pattern that makes the mixing strongest in the middle.
 ##
 ## The full product is easily accessed for half CPU register width and narrower
 ## numbers.  For the widest integer type, C/backend arithmetic rules only give
 ## the modulus|lower order bits of said product (x86/amd64 does make the upper
-## word available in another register).  We take the simple portable way out and
-## discard half our key entropy, just rotating down 32 bits, though bit reversal
-## might be better (though expensive) and ``shr`` reduction from hcode to table
-## address is another way out.  In general achieving "high order avalanche" is
-## likely more natural than the low order avalanche needed for ``and mask``.
-## Both may count as what https://burtleburtle.net/bob/hash/integer.html calls
+## word available in another register).  hashRoMu1 takes the simple portable way
+## out and discards half of key entropy, just rotating down the more well mixed
+## bits (bit reversal might be better, though expensive compared to rotr).
+## Reducing hash codes to table address via ``shr`` is another way out.  Getting
+## high order avalanche is more natural than the low order avalanche needed for
+## ``and mask``, both may be https://burtleburtle.net/bob/hash/integer.html's
 ## "half avalanche".  Anyway, rotating is portably fast (often 1 cycle latency,
 ## 1-per cycle tput for an immediate constant number of bits).  Bit reversal is
 ## not so slow using a fully unrolled loop and 16 entry nibble lookup table.
 ## Different hashes will perform more/less well on different data.  So, we just
 ## provide a few here, and one is based upon highly non-linear bit reversal.
 ##
-## The strongest hash is hashWangYi1 which passes all of SMHasher's entropy
-## tests and so is the default Hash-rehasher.
+## The strongest hash is ``hashWangYi1`` which passes all of SMHasher's entropy
+## tests and so is the default Hash-rehasher.  This uses the primitive of the
+## xor or the high and low parts of a double-width product of a salt with a key.
+## The xor blends the well mixed low order bits of the high output product word
+## with the less well mixed low order bits of the low output product word,
+## making "mostly level" mixing across all bits of the hash.  ``hashWangYi1``
+## takes two rounds of such mixing to achieve avalanche.  It may be possible to
+## "nearly pass" in only one round.  ``hashWY0`` is one attempt at that, but the
+## salt may need to be re-optimized to have any hope of doing well on SMHasher.
 ##
 ## (Incidentally, most "fast in GB/s" hashes are far too slow for just one int.
 ## Even assessing them that way for lookup tables is misleading.  You want time
 ## =~ a + b*nBytes (at least) where a & b maybe come from a linear regression.
 ## Just 1/b tells you little, especially for integer keys where ``a`` dominates,
-## although short string hashes can be similarly misleading.)
+## although short string hashes can be similarly misleading.  Anyway, at least
+## two summary numbers are desired, not one.  Whole curves are even better.)
 
 import std/hashes, bitop    # For the Hash type and system `hash()`es
 export Hash, `!$`, hash
