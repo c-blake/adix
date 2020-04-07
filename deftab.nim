@@ -94,6 +94,19 @@ template defTab*(T: untyped, S: untyped, G: untyped) =
   proc `[]=`*[K,V](t: var T[K,V], key: K, val: V) =
     discard t.s.setOrIncl((key, val))   # Replace FIRST FOUND item in multimap
 
+  proc `{}`*[K,V](t: T[K,V], key: K): V {.inline.} =
+    mixin withValue
+    t.withValue(key, value) do: return value[]
+    do: raiseNotFound(key)
+
+  proc `{}`*[K,V](t: var T[K,V], key: K): var V {.inline.} =
+    mixin withValue
+    t.withValue(key, value) do: return value[] #XXX check caller gets table val
+    do: raiseNotFound(key)
+
+  proc `{}=`*[K,V](t: var T[K,V], key: K, val: V) =
+    discard t.s.setOrIncl((key, val))   # Replace FIRST FOUND item in multimap
+
   proc hasKey*[K,V](t: T[K,V], key: K): bool {.inline.} =
     t.withValue(key, it) do: result = true
 
