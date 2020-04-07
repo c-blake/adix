@@ -399,7 +399,7 @@ iterator mitems*[A](s: var LPSet[A]): var A =
 
 iterator pairs*[A](s: LPSet[A]): tuple[a: int, b: A] =
   let L = s.len
-  var j =  0
+  var j = 0
   for i in 0 ..< s.data.len:
     assert(s.len == L, "cannot change a set while iterating over it")
     if isUsed(s.data, i): yield (j, s.data[i].item)
