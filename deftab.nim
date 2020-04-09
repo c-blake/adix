@@ -11,6 +11,9 @@ import algorithm        # TODO template/mac to make ref variants for sets & tabs
 export SortOrder        # TODO fatten interface for diset
 
 template defTab*(T: untyped, S: untyped, G: untyped) =
+  ## This is a template to define a fully functional suite of Table operations
+  ## based on (slightly expanded) HashSet-like primitives.
+
   export Pair, hash, `==`, cmpKey, cmpVal, high, low, getKey, setKey, # keys
          rightSize, items  # WTF `mixin` does not work in generic iterators?
 
@@ -58,20 +61,21 @@ template defTab*(T: untyped, S: untyped, G: untyped) =
   proc contains*[K,V](t: T[K,V], key: K): bool {.inline.} =
     (key, default(V)) in t.s
 
-  template withValue*[K,V](t: var T[K,V], key: K, v, body: untyped) =
+  template withValue*[K,V](t: var T[K,V], key: K; v, body1: untyped; body2: untyped=nil) =
     mixin withItem
     var vl: V
     let itm: Pair[K,V] = (key, vl)
     t.s.withItem(itm, it) do:
       var v {.inject.} = it.val.addr
-      body
- 
-  template withValue*[K,V](t: var T[K,V], key: K; v, body1, body2: untyped) =
+      body1
+    do: body2
+
+  template withValue*[K,V](t: T[K,V], key: K; v, body1: untyped; body2: untyped=nil) =
     mixin withItem
     var vl: V
     let itm: Pair[K,V] = (key, vl)
     t.s.withItem(itm, it) do:
-      var v {.inject.} = it.val.addr
+      let v {.inject.} = it.val.unsafeAddr
       body1
     do: body2
 
@@ -81,18 +85,55 @@ template defTab*(T: untyped, S: untyped, G: untyped) =
     else:
       raise newException(KeyError, "key not found")
 
-  proc `[]`*[K,V](t: T[K,V], key: K): V {.inline.} =
-    mixin withValue
-    t.withValue(key, value) do: return value[]
-    do: raiseNotFound(key)
+  when declared(getByPos): # NOTE: invoke defTab in ??tab.nim w/??set in scope
+    template withPos*[K,V](t: var T[K,V], i: int; v, body1: untyped; body2: untyped=nil) =
+      mixin withPosItem
+      t.s.withPosItem(i, it) do:
+        var v {.inject.} = it.val.addr
+        body1
+      do: body2
 
-  proc `[]`*[K,V](t: var T[K,V], key: K): var V {.inline.} =
-    mixin withValue
-    t.withValue(key, value) do: return value[] #XXX check caller gets table val
-    do: raiseNotFound(key)
+    template withPos*[K,V](t: T[K,V], i: int; v, body1: untyped; body2: untyped=nil) =
+      mixin withPosItem
+      t.s.withPosItem(i, it) do:
+        let v {.inject.} = it.val.unsafeAddr
+        body1
+      do: body2
 
-  proc `[]=`*[K,V](t: var T[K,V], key: K, val: V) =
-    discard t.s.setOrIncl((key, val))   # Replace FIRST FOUND item in multimap
+    template formatIndexError*[T](i, a, b: T): string =
+      when defined(standalone): # Like `lib/system/chcks.formatErrorIndexBound`
+        "indexOutOfBounds"
+      else:
+        if b < a: "index out of bounds, the container is empty"
+        else: "index " & $i & " not in " & $a & " .. " & $b
+
+    proc `[]`*[K,V](t: T[K,V], i: int): V {.inline.} =
+      mixin withPos
+      t.withPos(i, value) do: return value[]
+      do: raise newException(IndexError, formatIndexError(i, t.s.low, t.s.high))
+
+    proc `[]`*[K,V](t: var T[K,V], i: int): var V {.inline.} =
+      mixin withPos
+      t.withPos(i, value) do: return value[] #XXX check caller gets table val
+      do: raise newException(IndexError, formatIndexError(i, t.s.low, t.s.high))
+
+#   proc `[]=`*[K,V](t: var T[K,V], i: int, key: K, val: V) =# May break invar.
+#     discard t.s.setByPos(i, (key, val))                    # Skip|Trust|Check?
+
+    #XXX Want slices, too..to fully imitate the `seq` interface.
+  else:
+    proc `[]`*[K,V](t: T[K,V], key: K): V {.inline.} =
+      mixin withValue
+      t.withValue(key, value) do: return value[]
+      do: raiseNotFound(key)
+
+    proc `[]`*[K,V](t: var T[K,V], key: K): var V {.inline.} =
+      mixin withValue
+      t.withValue(key, value) do: return value[] #XXX check caller gets table val
+      do: raiseNotFound(key)
+
+    proc `[]=`*[K,V](t: var T[K,V], key: K, val: V) =
+      discard t.s.setOrIncl((key, val))   # Replace FIRST FOUND item in multimap
 
   proc `{}`*[K,V](t: T[K,V], key: K): V {.inline.} =
     mixin withValue
@@ -104,6 +145,9 @@ template defTab*(T: untyped, S: untyped, G: untyped) =
     t.withValue(key, value) do: return value[] #XXX check caller gets table val
     do: raiseNotFound(key)
 
+  when declared(lowKey):                # and presumably `highKey`
+    discard   #XXX key slices inside `{}` are a whole new thing for sorted sets
+
   proc `{}=`*[K,V](t: var T[K,V], key: K, val: V) =
     discard t.s.setOrIncl((key, val))   # Replace FIRST FOUND item in multimap
 
@@ -114,10 +158,9 @@ template defTab*(T: untyped, S: untyped, G: untyped) =
     discard t.s.mgetOrIncl((key, val), result)
 
   proc getOrDefault*[K,V](t: T[K,V], key: K, default=default(V)): V {.inline.} =
-# proc getOrDefault*[K,V](t: T[K,V], key: K, default: V): V {.inline.} =
     mixin withItem
     var defV: V
-    let itm: Pair[K,V] = (key, defV)    # WTF default(V) totally breaks
+    let itm: Pair[K,V] = (key, defV)    # default(V) breaks since param shadow
     t.s.withItem(itm, it) do: return it.val
     do: return default
 
@@ -222,7 +265,7 @@ template defTab*(T: untyped, S: untyped, G: untyped) =
         if val >= maxVal:
           maxKey = key
           maxVal = val
- 
+
   proc smallest*[K,V: SomeInteger](t: T[K,V], above: V=0): Pair[K,V] =
     var minKey: K
     var minVal = V.high
