@@ -99,7 +99,7 @@ template withItem*[A](s: SSSet[A], itm: A, it, body1, body2: untyped) =
   mixin rawGet
   let i = s.rawGet(itm)
   if i >= 0:
-    let it {.inject.} = s.data[i]
+    let it {.inject.} = s.data[i].unsafeAddr
     body1
   else:
     body2

@@ -340,14 +340,7 @@ proc add*[A](s: var LPSet[A], item: A) {.inline.} =
   s.data[k].item  = item
   s.count.inc
 
-template withItem*[A](s: var LPSet[A], itm: A, it, body: untyped) =
-  mixin rawGet
-  let i = s.rawGet(itm)
-  if i >= 0:
-    var it {.inject.} = s.data[i].item.addr
-    body
-
-template withItem*[A](s: var LPSet[A], itm: A, it, body1, body2: untyped) =
+template withItem*[A](s: var LPSet[A], itm: A; it,body1: untyped; body2: untyped=nil) =
   mixin rawGet
   let i = s.rawGet(itm)
   if i >= 0:
@@ -356,11 +349,11 @@ template withItem*[A](s: var LPSet[A], itm: A, it, body1, body2: untyped) =
   else:
     body2
 
-template withItem*[A](s: LPSet[A], itm: A, it, body1, body2: untyped) =
+template withItem*[A](s: LPSet[A], itm: A; it,body1: untyped; body2: untyped=nil) =
   mixin rawGet
   let i = s.rawGet(itm)
   if i >= 0:
-    let it {.inject.} = s.data[i].item
+    let it {.inject.} = s.data[i].item.unsafeAddr
     body1
   else:
     body2

@@ -280,25 +280,19 @@ proc add*[A](s: var OTSet[A], item: A) {.inline.} =
   s.data[k].hcode = hc
   s.data[k].item = item
 
-template withItem*[A](s: var OTSet[A], itm: A, it, body: untyped) =
+template withItem*[A](s: var OTSet[A], itm: A; it,body1: untyped; body2: untyped=nil) =
   var i = s.rawGet(itm)
   if i >= 0:
-    var it {.inject.} = addr(s.data[s.idx[i] - 1].item)
-    body
-
-template withItem*[A](s: var OTSet[A], itm: A, it, body1, body2: untyped) =
-  var i = s.rawGet(itm)
-  if i >= 0:
-    var it {.inject.} = addr(s.data[s.idx[i] - 1].item)
+    var it {.inject.} = s.data[s.idx[i] - 1].item.addr
     body1
   else:
     body2
 
-template withItem*[A](s: OTSet[A], itm: A, it, body1, body2: untyped) =
+template withItem*[A](s: OTSet[A], itm: A; it,body1: untyped; body2: untyped=nil) =
   mixin rawGet
   let i = s.rawGet(itm)
   if i >= 0:
-    let it {.inject.} = s.data[i].item
+    let it {.inject.} = s.data[i].item.unsafeAddr
     body1
   else:
     body2
