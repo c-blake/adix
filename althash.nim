@@ -140,6 +140,28 @@ proc hashWY0*(x: int64|uint64|Hash): Hash {.inline.} =
   let x = uint64(x)
   Hash(hiXorLo(P0, x xor P1))
 
+proc hashMoreMur*(x: int64|uint64|Hash): Hash {.inline.} =
+  ## This is from https://github.com/tommyettinger
+  var x = uint64(x)
+  x = x xor (x shr 27)
+  x = x * 0x3C79AC492BA7B653'u64
+  x = x xor (x shr 33)
+  x = x * 0x1C69B3F74AC4AE35'u64
+  x = x xor (x shr 27)
+  result = Hash(x)
+
+proc hashNASAM*(x: int64|uint64|Hash): Hash {.inline.} =
+  # Pelle Evensen's NASAM the xor of an odd number of rotations of the same term
+  # is invertible.  Here, one of the rotations is effectively a rotation by 0.
+  var x = uint64(x)
+  x = x xor (rotateRightBits(x, 25) xor rotateRightBits(x, 47))
+  x = x * 0x9E6C63D0676A9A99'u64
+  # All xorshifts in the same dir, even w/multiple xors & shifts, are invertible
+  x = x xor (x shr 23) xor (x shr 51)
+  x = x * 0x9E6D62D06F6A9A9B'u64
+  x = x xor (x shr 23) xor (x shr 51)
+  result = Hash(x)
+
 proc hashRevFib*(x: int32|uint32): Hash {.inline.} =
   Hash(reverseBits(uint32(x) * 0xd3833e81'u64))
 

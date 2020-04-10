@@ -65,7 +65,7 @@ proc rotateLeftBits*(a: uint64, numBits: int): uint64 {.inline.} =
   ## like bitops
   result = (a shl numBits) or (a shr (uint64.sizeof * 8 - numBits))
 
-proc rotateRightBits*(a: uint, numBits: int): uint {.inline.} =    # like bitops
+proc rotateRightBits*(a: uint64, numBits: int): uint64 {.inline.} =
   ## like bitops
   result = (a shr numBits) or (a shl (uint.sizeof * 8 - numBits))
 
