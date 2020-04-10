@@ -21,3 +21,10 @@ proc writeHash(n=99, r=0, fun=WangYi, bench=false) =
 
 dispatch(writeHash, help = { "n": "samples", "r": "rotation",
                              "fun": "hash function"})
+
+# For 1e6 numbers on 3 computers.  Time is min(5 runs) in ns/hash.
+# Compiled with Nim ...d0942d42a1; gcc-10.0.1 with PGO.
+#   CPU/Hash  WangYi  MoreMur  NASAM
+#   i76700k   1.2843  1.4986   1.6379  (4.70 GHz)
+#   amd2950x  1.7293  1.9127   2.2522  (3.78 GHz)
+#   i5-540m   2.9324  3.1191  11.9170  (2.53 GHz)
