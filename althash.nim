@@ -162,6 +162,14 @@ proc hashNASAM*(x: int64|uint64|Hash): Hash {.inline.} =
   x = x xor (x shr 23) xor (x shr 51)
   result = Hash(x)
 
+proc hashSplitMix*(x: int64|uint64|Hash): Hash {.inline.} =
+  ## This is one hop of a PRNG.  For more information on the PRNG part see
+  ## http://docs.oracle.com/javase/8/docs/api/java/util/SplittableRandom.html
+  var z = uint64(x) + 0x9e3779b97f4a7c15'u64
+  z = (z xor (z shr 30)) * 0xbf58476d1ce4e5b9'u64
+  z = (z xor (z shr 27)) * 0x94d049bb133111eb'u64
+  result = Hash(z xor (z shr 31))
+
 proc hashRevFib*(x: int32|uint32): Hash {.inline.} =
   Hash(reverseBits(uint32(x) * 0xd3833e81'u64))
 

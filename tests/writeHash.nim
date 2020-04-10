@@ -1,7 +1,7 @@
 # Just writes 8 byte binary hashes of 0..<n to stdout for input to PractRand.
 import althash, bitops, times, cligen, cligen/osUt
 
-type HashFun = enum WangYi, MoreMur, NASAM
+type HashFun = enum WangYi, MoreMur, NASAM, SplitMix
 
 proc writeHash(n=99, r=0, fun=WangYi, bench=false) =
   var h, sum: Hash
@@ -12,6 +12,7 @@ proc writeHash(n=99, r=0, fun=WangYi, bench=false) =
     of WangYi:  h = hashWangYi1(x)
     of MoreMur: h = hashMoreMur(x)
     of NASAM:   h = hashNASAM(x)
+    of SplitMix: h = hashSplitMix(x)
     if bench:
       sum += h
     else:
