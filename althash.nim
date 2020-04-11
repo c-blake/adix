@@ -162,6 +162,8 @@ proc hashNASAM*(x: int64|uint64|Hash): Hash {.inline.} =
   x = x xor (x shr 23) xor (x shr 51)
   result = Hash(x)
 
+proc hashIdentity*(x: int64|uint64|Hash): Hash {.inline.} = Hash(ord(x))
+
 proc hashSplitMix*(x: int64|uint64|Hash): Hash {.inline.} =
   ## This is one hop of a PRNG.  For more information on the PRNG part see
   ## http://docs.oracle.com/javase/8/docs/api/java/util/SplittableRandom.html
