@@ -6,7 +6,6 @@ type HashFun = enum WangYi, MoreMur, NASAM, SplitMix
 proc writeHash(n=99, r=0, fun=WangYi, bench=false, step=1) =
   var h, sum: Hash
   let t0 = getTime()
-  var i = 0
   for j in 0 ..< n:
     let i = j * step
     let x = rotateLeftBits(uint64(i), r)
