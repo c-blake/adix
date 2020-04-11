@@ -1,9 +1,9 @@
 # Just writes 8 byte binary hashes of 0..<n to stdout for input to PractRand.
-import althash, bitops, times, cligen, cligen/osUt
+import althash, bitops, times, cligen, cligen/osUt, strutils
 
 type HashFun = enum WangYi, MoreMur, NASAM, SplitMix
 
-proc writeHash(n=99, r=0, fun=WangYi, bench=false, step=1) =
+proc writeHash(n=99, r=0, fun=WangYi, bench=false, step=1, Hex=false) =
   var h, sum: Hash
   let t0 = getTime()
   for j in 0 ..< n:
@@ -17,7 +17,11 @@ proc writeHash(n=99, r=0, fun=WangYi, bench=false, step=1) =
     if bench:
       sum += h
     else:
-      discard stdout.uriteBuffer(cast[cstring](h.addr), Hash.sizeof.Natural)
+      if Hex:
+        let s = BiggestInt(h).toHex(16) & '\n'
+        discard stdout.uriteBuffer(cstring(s), 17)
+      else:
+        discard stdout.uriteBuffer(cast[cstring](h.addr), Hash.sizeof.Natural)
   if bench:
     echo "sum: ", sum, " ns/hash: ", (getTime() - t0).nanoseconds.float / n.float
 
