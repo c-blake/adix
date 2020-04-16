@@ -240,8 +240,8 @@ template popRet(present: untyped, missing: untyped) {.dirty.} =
     missing
 
 var lpInitialSize* = 4 ## default initial size aka capacity aka cap
-var lpNumer*       = 5 ## default numerator for lg(n) probe depth limit
-var lpDenom*       = 2 ## default denominator for lg(n) probe depth limit
+var lpNumer*       = 2 ## default numerator for lg(n) probe depth limit
+var lpDenom*       = 1 ## default denominator for lg(n) probe depth limit
 var lpMinFree*     = 1 ## default min free slots; (>= 1)
 var lpGrowPow2*    = 1 ## default growth power of 2; 1 means double
 var lpRehash*      = false ## default hcode rehashing behavior; auto-activated

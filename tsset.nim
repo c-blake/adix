@@ -205,8 +205,8 @@ template popRet(present: untyped, missing: untyped) {.dirty.} =
     missing
 
 var tsInitialSize* = 4 ## default initial size aka capacity aka cap
-var tsNumer*       = 3 ## default numerator for lg(n) probe depth limit
-var tsDenom*       = 2 ## default denominator for lg(n) probe depth limit
+var tsNumer*       = 2 ## default numerator for lg(n) probe depth limit
+var tsDenom*       = 1 ## default denominator for lg(n) probe depth limit
 var tsMinFree*     = 1 ## default min free slots; (>= 1)
 var tsGrowPow2*    = 1 ## default growth power of 2; 1 means double
 var tsRehash*      = true ## default hcode rehashing behavior
