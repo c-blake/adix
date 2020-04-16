@@ -19,8 +19,6 @@
 
 5) add `ref` variants, maybe via a `defref.nim`
 
-6) Look into other well vetted integer hashes for althash.
-
 7) Possible lpset/ilset/olset micro-optimizations most relevant for L1/L2 cases:
 
   a) `moveMem` type element shifting should be faster than current pushUp/etc.,
