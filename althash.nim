@@ -123,7 +123,7 @@ proc hiXorLo(a, b: uint64): uint64 {.inline.} =
     else:
       result = hiXorLoFallback64(a, b)
 
-proc hashWangYi1*(x: int64|uint64|Hash): Hash {.inline.} =
+proc hashWangYi1*[T: Ordinal|enum](x: T): Hash {.inline.} =
   ## Wang Yi's hash_v1 for 8B int.  https://github.com/rurban/smhasher has more
   ## details.  This passed all scrambling tests in Spring 2019 and is simple.
   ## NOTE: It's ok to define ``proc(x: int16): Hash = hashWangYi1(Hash(x))``.
@@ -152,7 +152,7 @@ proc hashWangYi1*(x: int64|uint64|Hash): Hash {.inline.} =
     else:
       cast[Hash](hiXorLo(hiXorLo(P0, uint64(x) xor P1), P58))
 
-proc hashWY0*(x: int64|uint64|Hash): Hash {.inline.} =
+proc hashWY0*[T: Ordinal|enum](x: T): Hash {.inline.} =
   ## A slightly simplified/early version of Wang Yi's hash for 8B ints.
   ## Faster, but less scrambling.  Definitely has some easy weak spots.
   const P0 = 0xa0761d6478bd642f'u64
@@ -160,7 +160,7 @@ proc hashWY0*(x: int64|uint64|Hash): Hash {.inline.} =
   let x = uint64(x)
   Hash(hiXorLo(P0, x xor P1))
 
-proc hashMoreMur*(x: int64|uint64|Hash): Hash {.inline.} =
+proc hashMoreMur*[T: Ordinal|enum](x: T): Hash {.inline.} =
   ## This is from https://github.com/tommyettinger
   var x = uint64(x)
   x = x xor (x shr 27)
@@ -170,7 +170,7 @@ proc hashMoreMur*(x: int64|uint64|Hash): Hash {.inline.} =
   x = x xor (x shr 27)
   result = Hash(x)
 
-proc hashNASAM*(x: int64|uint64|Hash): Hash {.inline.} =
+proc hashNASAM*[T: Ordinal|enum](x: T): Hash {.inline.} =
   # Pelle Evensen's NASAM the xor of an odd number of rotations of the same term
   # is invertible.  Here, one of the rotations is effectively a rotation by 0.
   var x = uint64(x)
@@ -182,9 +182,9 @@ proc hashNASAM*(x: int64|uint64|Hash): Hash {.inline.} =
   x = x xor (x shr 23) xor (x shr 51)
   result = Hash(x)
 
-proc hashIdentity*(x: int64|uint64|Hash): Hash {.inline.} = Hash(ord(x))
+proc hashIdentity*[T: Ordinal|enum](x: T): Hash {.inline.} = Hash(ord(x))
 
-proc hashSplitMix*(x: int64|uint64|Hash): Hash {.inline.} =
+proc hashSplitMix*[T: Ordinal|enum](x: T): Hash {.inline.} =
   ## This is one hop of a PRNG.  For more information on the PRNG part see
   ## http://docs.oracle.com/javase/8/docs/api/java/util/SplittableRandom.html
   var z = uint64(x) + 0x9e3779b97f4a7c15'u64
