@@ -92,11 +92,7 @@ proc `[]=`*(s: var SeqUint, i: uint, x: uint) {.inline.} =
     let wd = s.data[wdix]
     let hiM   = (not 0'u) shr bitend shl bitend
     let mMask = (1'u shl wdmod) - 1
-#   echo &"before: s.data[{wdix}] = {s.data[wdix]:#022o}"
     s.data[wdix] = (wd and hiM) or (x shl wdmod) or (wd and mMask)
-#   echo &"after;\n  hiM: {hiM:#022o}\n  mMask: {mMask:#024o}"
-#   echo &"  up|loM: {hiM or mMask:#022o}"
-#   echo &"  data[{wdix}] = {s.data[wdix]:#022o}"
   else:
     let w0bit = iBit - wdmod
     let oFlow = sbits - w0bit
@@ -105,12 +101,8 @@ proc `[]=`*(s: var SeqUint, i: uint, x: uint) {.inline.} =
     let oMask = (1'u shl oFlow) - 1
     let loM   = (1'u shl wdmod) - 1
     let cMask = (1'u shl (iBit - wdmod)) - 1
-#   echo &"BEFORE: s.data[{wdix}] = {s.data[wdix]:#022o}"
-#   echo &"        s.data[{wdix+1}] = {s.data[wdix+1]:#022o}"
     s.data[wdix]   = ((x and cMask) shl wdmod) or (w0 and loM)
     s.data[wdix+1] = (w1 and not oMask) or (x shr w0bit)
-#   echo &"AFTER: s.data[{wdix}] = {s.data[wdix]:#022o}"
-#   echo &"       s.data[{wdix+1}] = {s.data[wdix+1]:#022o}"
 
 proc `$`*(s: var SeqUint): string =
   result = "["
