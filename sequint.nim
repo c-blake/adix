@@ -1,7 +1,7 @@
 ## This module provides a memory optimized ``seq[uint]`` for a user-given range
 ## of numbers (by default its own length).  E.g., if the range is 0..63, it uses
 ## just 6 bits per number (plus rounding error).  In the best cases this allows
-## us to pack numbers up to about 2x (e.g., 64/33) more densely.  The public API
+## packing numbers up to about 2x (e.g., 64/33) more densely.  The public API
 ## uses only the widest type, usually a 64-bit unsigned integer.  To store n
 ## indices (default mode) takes only n*ceil(lg(n)) bits.  24*2**24/8 is only 48
 ## MiB and circa 2020 L3 caches have become that large.  Full 21-bit unicode can
@@ -11,6 +11,8 @@
 ## numbers up to said wide type ensures <= 2 consecutive backing items are
 ## needed to form any given number.  We also assume the almost universal pattern
 ## that the number of bits in that widest type is a power of 2 like 16, 32, 64.
+## Note that ISO/IEC JTC1 SC22 WG14 n2472 makes sizes of exact-bit ints the
+## next power of two, and so would be of no help in this array context.
 
 import bitop #, strformat
 const iBit = 8 * sizeof(int)
