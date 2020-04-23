@@ -30,6 +30,8 @@ proc roundUp(sz: int): int {.inline.} =
   if m == 0: return sz
   return sz + iBit - m
 
+proc bits*(s: SeqUint): int {.inline.} = int(s.bits)
+
 proc low*(s: SeqUint): int {.inline.} = 0
 
 proc len*(s: SeqUint): int {.inline.} = int(s.elen)
