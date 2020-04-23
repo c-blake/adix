@@ -93,7 +93,7 @@ proc `[]=`*(s: var SeqUint, i: int|uint, x: int|uint) {.inline.} =
   let bitend = wdmod + sbits
   if bitend <= iBit:
     let wd = s.data[wdix]
-    let hiM   = (not 0'u) shr bitend shl bitend
+    let hiM = if bitend == iBit: 0'u else: (not 0'u) shr bitend shl bitend
     let mMask = (1'u shl wdmod) - 1
     s.data[wdix] = (wd and hiM) or (x shl wdmod) or (wd and mMask)
   else:
