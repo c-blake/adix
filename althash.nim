@@ -60,7 +60,7 @@ proc hashRoMu1*[T: int32|uint32](x: T): Hash {.inline.} =
 
 proc hashRoMu1*(x: int64|uint64|Hash): Hash {.inline.} =
   ## 1-hop of Romul-DuoJr using x as seed
-  Hash(rotateLeftBits(x * 15241094284759029579'u64, 27))
+  Hash(rotateLeftBits(uint64(x) * 15241094284759029579'u64, 27))
 
 proc hashRoMu2*(x: int64|uint64|Hash): Hash {.inline.} =
   ## Just the cross terms of 128-bit whole product
@@ -212,8 +212,8 @@ proc zeroSalt*(x: pointer): Hash {.inline.} = 0
 var getSalt* = vmaddrSalt
 
 when int.sizeof == int64.sizeof:
-  proc hashRoMu1*(x: int|uint): Hash {.inline.} = hashRoMu1(uint64(x))
-  proc hashRevFib*(x: int|uint): Hash {.inline.} = hashRevFib(uint64(x))
+  proc hashRoMu1*(x: uint): Hash {.inline.} = hashRoMu1(uint64(x))
+  proc hashRevFib*(x: uint): Hash {.inline.} = hashRevFib(uint64(x))
 else:
   proc hashRoMu1*(x: int|uint): Hash {.inline.} = hashRoMu1(uint32(x))
   proc hashRevFib*(x: int|uint): Hash {.inline.} = hashRevFib(uint32(x))
