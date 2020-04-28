@@ -193,6 +193,26 @@ proc hashSplitMix*[T: Ordinal|enum](x: T): Hash {.inline.} =
   z = (z xor (z shr 27)) * 0x94d049bb133111eb'u64
   result = Hash(z xor (z shr 31))
 
+proc hashSplit64*[T: Ordinal|enum](x: T): Hash {.inline.} =
+  ## https://nullprogram.com/blog/2018/07/31/
+  var x = uint64(x)
+  x = x xor (x shr 30)
+  x *= 0xbf58476d1ce4e5b9'u64
+  x = x xor (x shr 27)
+  x *= 0x94d049bb133111eb'u64
+  x = x xor (x shr 31)
+  result = Hash(x)
+
+proc hashDegski*[T: Ordinal|enum](x: T): Hash {.inline.} =
+  ## https://gist.github.com/degski/6e2069d6035ae04d5d6f64981c995ec2
+  var x = uint64(x)
+  x = x xor (x shr 32)
+  x *= 0xd6e8feb86659fd93'u64
+  x = x xor (x shr 32)
+  x *= 0xd6e8feb86659fd93'u64
+  x = x xor (x shr 32)
+  result = Hash(x)
+
 proc hashRevFib*(x: int32|uint32): Hash {.inline.} =
   Hash(reverseBits(uint32(x) * 0xd3833e81'u64))
 
