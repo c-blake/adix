@@ -14,6 +14,8 @@
 ## Note that ISO/IEC JTC1 SC22 WG14 n2472 makes sizes of exact-bit ints the
 ## next power of two, and so would be of no help in this array context.
 
+#XXX There is a `bitslice`/`bitsliced` feature in bleeding edge Nim that could
+#    make this code look quite a bit cleaner, but it seems all debugged now.
 import bitop #, strformat
 const iBit = 8 * sizeof(int)
 const iShf = lgPow2(iBit)
