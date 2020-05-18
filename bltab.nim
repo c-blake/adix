@@ -188,4 +188,8 @@ when isMainModule:
 #   79/98304. false pos. (if all +); fpr=0.0008; 19*26/8=61.75 < 64B cache line.
 # A Bloom filter is less space -1.44*lg.0008=14.8 bit/num (57% of 26 bits, 42.7%
 # adjusting for 75% hashLd), BUT needs -lg .0008 = 10.3 hash funs ~10 line lds.
-# *MANY* would pay a 1/.427=2.34X space increase to get a 10+X speed boost.
+# *MANY* would pay a 1/.427=2.34X space increase to get a 10+X speed boost.  If
+# an aux counter field is 3 bits (29./26*2.34=2.61x space) then it saturates at
+# 8 (counting can start at zero) and buys deletes with high reliability (the
+# same-slot collision prob**8 which is very small).  Even compared with Cuckoo
+# filters things are about 2x faster for a bit over 2x the space.
