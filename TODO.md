@@ -35,12 +35,12 @@
      Also, you save 1/3 not so predictable branches in the find loop per cluster
      element, but also create 5 ops per cluster element for mutation ops (load,
      mask out, inc/dec, mask in, store) for the cluster upper half.  The extra
-     ops are more predictable work, but so is an optimized memmove.  Mutate
-     heavy workloads probably shake out to a net wash.  For "mostly miss read-
+     ops are more predictable work, but so is an optimized memmove.  Edit heavy
+     workloads probably shake out to near a net wash.  For "mostly miss, read-
      only after build" workloads it could help 1.5x (e.g. empty set intersects).
      That's also when Robin Hood *already* wins big from its half-depth search.
      Given that memory layout is identical to *not* saving depths, this could
-     also be a run-time/per-instance option { like Robin re-org itself is },
+     maybe be a run-time/per-instance option { like Robin re-org itself is },
      not necessarily on by default.  "bulk conversions" of hcodes to (upper hc,
      depth) combos & back can be faster than a full resize/rehash anyway.
 
