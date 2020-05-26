@@ -1,0 +1,31 @@
+#!/bin/sh
+if [ $# -lt 1 ]; then
+    cat <<-EOF
+Convert numbers on stdin to bt-interact ops tracking a size \$1 moving window.
+Repeatably tests trees of many shapes, sizes, duplicate key distros, op mixes.
+Zsh Eg. to gen input numbers: (repeat 99 {rshuffle \$(echo {1..99})|tr ' ' \\n})
+EOF
+    exit 1
+fi
+DEL="-0"; ADD="+1"                  # FIFO order
+if [ "$1" = "-u" ]; then            # unordered
+    DEL="-"; ADD="+"; shift 1
+fi
+win="$1"                            # window is $*/$@ or $1 .. $$#
+set dummy; shift 1                  # set w/no arg dumps defs which is unwanted
+
+seq=1
+while read a
+do
+    if [ $seq -gt $win ]; then
+        echo $DEL $1                # w/dups s sets path to 0-side
+        shift 1
+    fi
+    echo $ADD $a $seq               # w/dups i1 appends at 1-side
+    set "$@" $a
+    echo n0 $(($#/2))               # query uninterpolated moving median
+    if [ -n "$xtra" ]; then
+        echo $xtra
+    fi
+    seq=$((seq+1))
+done
