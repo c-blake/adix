@@ -22,7 +22,7 @@ proc preproc*(i="/dev/stdin", o="/dev/stdout") =
     if cols.len < 1 or cols[0].len < 1: continue
     cout.letter = cols[0][0]
     cout.sided = cols[0].len > 1
-    cout.side = if cols[0][1] == '1': true else: false
+    cout.side = if cout.sided and cols[0][1] == '1': true else: false
     cout.key = int16(if cols.len > 1: parseInt(cols[1]) else: -99)
     cout.val = int16(if cols.len > 2: parseInt(cols[2]) else: 0)
     discard fo.writeBuffer(cout.addr, cout.sizeof)
