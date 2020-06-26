@@ -159,7 +159,7 @@ proc btshell(verbose=false, quiet=false, check=false, errstd=false): int =
     of 'X': discard
     of 'z': f.write "node size: ", Node.sizeof, " bytes\n"
     of 't': nOp = 0; t0 = getTime()
-    of 'T': f.write nOp, " ops in ", (getTime() - t0).nanoseconds, " ns\n"
+    of 'T': f.write nOp, " ops in ", (getTime() - t0).inNanoseconds, " ns\n"
     else: f.write &"unknown command '{cin.letter}'; choices are:\n{help}\n"
   return nOp mod 2                      # Ensure compiler cannot elide calc
 

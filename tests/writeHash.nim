@@ -28,7 +28,7 @@ proc writeHash(n=99, r=0, fun=WangYi, bench=false, step=1, Hex=false) =
       else:
         discard stdout.uriteBuffer(cast[cstring](h.addr), Hash.sizeof.Natural)
   if bench:
-    echo "sum: ", sum, " ns/hash: ", (getTime() - t0).nanoseconds.float / n.float
+    echo "sum: ", sum, " ns/hash: ", (getTime()-t0).inNanoseconds.float/n.float
 
 dispatch(writeHash, help = { "n": "samples", "r": "rotation",
                              "fun": "hash function"})
