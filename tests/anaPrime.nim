@@ -25,7 +25,7 @@ proc qry(dict="words", stats=false, query: seq[string])=
       for ana in ana[prod]: echo "  ", ana
     except: echo "No such word in ", dict
   if stats:
-    echo "Build Time: ", (t1 - t0).microseconds, " us"
+    echo "Build Time: ", (t1 - t0).inMicroseconds, " us"
     when compiles(ana.depths):
       echo "Depths: ", ana.depths    # hash table perf
       echo "FinalTable: ", ana.len, "/", ana.getCap
