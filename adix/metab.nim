@@ -12,7 +12,7 @@ when defined(stdlibTab):
   proc rightSz*(x: Natural): int {.inline.} = tables.rightSize(x)
   export tables, sets
 elif defined(tombstone):
-  import tstab, tsset
+  import adix/[tstab, tsset]
   type Tab*[K,V] = TSTab[K,V]
   type Set*[A] = TSSet[A]
   proc initTab*[K,V](sz=4, numer=tsNumer, denom=tsDenom, minFree=tsMinFree,
@@ -24,7 +24,7 @@ elif defined(tombstone):
   proc rightSz*(x: Natural): int {.inline.} = tsset.rightSize(x)
   export tstab, tsset
 elif defined(orderedTombstone):
-  import ottab, otset
+  import adix/[ottab, otset]
   type Tab*[K,V] = OTTab[K,V]
   type Set*[A] = OTSet[A]
   proc initTab*[K,V](sz=4, numer=otNumer, denom=otDenom, minFree=otMinFree,
@@ -36,7 +36,7 @@ elif defined(orderedTombstone):
   proc rightSz*(x: Natural): int {.inline.} = otset.rightSize(x)
   export ottab, otset
 elif defined(orderedLinear):
-  import oltab, olset
+  import adix/[oltab, olset]
   type Tab*[K,V] = OLTab[K,V]
   type Set*[A] = OLSet[A]
   proc initTab*[K,V](sz=4, numer=olNumer, denom=olDenom, minFree=olMinFree,
@@ -48,7 +48,7 @@ elif defined(orderedLinear):
   proc rightSz*(x: Natural): int {.inline.} = olset.rightSize(x)
   export oltab, olset
 elif defined(noRehash):
-  import lptab, lpset
+  import adix/[lptab, lpset]
   type Tab*[K,V] = LPTab[K,V]
   type Set*[A] = LPSet[A]
   proc initTab*[K,V](sz=4, numer=lpNumer, denom=lpDenom, minFree=lpMinFree,
@@ -60,7 +60,7 @@ elif defined(noRehash):
   proc rightSz*(x: Natural): int {.inline.} = lpset.rightSize(x)
   export lptab, lpset
 elif defined(noRobinHood):
-  import lptab, lpset
+  import adix/[lptab, lpset]
   type Tab*[K,V] = LPTab[K,V]
   type Set*[A] = LPSet[A]
   proc initTab*[K,V](sz=4, numer=lpNumer, denom=lpDenom, minFree=lpMinFree,
@@ -72,7 +72,7 @@ elif defined(noRobinHood):
   proc rightSz*(x: Natural): int {.inline.} = lpset.rightSize(x)
   export lptab, lpset
 elif defined(directIndex):
-  import ditab, diset
+  import adix/[ditab, diset]
   type Tab*[K,V] = DITab[K,V]
   type Set*[A] = DISet[A]
   proc initTab*[K,V](sz=0, numer=diNumer, denom=diDenom, minFree=diMinFree,
@@ -84,7 +84,7 @@ elif defined(directIndex):
   proc rightSz*(x: Natural): int {.inline.} = diset.rightSize(x)
   export ditab, diset
 elif defined(integerTab0):
-  import iltab, ilset
+  import adix/[iltab, ilset]
   type Tab*[K,V] = ILTab[K,V,0]
   type Set*[A] = ILSet[A,0]
   proc initTab*[K,V](sz=4, numer=ilNumer, denom=ilDenom, minFree=ilMinFree,
@@ -96,7 +96,7 @@ elif defined(integerTab0):
   proc rightSz*(x: Natural): int {.inline.} = ilset.rightSize(x)
   export iltab, ilset
 elif defined(integerTabM1):
-  import iltab, ilset
+  import adix/[iltab, ilset]
   type Tab*[K,V] = ILTab[K,V,-1]
   type Set*[A] = ILSet[A,-1]
   proc initTab*[K,V](sz=4, numer=ilNumer, denom=ilDenom, minFree=ilMinFree,
@@ -108,7 +108,7 @@ elif defined(integerTabM1):
   proc rightSz*(x: Natural): int {.inline.} = ilset.rightSize(x)
   export iltab, ilset
 else:
-  import lptab, lpset
+  import adix/["lptab", "lpset"]
   type Tab*[K,V] = LPTab[K,V]
   type Set*[A] = LPSet[A]
   proc initTab*[K,V](sz=4, numer=lpNumer, denom=lpDenom, minFree=lpMinFree,

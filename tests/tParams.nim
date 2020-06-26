@@ -1,4 +1,4 @@
-import metab, random, stats, althash, cligen
+import random, stats, adix/[metab, althash, bitop], cligen
 
 proc statsVratio(N=7000, MaxNum=(1 shl 32), numer=1, denom=1,
                  rehash=true, Robin=true, trials=10) =
