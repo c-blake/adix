@@ -31,6 +31,8 @@ when defined(ilWarn) or not defined(danger):
   var ilMaxWarn* = 10   ## Most warnings per program invocation
   var ilWarnCnt = 0     # Running counter of warnings issued
 
+proc len*[A; z: static[int]](s: ILSet[A,z]): int {.inline.} = s.count
+
 proc isUsed[A; z: static[int]](s: ILSet[A,z], data: seq[A],
                                i: int): bool {.inline.} =
   data[i].getKey != z
@@ -272,8 +274,6 @@ proc setPolicy*[A; z: static[int]](s: var ILSet[A,z], numer=ilNumer,
 
 proc rightSize*(count: int, numer=0, denom=0, minFree=0): int {.inline,
   deprecated: "Deprecated since 0.2; identity function".} = count
-
-proc len*[A; z: static[int]](s: ILSet[A,z]): int {.inline.} = s.count
 
 proc getCap*[A; z: static[int]](s: ILSet[A,z]): int {.inline.} = s.data.len
 

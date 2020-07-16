@@ -7,6 +7,8 @@ type                    # `A` is Element type; Nim leans toward `item` language.
   SSSet*[A] = object  ## Sorted Seq Set
     data: seq[A]        # data array
 
+proc len*[A](s: SSSet[A]): int {.inline.} = s.data.len
+
 proc rawGet[A](s: SSSet[A]; item: A): int {.inline.} =
   # This returns the LAST of a block of duplicates or else -1 - insertSpot
   if s.data.len == 0: return -1
@@ -60,8 +62,6 @@ proc setPolicy*[A](s: var SSSet[A], numer=0, denom=0, minFree=0, growPow2=0,
 
 proc rightSize*(count: int, numer=0, denom=0, minFree=0): int {.inline,
   deprecated: "Deprecated since 0.2; identity function".} = count
-
-proc len*[A](s: SSSet[A]): int {.inline.} = s.data.len
 
 proc getCap*[A](s: SSSet[A]): int {.inline.} = s.data.len
 

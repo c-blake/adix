@@ -35,6 +35,8 @@ type                  # `A` is Element type; Nim leans toward `item` language.
     numer, denom, minFree, growPow2, pow2: uint8 # size policy parameters
     rehash, robin: bool
 
+proc len*[A](s: LPSet[A]): int {.inline.} = s.count
+
 proc isUsed[A](data: seq[HCell[A]], i: int): bool {.inline.} =
   data[i].hcode != 0
 
@@ -283,8 +285,6 @@ proc setPolicy*[A](s: var LPSet[A], numer=lpNumer, denom=lpDenom,
 
 proc rightSize*(count: int, numer=0, denom=0, minFree=0): int {.inline,
   deprecated: "Deprecated since 0.2; identity function".} = count
-
-proc len*[A](s: LPSet[A]): int {.inline.} = s.count
 
 proc getCap*[A](s: LPSet[A]): int {.inline.} = s.data.len
 

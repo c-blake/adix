@@ -33,6 +33,8 @@ type                  # `A` is Element type; Nim leans toward `item` language.
     numer, denom, minFree, growPow2, pow2: uint8 # size policy parameters
     rehash, robin: bool
 
+proc len*[A](s: TSSet[A]): int {.inline.} = s.count
+
 const free = Hash(0)
 const tomb = Hash(-1)
 proc isFree(hcode: Hash): bool {.inline.} = hcode == free
@@ -248,8 +250,6 @@ proc setPolicy*[A](s: var TSSet[A], numer=tsNumer, denom=tsDenom,
 
 proc rightSize*(count: int, numer=0, denom=0, minFree=0): int {.inline,
   deprecated: "Deprecated since 0.2; identity function".} = count
-
-proc len*[A](s: TSSet[A]): int {.inline.} = s.count
 
 proc getCap*[A](s: TSSet[A]): int {.inline.} = s.data.len
 

@@ -27,6 +27,8 @@ when defined(otWarn) or not defined(danger):
   var otMaxWarn* = 10   ## Most warnings per program invocation
   var otWarnCnt = 0     # Running counter of warnings issued
 
+proc len*[A](s: OTSet[A]): int {.inline.} = s.data.len
+
 # s.salt here is just a hash of the VM address of data[] that can give distinct
 # tabs distinct home addr locations at least as independent as `getSalt`.
 proc hashHc[A](s: OTSet[A], hc: Hash): Hash {.inline.} =
@@ -229,8 +231,6 @@ proc setPolicy*[A](s: var OTSet[A], numer=otNumer, denom=otDenom,
 
 proc rightSize*(count: int, numer=0, denom=0, minFree=0): int {.inline,
   deprecated: "Deprecated since 0.2; identity function".} = count
-
-proc len*[A](s: OTSet[A]): int {.inline.} = s.data.len
 
 proc getCap*[A](s: OTSet[A]): int {.inline.} = s.idx.len
 

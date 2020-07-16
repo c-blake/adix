@@ -32,6 +32,8 @@ type                  # `A` is Element type; Nim leans toward `item` language.
     numer, denom, minFree, growPow2, pow2: uint8 # size policy parameters
     rehash, robin: bool
 
+proc len*[A](s: OLSet[A]): int {.inline.} = s.data.len
+
 proc isUsed(idx: seq[uint32], i: int): bool {.inline.} = idx[i] != 0
 
 when defined(hashStats):    # Power user inspectable/zeroable stats.  These are
@@ -288,8 +290,6 @@ proc setPolicy*[A](s: var OLSet[A], numer=olNumer, denom=olDenom,
 
 proc rightSize*(count: int, numer=0, denom=0, minFree=0): int {.inline,
   deprecated: "Deprecated since 0.2; identity function".} = count
-
-proc len*[A](s: OLSet[A]): int {.inline.} = s.data.len
 
 proc getCap*[A](s: OLSet[A]): int {.inline.} = s.idx.len
 

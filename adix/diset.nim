@@ -34,6 +34,8 @@ type                  # `A` is Element type; Nim leans toward `item` language.
     range: int
     idx: ptr UncheckedArray[I]
 
+proc len*[A](s: DISet[A]): int {.inline.} = s.data.len
+
 proc rawGet[A](s: DISet[A], item: A): int {.inline.} =
   assert(s.range > 0, "Uninitialized DISet")  # Adjust *caller* not here
   let i = int(item.getKey) - item.low.int
@@ -104,8 +106,6 @@ proc `=destroy`*[A](s: var DISet[A]) {.inline.} =
 
 proc rightSize*(count: int, numer=0, denom=0, minFree=0): int {.inline,
   deprecated: "Deprecated since 0.2; identity function".} = count
-
-proc len*[A](s: DISet[A]): int {.inline.} = s.data.len
 
 proc getCap*[A](s: var DISet[A]): int {.inline.} = s.range
 
