@@ -45,7 +45,7 @@ template defTab*(T: untyped, S: untyped, G: untyped) =
   proc setCap*[K,V;z: static[int]](t: var T[K,V,z], newSize = -1) = t.s.setCap(newSize)
 
   proc `to T`*[K,V;z: static[int]](pairs: openArray[(K,V)]): T[K,V,z] =
-    result.init rightSize(pairs.len)
+    result.init pairs.len
     for key, val in pairs: result.add(key, val)  # clobber w/result[key] = val?
 
   proc mgetOrPut*[K,V;z: static[int]](t: var T[K,V,z], key: K, val: V): var V =

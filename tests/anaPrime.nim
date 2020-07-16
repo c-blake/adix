@@ -12,7 +12,7 @@ proc product(word: MSlice): uint64 =
 proc qry(dict="words", stats=false, query: seq[string])=
   let mf = mopen(dict)
   if mf == nil: return
-  var ana = initTab[uint64, seq[MSlice]](rightSz(mf.len div 10))
+  var ana = initTab[uint64, seq[MSlice]](mf.len div 10)
   let t0 = getTime()
   for word in mf.mSlices:
     ana.mgetOrPut(word.product, @[]).add word

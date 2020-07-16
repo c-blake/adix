@@ -102,7 +102,8 @@ proc setPolicy*[A](s: var DISet[A], numer=0, denom=0, minFree=0, growPow2=0,
 proc `=destroy`*[A](s: var DISet[A]) {.inline.} =
   if s.range > 0: s.idx.dealloc
 
-proc rightSize*(count: int): int {.inline.} = count
+proc rightSize*(count: int, numer=0, denom=0, minFree=0): int {.inline,
+  deprecated: "Deprecated since 0.2; identity function".} = count
 
 proc len*[A](s: DISet[A]): int {.inline.} = s.data.len
 

@@ -193,9 +193,13 @@ var otGrowPow2*    = 1 ## default growth power of 2; 1 means double
 var otRehash*      = true ## default hcode rehashing behavior
 var otRobinHood*   = false ## default to Robin Hood re-org on insert/delete
 
+proc slotsGuess(count: int, numer=otNumer, denom=otDenom, minFree=otMinFree):
+    int {.inline.} = ceilPow2(count * 4 div 3 + minFree)
+
 proc init*[A](s: var OTSet[A], initialSize=otInitialSize, numer=otNumer,
               denom=otDenom, minFree=otMinFree, growPow2=otGrowPow2,
               rehash=otRehash, robinhood=otRobinHood) {.inline.} =
+  let initialSize = slotsGuess(initialSize)
   s.data     = newSeqOfCap[HCell[A]](initialSize * 3 div 4)
   s.idx      = newSeq[uint32](initialSize) #WTF --gc:arc bug w/incompat structs
   s.salt     = getSalt(s.idx[0].addr)
@@ -223,8 +227,8 @@ proc setPolicy*[A](s: var OTSet[A], numer=otNumer, denom=otDenom,
   s.rehash   = rehash    
   s.robin    = robinhood 
 
-proc rightSize*(count: int, numer=otNumer, denom=otDenom, minFree=otMinFree):
-    int {.inline.} = ceilPow2(count * 4 div 3 + minFree) # Might have good hash
+proc rightSize*(count: int, numer=0, denom=0, minFree=0): int {.inline,
+  deprecated: "Deprecated since 0.2; identity function".} = count
 
 proc len*[A](s: OTSet[A]): int {.inline.} = s.data.len
 
@@ -237,7 +241,7 @@ proc setCap*[A](s: var OTSet[A], newSize = -1) =
     newSz = s.idx.len shl s.growPow2
     s.pow2 += s.growPow2
   else:
-    newSz = max(newSize, rightSize(s.data.len, minFree=s.minFree.int))
+    newSz = max(newSize, slotsGuess(s.data.len, minFree=s.minFree.int))
 #   if newSz == s.idx.len: return # may still be too full of tombstones
     s.pow2 = uint8(newSz.lg)
   dbg echo("RESIZE@ ",s.data.len,"/",s.idx.len," ",s.data.len.float/s.idx.len.float)

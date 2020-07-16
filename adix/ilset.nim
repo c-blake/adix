@@ -231,10 +231,14 @@ var ilGrowPow2*    = 1 ## default growth power of 2; 1 means double
 var ilRehash*      = true ## default hcode rehashing behavior; disable@own peril
 var ilRobinHood*   = true ## default to Robin Hood re-org on insert/delete
 
+proc slotsGuess(count: int, numer=ilNumer, denom=ilDenom, minFree=ilMinFree):
+    int {.inline.} = ceilPow2(count + minFree) # Might have a great hash
+
 proc init*[A; z: static[int]](s: var ILSet[A,z], initialSize=ilInitialSize,
                               numer=ilNumer, denom=ilDenom, minFree=ilMinFree,
                               growPow2=ilGrowPow2, rehash=ilRehash,
                               robinhood=ilRobinHood) {.inline.} =
+  let initialSize = slotsGuess(initialSize)
   s.data     = newSeq[A](initialSize)
   if z != 0:
     for i in 0..<initialSize: s.data[i].setKey z
@@ -266,8 +270,8 @@ proc setPolicy*[A; z: static[int]](s: var ILSet[A,z], numer=ilNumer,
   s.rehash   = rehash
   s.robin    = robinhood
 
-proc rightSize*(count: int, numer=ilNumer, denom=ilDenom, minFree=ilMinFree):
-    int {.inline.} = ceilPow2(count + minFree) # Might have a great hash
+proc rightSize*(count: int, numer=0, denom=0, minFree=0): int {.inline,
+  deprecated: "Deprecated since 0.2; identity function".} = count
 
 proc len*[A; z: static[int]](s: ILSet[A,z]): int {.inline.} = s.count
 
@@ -280,7 +284,7 @@ proc setCap*[A; z: static[int]](s: var ILSet[A,z], newSize = -1) =
     newSz = s.data.len shl s.growPow2
     s.pow2 += s.growPow2
   else:
-    newSz = max(newSize, rightSize(s.count, minFree=s.minFree.int))
+    newSz = max(newSize, slotsGuess(s.count, minFree=s.minFree.int))
     s.pow2 = uint8(newSz.lg)
   if newSz == s.data.len and newSize == -1:
     return

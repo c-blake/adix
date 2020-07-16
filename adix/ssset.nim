@@ -58,7 +58,8 @@ proc setPolicy*[A](s: var SSSet[A], numer=0, denom=0, minFree=0, growPow2=0,
   ## This is only for API compatibility with other sets and does nothing.
   discard
 
-proc rightSize*(count: int, numer=0, denom=0, minFree=0): int {.inline.} = count
+proc rightSize*(count: int, numer=0, denom=0, minFree=0): int {.inline,
+  deprecated: "Deprecated since 0.2; identity function".} = count
 
 proc len*[A](s: SSSet[A]): int {.inline.} = s.data.len
 

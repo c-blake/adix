@@ -31,7 +31,7 @@ template defSetOps*(T: untyped) =
     result.incl s2
 
   proc intersection*[A](s1, s2: T[A]): T[A] =
-    result.init(rightSize(min(s1.len, s2.len)))
+    result.init min(s1.len, s2.len)
     for elt in s1:
       if elt in s2: result.incl elt
 
@@ -90,7 +90,7 @@ template defSetOps*(T: untyped) =
         raise newException(KeyError, "item not found")
 
   proc `to T`*[A](keys: openArray[A]): T[A] =
-    result.init rightSize(keys.len)
+    result.init keys.len
     for item in keys: result.incl item
 
   #NOTE: In the stdlib, OrderedSet/OrderedTable provide a way to keep using a
