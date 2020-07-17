@@ -174,9 +174,7 @@ proc rawPut2[A](s: var OLSet[A], i, j: Hash): int {.inline.} =
       s.idx[0] = s.idx[s.idx.high]
       pushUp s.idx, i, s.idx.high - i
 # else:                                 # j == i => already have space @i; done
-  s.idx[i] = s.data.len.uint32 + 1
-  s.data.setLen s.data.len + 1
-  s.data.len - 1
+  result = i
 
 proc rawDelIdx[A](s: var OLSet[A], i: Hash) {.inline.} =
   let mask = s.idx.high
@@ -231,7 +229,9 @@ template getPut(present: untyped, missing: untyped) {.dirty.} =
       d = 0
       i = s.rawGet(item, hc, d)
       j = s.rawPut1(-1 - i, d)
-    let k = s.rawPut2(-1 - i, j)        # Maybe allocate a slot
+    s.idx[s.rawPut2(-1 - i, j)] = s.data.len.uint32 + 1   # alloc & update slot
+    let k = s.data.len      # client code could s.data.add but that dups hc calc
+    s.data.setLen k + 1
     s.data[k].hcode = hc
     missing
   else:
@@ -312,7 +312,7 @@ proc setCap*[A](s: var OLSet[A], newSize = -1) =
   for i, cell in s.data:
     var d: Hash = 0
     let j = s.rawGetDeep(cell.item, cell.hcode, d)
-    s.idx[j] = (i + 1).uint32
+    s.idx[s.rawPut2(j, s.rawPut1(j, d))] = (i + 1).uint32
 
 proc contains*[A](s: OLSet[A], item: A): bool {.inline.} =
   if s.data.len == 0: return false
@@ -342,8 +342,8 @@ proc add*[A](s: var OLSet[A], item: A) {.inline.} =
     i = s.rawGetDeep(item, hc, d)
     j = s.rawPut1(i, d)
   let k = s.rawPut2(i, j)               # Maybe allocate a slot
-  s.data[k].hcode = hc
-  s.data[k].item  = item
+  s.data.add (hcode: hc, item: item)
+  s.idx[k] = s.data.len.uint32
 
 template withItem*[A](s: var OLSet[A], itm: A; it,body1: untyped; body2: untyped=nil) =
   mixin rawGet
