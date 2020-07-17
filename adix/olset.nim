@@ -417,10 +417,11 @@ iterator allItems*[A](s: OLSet[A]; item: A): A =
 proc debugDump*[A](s: OLSet[A], label="") =
   if label.len > 0: echo label
   echo s.len, " items"
-  echo "data:", s.data
+  echo "data:"
+  for n, e in s.data: echo "  n: ", n, " e: ", e
   echo "idx:"
   for i, j in s.idx:
     echo "  i: ", i, " depth: ",
-         (if j == 0: 0 else: s.depth(s.data[j-1].item)), " idx: ", j
+         (if j == 0: 0 else: depth(i, s.hash(i), s.idx.high)), " idx: ", j
 
 defSetOps(OLSet)    # Define rest of the wide API not depending on repr details
