@@ -301,7 +301,6 @@ proc setCap*[A](s: var LPSet[A], newSize = -1) =
     return
   dbg echo("RESIZE@ ",s.count,"/",s.data.len," ",s.count.float/s.data.len.float)
   var old: seq[HCell[A]]
-  var d: Hash
   newSeq(old, newSz)
   if s.rehash: s.salt = getSalt(old[0].addr)
   when defined(unstableHash):
@@ -309,7 +308,7 @@ proc setCap*[A](s: var LPSet[A], newSize = -1) =
   swap(s.data, old)
   for i in 0 ..< old.len:
     if isUsed(old, i):
-      d = 0
+      var d: Hash = 0
       let j = s.rawGetDeep(old[i].item, old[i].hcode, d)
       s.data[s.rawPut2(j, s.rawPut1(j, d))] = move(old[i])
 
