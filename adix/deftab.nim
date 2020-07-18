@@ -15,7 +15,7 @@ template defTab*(T: untyped, S: untyped, G: untyped) =
   ## based on (slightly expanded) HashSet-like primitives.
 
   export Pair, hash, `==`, cmpKey, cmpVal, high, low, getKey, setKey, # keys
-         rightSize, items  # WTF `mixin` does not work in generic iterators?
+         rightSize, items, mitems, pairs, hcodes, allItems
 
   type T*[K,V] = object ## KV-wrapper over set reprs amenable to satellite data
     s: S[Pair[K,V]]
@@ -61,7 +61,7 @@ template defTab*(T: untyped, S: untyped, G: untyped) =
   proc contains*[K,V](t: T[K,V], key: K): bool {.inline.} =
     (key, default(V)) in t.s
 
-  template withValue*[K,V](t: var T[K,V], key: K; v, body1: untyped; body2: untyped=nil) =
+  template withValue*[K,V](t: var T[K,V], key: K; v, body1: untyped; body2: untyped) =
     mixin withItem
     var vl: V
     let itm: Pair[K,V] = (key, vl)
@@ -70,14 +70,30 @@ template defTab*(T: untyped, S: untyped, G: untyped) =
       body1
     do: body2
 
-  template withValue*[K,V](t: T[K,V], key: K; v, body1: untyped; body2: untyped=nil) =
+  template withValue*[K,V](t: T[K,V], key: K; v, body1: untyped; body2: untyped) =
     mixin withItem
     var vl: V
     let itm: Pair[K,V] = (key, vl)
     t.s.withItem(itm, it) do:
-      let v {.inject.} = it.val.unsafeAddr
+      let v {.inject,used.} = it.val.unsafeAddr
       body1
     do: body2
+
+  template withValue*[K,V](t: var T[K,V], key: K; v, body1: untyped) =
+    mixin withItem
+    var vl: V
+    let itm: Pair[K,V] = (key, vl)
+    t.s.withItem(itm, it) do:
+      var v {.inject.} = it.val.addr
+      body1
+
+  template withValue*[K,V](t: T[K,V], key: K; v, body1: untyped) =
+    mixin withItem
+    var vl: V
+    let itm: Pair[K,V] = (key, vl)
+    t.s.withItem(itm, it) do:
+      let v {.inject,used.} = it.val.unsafeAddr
+      body1
 
   proc raiseNotFound[K](key: K) =
     when compiles($key):
@@ -86,19 +102,31 @@ template defTab*(T: untyped, S: untyped, G: untyped) =
       raise newException(KeyError, "key not found")
 
   when declared(getByPos): # NOTE: invoke defTab in ??tab.nim w/??set in scope
-    template withPos*[K,V](t: var T[K,V], i: int; v, body1: untyped; body2: untyped=nil) =
+    template withPos*[K,V](t: var T[K,V], i: int; v, body1: untyped; body2: untyped) =
       mixin withPosItem
       t.s.withPosItem(i, it) do:
         var v {.inject.} = it.val.addr
         body1
       do: body2
 
-    template withPos*[K,V](t: T[K,V], i: int; v, body1: untyped; body2: untyped=nil) =
+    template withPos*[K,V](t: T[K,V], i: int; v, body1: untyped; body2: untyped) =
       mixin withPosItem
       t.s.withPosItem(i, it) do:
         let v {.inject.} = it.val.unsafeAddr
         body1
       do: body2
+
+    template withPos*[K,V](t: var T[K,V], i: int; v, body1: untyped) =
+      mixin withPosItem
+      t.s.withPosItem(i, it) do:
+        var v {.inject.} = it.val.addr
+        body1
+
+    template withPos*[K,V](t: T[K,V], i: int; v, body1: untyped) =
+      mixin withPosItem
+      t.s.withPosItem(i, it) do:
+        let v {.inject.} = it.val.unsafeAddr
+        body1
 
     template formatIndexError*[T](i, a, b: T): string =
       when defined(standalone): # Like `lib/system/chcks.formatErrorIndexBound`
@@ -152,7 +180,8 @@ template defTab*(T: untyped, S: untyped, G: untyped) =
     discard t.s.setOrIncl((key, val))   # Replace FIRST FOUND item in multimap
 
   proc hasKey*[K,V](t: T[K,V], key: K): bool {.inline.} =
-    t.withValue(key, it) do: result = true
+    mixin withValue
+    t.withValue(key, value) do: result = true
 
   proc hasKeyOrPut*[K,V](t: var T[K,V], key: K, val: V): bool {.inline.} =
     discard t.s.mgetOrIncl((key, val), result)
@@ -220,7 +249,7 @@ template defTab*(T: untyped, S: untyped, G: untyped) =
   iterator pairs*[K,V](t: T[K,V]): (K,V) =
     for item in t.s: yield (item.key, item.val)
 
-  iterator mpairs*[K,V](t: var T[K,V]): (K, var V) =
+  iterator mpairs*[K,V](t: var T[K,V]): tuple[key: var K, val: var V] =
     for item in mitems(t.s): yield (item.key, item.val)
 
   iterator keys*[K,V](t: T[K,V]): K =
