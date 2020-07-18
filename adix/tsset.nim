@@ -1,6 +1,6 @@
 ## This module provides what might be called the most commonly recommended hash
 ## table in articles for novices.  It uses tombstone markers for deletion which
-## allows a general ``probeSeq``.
+## allows a fully general ``probeSeq``.
 ##
 ## This solution is surely suboptimal for delete heavy workloads where tombs
 ## cost both space and time.  It is also likely suboptimal for any workload that
@@ -9,19 +9,17 @@
 ## both in space and cache miss metrics against the *very same threat model* -
 ## namely "strong whole value user hash()es that are weak in some bits". Indeed,
 ## the perturbed sequence can be viewed as just a particularly expensive rehash
-## that happens to not penalize the very first hop(s).
+## that happens to not penalize the very first hop(s).  I include this and the
+## ordered variant ``otset`` here since people seem to want it due to
+## misunderstanding the above facts and its use in Python.
 ##
-## I include this and the ordered variant ``otset`` here since people seem to
-## want it due to in my view misunderstanding basic facts.  Invalid appeals to
-## the authority of slow Python implementations do not help.  Also, the main Nim
-## stdlib uses this presently.
-##
-## There is an improvement here to use a hybrid probe seq - less of a disaster,
-## but still not as good as Robin Hood with rehash fallback on delete heavy
-## workloads or just LP with rehash fallback.  Automatic rehash activation is
-## disabled by default to assess efficacy of perturbed weak hash mitigation.
-## If reactivated for production, it would be a "first line of defense" against
-## weak hashes with perturbed probe sequences the second line, etc.
+## An improvement here, on by default, uses a hybrid probeSeq - linear for a
+## while before perturbed which is less bad, but still not as local as Robin
+## Hood with rehash fallback on delete heavy workloads or just LP with rehash
+## fallback.  Automatic rehash activation is disabled by default to assess
+## efficacy of perturbed weak hash mitigation.  If reactivated for production,
+## it would be a "first line of defense" against weak hashes with perturbed
+## probe sequences the second line, etc.
 
 import althash, bitop, setops
 type                  # `A` is Element type; Nim leans toward `item` language.
@@ -86,7 +84,7 @@ iterator probeSeq(hc, mask: Hash, d: var Hash, sz: int): int =
     # tsHybridProbe is @timotheecour's fine idea improved to be in units of
     # memory rather than number of data slots.  Limit should be several cache
     # lines and maybe a define/runtime parameter conditioned upon which CPU.
-    when defined(tsHybridProbe):
+    when not defined(tsPRProbe):
       if d * sz < 192:        # Linear probe for 192 bytes which is v.local
         i = (i + 1) and mask
       else:                   # Then non-local rotated hcode-perturbed probing.
