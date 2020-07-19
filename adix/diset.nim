@@ -128,7 +128,7 @@ proc mgetOrIncl*[A](s: var DISet[A], item: A, had: var bool): var A =
 proc add*[A](s: var DISet[A], item: A) {.inline.} =
   raise newException(RangeError, "Direct Indexed sets cannot be multisets")
 
-template withItem*[A](t: var DISet[A], item: A; it,body1: untyped; body2: untyped=nil) =
+template withItem*[A](t: var DISet[A], item: A; it, body1, body2: untyped) =
   var i = rawGet(t, item)
   if i >= 0:
     var it {.inject.} = t.data[i].addr
@@ -136,13 +136,25 @@ template withItem*[A](t: var DISet[A], item: A; it,body1: untyped; body2: untype
   else:
     body2
 
-template withItem*[A](t: DISet[A], item: A; it,body1: untyped; body2: untyped=nil) =
+template withItem*[A](t: DISet[A], item: A; it, body1, body2: untyped) =
   var i = rawGet(t, item)
   if i >= 0:
     let it {.inject.} = t.data[i].unsafeAddr
     body1
   else:
     body2
+
+template withItem*[A](t: var DISet[A], item: A; it, body1: untyped) =
+  var i = rawGet(t, item)
+  if i >= 0:
+    var it {.inject.} = t.data[i].addr
+    body1
+
+template withItem*[A](t: DISet[A], item: A; it, body1: untyped) =
+  var i = rawGet(t, item)
+  if i >= 0:
+    let it {.inject.} = t.data[i].unsafeAddr
+    body1
 
 proc missingOrExcl*[A](s: var DISet[A], item: A): bool =
   popRet do: s.rawDel i

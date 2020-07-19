@@ -345,7 +345,7 @@ proc add*[A](s: var OLSet[A], item: A) {.inline.} =
   s.data.add (hcode: hc, item: item)
   s.idx[k] = s.data.len.uint32
 
-template withItem*[A](s: var OLSet[A], itm: A; it,body1: untyped; body2: untyped) =
+template withItem*[A](s: var OLSet[A], itm: A; it, body1, body2: untyped) =
   mixin rawGet
   let i = s.rawGet(itm)
   if i >= 0:
@@ -354,7 +354,7 @@ template withItem*[A](s: var OLSet[A], itm: A; it,body1: untyped; body2: untyped
   else:
     body2
 
-template withItem*[A](s: OLSet[A], itm: A; it,body1: untyped; body2: untyped) =
+template withItem*[A](s: OLSet[A], itm: A; it, body1, body2: untyped) =
   mixin rawGet
   let i = s.rawGet(itm)
   if i >= 0:
@@ -363,14 +363,14 @@ template withItem*[A](s: OLSet[A], itm: A; it,body1: untyped; body2: untyped) =
   else:
     body2
 
-template withItem*[A](s: var OLSet[A], itm: A; it,body1: untyped) =
+template withItem*[A](s: var OLSet[A], itm: A; it, body1: untyped) =
   mixin rawGet
   let i = s.rawGet(itm)
   if i >= 0:
     var it {.inject.} = s.data[s.idx[i] - 1].item.addr
     body1
 
-template withItem*[A](s: OLSet[A], itm: A; it,body1: untyped) =
+template withItem*[A](s: OLSet[A], itm: A; it, body1: untyped) =
   mixin rawGet
   let i = s.rawGet(itm)
   if i >= 0:

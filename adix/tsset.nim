@@ -304,7 +304,7 @@ proc add*[A](s: var TSSet[A], item: A) {.inline.} =
   s.data[k].item = item
   s.count.inc
 
-template withItem*[A](s: var TSSet[A], itm: A; it,body1: untyped; body2: untyped=nil) =
+template withItem*[A](s: var TSSet[A], itm: A; it, body1, body2: untyped) =
   var i = s.rawGet(itm)
   if i >= 0:
     var it {.inject.} = s.data[i].item.addr
@@ -312,7 +312,7 @@ template withItem*[A](s: var TSSet[A], itm: A; it,body1: untyped; body2: untyped
   else:
     body2
 
-template withItem*[A](s: TSSet[A], itm: A; it,body1: untyped; body2: untyped=nil) =
+template withItem*[A](s: TSSet[A], itm: A; it, body1, body2: untyped) =
   mixin rawGet
   let i = s.rawGet(itm)
   if i >= 0:
@@ -320,6 +320,19 @@ template withItem*[A](s: TSSet[A], itm: A; it,body1: untyped; body2: untyped=nil
     body1
   else:
     body2
+
+template withItem*[A](s: var TSSet[A], itm: A; it, body1: untyped) =
+  var i = s.rawGet(itm)
+  if i >= 0:
+    var it {.inject.} = s.data[i].item.addr
+    body1
+
+template withItem*[A](s: TSSet[A], itm: A; it, body1: untyped) =
+  mixin rawGet
+  let i = s.rawGet(itm)
+  if i >= 0:
+    let it {.inject.} = s.data[i].item.unsafeAddr
+    body1
 
 proc missingOrExcl*[A](s: var TSSet[A], item: A): bool =
   popRet do: s.rawDel i

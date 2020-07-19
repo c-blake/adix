@@ -337,8 +337,8 @@ proc add*[A; z: static[int]](s: var ILSet[A,z], item: A) {.inline.} =
   s.data[k] = item
   s.count.inc
 
-template withItem*[A; z: static[int]](s: var ILSet[A,z], itm: A,
-                                      it, body1: untyped; body2: untyped=nil) =
+template withItem*[A; z: static[int]](s: var ILSet[A,z], itm: A;
+                                      it, body1, body2: untyped) =
   mixin rawGet
   let i = s.rawGet(itm)
   if i >= 0:
@@ -347,8 +347,8 @@ template withItem*[A; z: static[int]](s: var ILSet[A,z], itm: A,
   else:
     body2
 
-template withItem*[A; z: static[int]](s: ILSet[A,z], itm: A,
-                                      it, body1: untyped; body2: untyped=nil) =
+template withItem*[A; z: static[int]](s: ILSet[A,z], itm: A;
+                                      it, body1, body2: untyped) =
   mixin rawGet
   let i = s.rawGet(itm)
   if i >= 0:
@@ -356,6 +356,22 @@ template withItem*[A; z: static[int]](s: ILSet[A,z], itm: A,
     body1
   else:
     body2
+
+template withItem*[A; z: static[int]](s: var ILSet[A,z], itm: A;
+                                      it, body1: untyped) =
+  mixin rawGet
+  let i = s.rawGet(itm)
+  if i >= 0:
+    var it {.inject.} = s.data[i].addr
+    body1
+
+template withItem*[A; z: static[int]](s: ILSet[A,z], itm: A;
+                                      it, body1: untyped) =
+  mixin rawGet
+  let i = s.rawGet(itm)
+  if i >= 0:
+    let it {.inject.} = s.data[i].unsafeAddr
+    body1
 
 proc missingOrExcl*[A; z: static[int]](s: var ILSet[A,z], item: A): bool =
   popRet do: s.rawDel i

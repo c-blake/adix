@@ -284,7 +284,7 @@ proc add*[A](s: var OTSet[A], item: A) {.inline.} =
   s.data[k].hcode = hc
   s.data[k].item = item
 
-template withItem*[A](s: var OTSet[A], itm: A; it,body1: untyped; body2: untyped=nil) =
+template withItem*[A](s: var OTSet[A], itm: A; it, body1, body2: untyped) =
   var i = s.rawGet(itm)
   if i >= 0:
     var it {.inject.} = s.data[s.idx[i] - 1].item.addr
@@ -292,7 +292,7 @@ template withItem*[A](s: var OTSet[A], itm: A; it,body1: untyped; body2: untyped
   else:
     body2
 
-template withItem*[A](s: OTSet[A], itm: A; it,body1: untyped; body2: untyped=nil) =
+template withItem*[A](s: OTSet[A], itm: A; it, body1, body2: untyped) =
   mixin rawGet
   let i = s.rawGet(itm)
   if i >= 0:
@@ -300,6 +300,19 @@ template withItem*[A](s: OTSet[A], itm: A; it,body1: untyped; body2: untyped=nil
     body1
   else:
     body2
+
+template withItem*[A](s: var OTSet[A], itm: A; it, body1: untyped) =
+  var i = s.rawGet(itm)
+  if i >= 0:
+    var it {.inject.} = s.data[s.idx[i] - 1].item.addr
+    body1
+
+template withItem*[A](s: OTSet[A], itm: A; it, body1: untyped) =
+  mixin rawGet
+  let i = s.rawGet(itm)
+  if i >= 0:
+    let it {.inject.} = s.data[i].item.unsafeAddr
+    body1
 
 proc missingOrExcl*[A](s: var OTSet[A], item: A): bool =
   popRet do: s.rawDel i
