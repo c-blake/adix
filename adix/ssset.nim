@@ -100,7 +100,7 @@ template withItem*[A](s: SSSet[A], itm: A; it, body1, body2: untyped) =
   mixin rawGet
   let i = s.rawGet(itm)
   if i >= 0:
-    let it {.inject.} = s.data[i].unsafeAddr
+    let it {.inject,used.} = s.data[i].unsafeAddr
     body1
   else:
     body2
@@ -116,7 +116,7 @@ template withItem*[A](s: SSSet[A], itm: A; it, body1: untyped) =
   mixin rawGet
   let i = s.rawGet(itm)
   if i >= 0:
-    let it {.inject.} = s.data[i].unsafeAddr
+    let it {.inject,used.} = s.data[i].unsafeAddr
     body1
 
 proc missingOrExcl*[A](s: var SSSet[A], item: A): bool =
@@ -179,16 +179,26 @@ proc lowKey*[A](s: SSSet[A]): A {.inline.} = s.data[0]
 
 proc highKey*[A](s: SSSet[A]): A {.inline.} = s.data[^1]
 
-template withPosItem*[A](s: var SSSet[A], i: int, it, body1: untyped; body2: untyped = nil) =
+template withPosItem*[A](s: var SSSet[A], i: int; it, body1, body2: untyped) =
   if i >= 0 and i < s.data.len:
     var it {.inject.} = s.data[i].addr
     body1
   else:
     body2
 
-template withPosItem*[A](s: SSSet[A], i: int, it, body1, body2: untyped) =
+template withPosItem*[A](s: SSSet[A], i: int; it, body1, body2: untyped) =
   if i >= 0 and i < s.data.len:
-    let it {.inject.} = s.data[i]
+    let it {.inject,used.} = s.data[i]
     body1
   else:
     body2
+
+template withPosItem*[A](s: var SSSet[A], i: int; it, body1: untyped) =
+  if i >= 0 and i < s.data.len:
+    var it {.inject.} = s.data[i].addr
+    body1
+
+template withPosItem*[A](s: SSSet[A], i: int; it, body1: untyped) =
+  if i >= 0 and i < s.data.len:
+    let it {.inject,used.} = s.data[i]
+    body1

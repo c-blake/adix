@@ -61,7 +61,7 @@ template defTab*(T: untyped, S: untyped, G: untyped) =
   proc contains*[K,V](t: T[K,V], key: K): bool {.inline.} =
     (key, default(V)) in t.s
 
-  template withValue*[K,V](t: var T[K,V], key: K; v, body1: untyped; body2: untyped) =
+  template withValue*[K,V](t: var T[K,V], key: K; v, body1, body2: untyped) =
     mixin withItem
     var vl: V
     let itm: Pair[K,V] = (key, vl)
@@ -70,7 +70,7 @@ template defTab*(T: untyped, S: untyped, G: untyped) =
       body1
     do: body2
 
-  template withValue*[K,V](t: T[K,V], key: K; v, body1: untyped; body2: untyped) =
+  template withValue*[K,V](t: T[K,V], key: K; v, body1, body2: untyped) =
     mixin withItem
     var vl: V
     let itm: Pair[K,V] = (key, vl)
@@ -102,17 +102,17 @@ template defTab*(T: untyped, S: untyped, G: untyped) =
       raise newException(KeyError, "key not found")
 
   when declared(getByPos): # NOTE: invoke defTab in ??tab.nim w/??set in scope
-    template withPos*[K,V](t: var T[K,V], i: int; v, body1: untyped; body2: untyped) =
+    template withPos*[K,V](t: var T[K,V], i: int; v, body1, body2: untyped) =
       mixin withPosItem
       t.s.withPosItem(i, it) do:
         var v {.inject.} = it.val.addr
         body1
       do: body2
 
-    template withPos*[K,V](t: T[K,V], i: int; v, body1: untyped; body2: untyped) =
+    template withPos*[K,V](t: T[K,V], i: int; v, body1, body2: untyped) =
       mixin withPosItem
       t.s.withPosItem(i, it) do:
-        let v {.inject.} = it.val.unsafeAddr
+        let v {.inject,used.} = it.val.unsafeAddr
         body1
       do: body2
 
@@ -125,7 +125,7 @@ template defTab*(T: untyped, S: untyped, G: untyped) =
     template withPos*[K,V](t: T[K,V], i: int; v, body1: untyped) =
       mixin withPosItem
       t.s.withPosItem(i, it) do:
-        let v {.inject.} = it.val.unsafeAddr
+        let v {.inject,used.} = it.val.unsafeAddr
         body1
 
     template formatIndexError*[T](i, a, b: T): string =

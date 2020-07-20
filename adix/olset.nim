@@ -358,7 +358,7 @@ template withItem*[A](s: OLSet[A], itm: A; it, body1, body2: untyped) =
   mixin rawGet
   let i = s.rawGet(itm)
   if i >= 0:
-    let it {.inject.} = s.data[i].item.unsafeAddr
+    let it {.inject,used.} = s.data[i].item.unsafeAddr
     body1
   else:
     body2
@@ -374,7 +374,7 @@ template withItem*[A](s: OLSet[A], itm: A; it, body1: untyped) =
   mixin rawGet
   let i = s.rawGet(itm)
   if i >= 0:
-    let it {.inject.} = s.data[i].item.unsafeAddr
+    let it {.inject,used.} = s.data[i].item.unsafeAddr
     body1
 
 proc missingOrExcl*[A](s: var OLSet[A], item: A): bool =

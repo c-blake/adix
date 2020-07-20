@@ -139,7 +139,7 @@ template withItem*[A](t: var DISet[A], item: A; it, body1, body2: untyped) =
 template withItem*[A](t: DISet[A], item: A; it, body1, body2: untyped) =
   var i = rawGet(t, item)
   if i >= 0:
-    let it {.inject.} = t.data[i].unsafeAddr
+    let it {.inject,used.} = t.data[i].unsafeAddr
     body1
   else:
     body2
@@ -153,7 +153,7 @@ template withItem*[A](t: var DISet[A], item: A; it, body1: untyped) =
 template withItem*[A](t: DISet[A], item: A; it, body1: untyped) =
   var i = rawGet(t, item)
   if i >= 0:
-    let it {.inject.} = t.data[i].unsafeAddr
+    let it {.inject,used.} = t.data[i].unsafeAddr
     body1
 
 proc missingOrExcl*[A](s: var DISet[A], item: A): bool =

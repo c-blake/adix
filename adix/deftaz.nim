@@ -12,7 +12,7 @@ export SortOrder        # TODO fatten interface for diset
 
 template defTab*(T: untyped, S: untyped, G: untyped) =
   export Pair, hash, `==`, cmpKey, cmpVal, high, low, getKey, # keys
-         rightSize, items  # WTF `mixin` does not work in generic iterators?
+         rightSize, items, mitems, pairs, hcodes, allItems
 
   type T*[K,V;z: static[int]] = object ## KV-wrapper over set reprs amenable to satellite data
     s: S[Pair[K,V], z]
@@ -58,14 +58,6 @@ template defTab*(T: untyped, S: untyped, G: untyped) =
   proc contains*[K,V;z: static[int]](t: T[K,V,z], key: K): bool {.inline.} =
     (key, default(V)) in t.s
 
-  template withValue*[K,V;z: static[int]](t: var T[K,V,z], key: K, v, body: untyped) =
-    mixin withItem
-    var vl: V
-    let itm: Pair[K,V] = (key, vl)
-    t.s.withItem(itm, it) do:
-      var v {.inject.} = it.val.addr
-      body
- 
   template withValue*[K,V;z: static[int]](t: var T[K,V,z], key: K; v, body1, body2: untyped) =
     mixin withItem
     var vl: V
@@ -75,6 +67,31 @@ template defTab*(T: untyped, S: untyped, G: untyped) =
       body1
     do: body2
 
+  template withValue*[K,V;z: static[int]](t: T[K,V,z], key: K; v, body1, body2: untyped) =
+    mixin withItem
+    var vl: V
+    let itm: Pair[K,V] = (key, vl)
+    t.s.withItem(itm, it) do:
+      let v {.inject,used.} = it.val.addr
+      body1
+    do: body2
+
+  template withValue*[K,V;z: static[int]](t: var T[K,V,z], key: K; v, body: untyped) =
+    mixin withItem
+    var vl: V
+    let itm: Pair[K,V] = (key, vl)
+    t.s.withItem(itm, it) do:
+      var v {.inject.} = it.val.addr
+      body
+ 
+  template withValue*[K,V;z: static[int]](t: T[K,V,z], key: K; v, body: untyped) =
+    mixin withItem
+    var vl: V
+    let itm: Pair[K,V] = (key, vl)
+    t.s.withItem(itm, it) do:
+      let v {.inject,used.} = it.val.addr
+      body
+ 
   proc raiseNotFound[K](key: K) =
     when compiles($key):
       raise newException(KeyError, "key not found: " & $key)
@@ -95,6 +112,7 @@ template defTab*(T: untyped, S: untyped, G: untyped) =
     discard t.s.setOrIncl((key, val))   # Replace FIRST FOUND item in multimap
 
   proc hasKey*[K,V;z: static[int]](t: T[K,V,z], key: K): bool {.inline.} =
+    mixin withValue
     t.withValue(key, it) do: result = true
 
   proc hasKeyOrPut*[K,V;z: static[int]](t: var T[K,V,z], key: K, val: V): bool {.inline.} =
