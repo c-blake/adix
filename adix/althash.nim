@@ -29,15 +29,22 @@
 ## Different hashes will perform more/less well on different data.  So, we just
 ## provide a few here, and one is based upon highly non-linear bit reversal.
 ##
-## The strongest hash is ``hashWangYi1`` which passes all of SMHasher's entropy
-## tests and so is the default Hash-rehasher.  This uses the primitive of the
-## xor or the high and low parts of a double-width product of a salt with a key.
-## The xor blends the well mixed low order bits of the high output product word
-## with the less well mixed low order bits of the low output product word,
-## making "mostly level" mixing across all bits of the hash.  ``hashWangYi1``
-## takes two rounds of such mixing to achieve avalanche.  It may be possible to
-## "nearly pass" in only one round.  ``hashWY0`` is one attempt at that, but the
-## salt may need to be re-optimized to have any hope of doing well on SMHasher.
+## A stronger hash is ``hashWangYi1`` which passes SMHasher's entropy tests, but
+## "funnels" 64 inputs into about 62-bits of output entropy.  It is still the
+## default Hash-rehasher since it is fast & tables with 2^62 entries are rare.
+## WangYi1's primitive is the xor of the high & low parts of a double-width
+## product of a salt with a key.  The xor blends well-mixed low order bits of
+## the high output product word with less well-mixed low order bits of the low
+## output product word, yielding "mostly level" mixing across all bits of the
+## hash.  WangYi1 takes two rounds of such mixing to achieve avalanche.  It may
+## be possible to "nearly pass" in only one round.  ``hashWY0`` is one attempt
+## at that, but the salt may need to be re-optimized to have any hope of doing
+## well on SMHasher.  This hash became the default ``hash(int)`` in Nim stdlib.
+##
+## There is a motley selection of other hashes here.  The strongest fast hash
+## is Pelle Evensen's bijective (64-bits -> 64-bits) ``hashNASAM``.  It's 2-3x
+## slower than WangYi1 on some CPU architectures, but has no known statistical
+## flaws.
 ##
 ## (Incidentally, most "fast in GB/s" hashes are far too slow for just one int.
 ## Even assessing them that way for lookup tables is misleading.  You want time
