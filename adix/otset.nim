@@ -116,6 +116,13 @@ proc depth[A](s: OTSet[A]; item: A): int {.inline.} =
   discard rawGet(s, item, hc, d)
   d
 
+proc depths*[A](s: OTSet[A]): seq[int] =
+  ## Compute & return exact distribution of search depths over a set
+  for elt in s:
+    let d = s.depth(elt)
+    if d >= result.len: result.setLen(d + 1)
+    result[d] += 1
+
 proc tooFull[A](s: OTSet[A], d: int; newSize: var int): bool {.inline.} =
   result = true                 # Whether to call setCap or not
   if s.idx.len - s.data.len < s.minFree.int + 1:

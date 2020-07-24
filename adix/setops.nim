@@ -104,13 +104,6 @@ template defSetOps*(T: untyped) =
     result = !$result
 
   # Performance Forensics
-  proc depths*[A](s: T[A]): seq[int] =
-    ## Compute & return exact distribution of search depths over a set
-    for elt in s:
-      let d = s.depth(elt)
-      if d >= result.len: result.setLen(d + 1)
-      result[d] += 1
-
   proc normalized*[T](x: seq[T]): seq[float] =
     var norm = 0.0
     for n in x: norm += n.float
