@@ -30,9 +30,9 @@ proc qry(dict="words", stats=false, query: seq[string]) =
   let t1 = getTime()
   for word in query:
     let word = word.toUpperAscii
-    let prod = word.toMSlice.sig
+    let key = word.toMSlice.sig
     echo word, ":"
-    for ana in ana.allValues(prod):
+    for ana in ana.allValues(key):
       echo "  ", ana.toString(mf)
   if stats:
     echo "Build Time: ", (t1 - t0).inMicroseconds, " us"
