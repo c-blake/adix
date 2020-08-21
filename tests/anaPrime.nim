@@ -3,10 +3,10 @@ proc hash(x: uint64): Hash {.inline.} = hashRoMu1(x) # =~ 1.03x faster
 
 type Word = distinct uint32 # 24 bits of byte-offset, 8 bits of word length
 
-proc initWord(off, len: int): Word =
+proc initWord(off, len: int): Word {.inline.} =
   Word(uint32(off) shl 8 or uint32(len))
 
-proc toString(w: Word, mf: MFile): string =
+proc toString(w: Word, mf: MFile): string {.inline.} =
   let off = uint32(w) shr 8
   let len = uint32(w) and 255
   result.setLen len
