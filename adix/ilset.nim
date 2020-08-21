@@ -433,7 +433,7 @@ iterator hcodes*[A; z: static[int]](s: ILSet[A,z]): tuple[i: int, hc: Hash] =
 
 iterator allItems*[A; z: static[int]](s: ILSet[A,z]; item: A): A =
   let L = s.len
-  let hc0 = hash0(item)                #QUESTION: does equal(...,hc0) work here?
+  let hc0 = s.hash0(item)              #QUESTION: does equal(...,hc0) work here?
   for i in probeSeq(s.hashHc(hc0), s.data.high):
     assert(s.len == L, "cannot change a set while iterating over it")
     if not s.isUsed(s.data, i): break
