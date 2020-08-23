@@ -105,9 +105,11 @@ proc rawGet[A](s: LPSet[A]; item: A; hc, d: var Hash): int {.inline.} =
     ifStats lpDepth.inc
   result = -1 - t               # < 0 => MISSING and insert idx = -1 - result
 
-proc rawGetDeep[A](s: LPSet[A]; item: A; hc, d: var Hash): int {.inline.} =
+proc rawGetDeep[A](s: LPSet[A]; item: A; hc, d: var Hash;
+                   useHc=false): int {.inline.} =
   assert(s.data.len > 0, "Uninitialized LPSet") # Ensure in *caller* not here
-  hc = hash0(item)
+  if not useHc:
+    hc = hash0(item)
   for i in probeSeq(s.hashHc(hc), s.data.high):
     result = i
     if not isUsed(s.data, i):                # Need >=1 FREE slot to terminate
@@ -316,7 +318,7 @@ proc setCap*[A](s: var LPSet[A], newSize = -1) =
   for i in 0 ..< old.len:
     if isUsed(old, i):
       var d: Hash = 0
-      let j = s.rawGetDeep(old[i].item, old[i].hcode, d)
+      let j = s.rawGetDeep(old[i].item, old[i].hcode, d, true)
       s.data[s.rawPut2(j, s.rawPut1(j, d))] = move(old[i])
 
 proc contains*[A](s: LPSet[A], item: A): bool {.inline.} =

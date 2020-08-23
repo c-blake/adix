@@ -25,6 +25,7 @@ proc main() =
     let k = ky[i]
     if verb: echo c, k                        # Verb mode helpful to trap bugs
     case c
+      of 'a': s.add k
       of 'g':
         if k in s: nG1.inc
         else     : nG0.inc

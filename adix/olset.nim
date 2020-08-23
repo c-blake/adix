@@ -101,7 +101,11 @@ proc rawGet[A](s: OLSet[A]; item: A; hc, d: var Hash): int {.inline.} =
     ifStats olDepth.inc
   result = -1 - t               # < 0 => MISSING and insert idx = -1 - result
 
-proc rawGetDeep[A](s: OLSet[A]; item: A; hc: Hash; d: var Hash): int {.inline.}=
+proc rawGetDeep[A](s: OLSet[A]; item: A; hc: Hash; d: var Hash;
+                   useHc=false): int {.inline.}=
+  assert(s.idx.len > 0, "Uninitialized ILSet") # Ensure in *caller* not here
+  if not useHc:
+    hc = s.hash0(item)
   for i in probeSeq(s.hashHc(hc), s.idx.high):
     result = i
     if not isUsed(s.idx, i):                 # Need >=1 FREE slot to terminate
@@ -318,7 +322,7 @@ proc setCap*[A](s: var OLSet[A], newSize = -1) =
     dbg echo(" NEW SALT: ", s.salt)
   for i, cell in s.data:
     var d: Hash = 0
-    let j = s.rawGetDeep(cell.item, cell.hcode, d)
+    let j = s.rawGetDeep(cell.item, cell.hcode, d, true)
     s.idx[s.rawPut2(j, s.rawPut1(j, d))] = (i + 1).uint32
 
 proc contains*[A](s: OLSet[A], item: A): bool {.inline.} =
