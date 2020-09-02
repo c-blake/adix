@@ -256,5 +256,16 @@ when defined(hashDebug):
 else:
   template dbg*(x) = discard
 
-when isMainModule:
-  echo hashWangYi1(456)
+# These do not really belong here, but `hcodes` needs `Hash` from here anyway.
+proc raiseNotFound*[K](key: K) =
+  when compiles($key):
+    raise newException(KeyError, "key not found: " & $key)
+  else:
+    raise newException(KeyError, "key not found")
+
+proc normalized*[T](x: openArray[T]): seq[float] =
+  var norm = 0.0
+  for n in x: norm += n.float
+  norm = 1.0 / norm
+  result.setLen x.len
+  for i, n in x: result[i] = n.float * norm
