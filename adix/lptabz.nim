@@ -33,7 +33,7 @@ type                  ## `K` is Key type; `V` is Value type (can be `void`)
     key: K
     when V isnot void:
       val: V
-#XXX `seq` -> `UncheckedArray` and add `save`, `loadLPTabz`, `mmapLPTabz` procs
+  #XXX `seq`->`UncheckedArray` and add `save`, `loadLPTabz`, `mmapLPTabz` procs
   LPTabz*[K,V,Z;z:static[int]] = object                        ## Robin Hood Hash Set
     data: seq[HCell[K,V,Z,z]]                     # data array
     count: int                                # count of used slots
@@ -360,11 +360,11 @@ proc setCap*[K,V,Z;z:static[int]](t: var LPTabz[K,V,Z,z]; newSize = -1) =
 proc contains*[K,V,Z;z:static[int]](t: LPTabz[K,V,Z,z]; key: K): bool {.inline.} =
   t.data.len > 0 and t.rawGet(key) >= 0
 
-proc containsOrIncl*[K,V,Z;z:static[int]](t: var LPTabz[K,V,Z,z]; key: K): bool {.inline.} =
+proc containsOrIncl*[K,Z;z:static[int]](t: var LPTabz[K,void,Z,z]; key: K): bool {.inline.} =
   getPut do: result = true
   do       : result = false; t.data[k].key = key
 
-proc setOrIncl*[K,V,Z;z:static[int]](t: var LPTabz[K,V,Z,z]; key: K): bool {.inline.} =
+proc setOrIncl*[K,Z;z:static[int]](t: var LPTabz[K,void,Z,z]; key: K): bool {.inline.} =
   getPut do: t.data[i].key = key; result = true
   do       : t.data[k].key = key; result = false
 
@@ -409,7 +409,7 @@ template doAdd(body: untyped) {.dirty.} =
 proc add*[K,Z;z:static[int]](t: var LPTabz[K,void,Z,z]; key: K) {.inline.} =
   doAdd: discard
 
-proc add*[K,V: not void,Z;z:static[int]](t: var LPTabz[K,V,Z,z]; key: K, val: V) {.inline.} =
+proc add*[K,V,Z;z:static[int]](t: var LPTabz[K,V,Z,z]; key: K, val: V) {.inline.} =
   doAdd: t.data[k].val = val
 
 proc missingOrExcl*[K,V,Z;z:static[int]](t: var LPTabz[K,V,Z,z]; key: K): bool =
@@ -420,27 +420,26 @@ proc take*[K,Z;z:static[int]](t: var LPTabz[K,void,Z,z]; key: var K): bool {.inl
   popRet do: key = move(t.data[i].key); t.rawDel i; result = true
   do: discard
 
-proc take*[K,V: not void,Z;z:static[int]](t: var LPTabz[K,V,Z,z]; key: var K; val: var V): bool {.inline.} =
+proc take*[K,V: not void,Z;z:static[int]](t: var LPTabz[K,V,Z,z]; key: K; val: var V): bool {.inline.} =
   popRet do:
-    key = move(t.data[i].key)
     val = move(t.data[i].val)
     t.rawDel i
     result = true
   do: discard
 
-proc pop*[K,Z;z:static[int]](t: var LPTabz[K,void,Z,z]): var K {.inline.} =
+proc pop*[K,Z;z:static[int]](t: var LPTabz[K,void,Z,z]): K {.inline.} =
   if t.data.len == 0: raise newException(IndexError, formatErrorIndexBound(0,0))
   for e in t:         # Cheaper than it may look due to early exit, BUT can get
-    result = move(e)  #..slow as a set empties out.  Could keep running "min ix"
+    result = e        #..slow as a set empties out.  Could keep running "min ix"
     t.excl result     #..based on t.flag (cheaply updated by either ins/del.
     return            #..Also broken if dups are present. XXX
 
-proc pop*[K,V: not void,Z;z:static[int]](t: var LPTabz[K,V,Z,z]): var (K, V) {.inline.} =
+proc pop*[K,V: not void,Z;z:static[int]](t: var LPTabz[K,V,Z,z]): (K, V) {.inline.} =
   if t.data.len == 0: raise newException(IndexError, formatErrorIndexBound(0,0))
-  for k,v in t:         # Cheaper than it may look due to early exit, BUT can get
-    result[0] = k       #..slow as a set empties out.  Could keep running "min ix"
-    result[1] = move(v) #..based on t.flag (cheaply updated by either ins/del.
-    t.del k             #..Also broken if dups are present. XXX
+  for k,v in t:
+    result[0] = k
+    result[1] = v
+    discard t.missingOrExcl(k)
     return            
 
 proc clear*[K,V,Z;z:static[int]](t: var LPTabz[K,V,Z,z]) =
@@ -609,9 +608,12 @@ proc map*[K, A,Z;z:static[int]](data: LPTabz[K,void,Z,z], op: proc (x: K): A {.c
   result.init data.len
   for item in data: result.incl op(item)
 
-proc toLPTabz*[K,Z;z:static[int]](keys: openArray[K]): LPTabz[K,void,Z,z] =
+proc toLPTabz*[K,Z;z:static[int]](keys: openArray[K], dups=false): LPTabz[K,void,Z,z] =
   result.init keys.len
-  for item in keys: result.add item
+  if dups:
+    for item in keys: result.add item   # append; multi-set
+  else:
+    for item in keys: result.incl item  # replace; unique set
 
 proc `$`*[K,Z;z:static[int]](s: LPTabz[K,void,Z,z]): string =
   if s.len == 0: return "{}"
@@ -648,9 +650,12 @@ proc depthStats*[K,V,Z;z:static[int]](s: LPTabz[K,V,Z,z]): tuple[m1, m2: float; 
   result.m2 *= norm
   result.mx = ds.len
 
-proc toLPTabz*[K,V: not void,Z;z:static[int]](pairs: openArray[(K,V)]): LPTabz[K,V,Z,z] =
+proc toLPTabz*[K,V: not void,Z;z:static[int]](pairs: openArray[(K,V)], dups=false): LPTabz[K,V,Z,z] =
   result.init pairs.len
-  for key, val in pairs: result.add(key, val)  # clobber w/result[key] = val?
+  if dups:
+    for key, val in pairs: result.add(key, val) # append; multi-table
+  else:
+    for key, val in pairs: result[key] = val    # clobber
 
 proc `$`*[K,V: not void,Z;z:static[int]](t: LPTabz[K,V,Z,z]): string =
   if t.len == 0: return "{:}"
@@ -668,7 +673,7 @@ proc raiseNotFound[K](key: K) =
   else:
     raise newException(KeyError, "key not found")
 
-proc pop*[K,V: not void,Z;z:static[int]](t: var LPTabz[K,V,Z,z]; key: var K; val: var V):
+proc pop*[K,V: not void,Z;z:static[int]](t: var LPTabz[K,V,Z,z]; key: K; val: var V):
     bool {.inline.} = t.take key, val
 
 template withValue*[K,V,Z;z:static[int]](t: var LPTabz[K,V,Z,z], key: K; value, body: untyped) =
@@ -717,7 +722,7 @@ proc getOrDefault*[K,V,Z;z:static[int]](t: LPTabz[K,V,Z,z], key: K, default=defa
   result = if i >= 0: t.data[i].val else: default
 
 proc del*[K,V,Z;z:static[int]](t: var LPTabz[K,V,Z,z], key: K) {.inline.} =
-  discard t.missingOrExcl(key)
+  if t.missingOrExcl(key): key.raiseNotFound
 
 proc del*[K,V,Z;z:static[int]](t: var LPTabz[K,V,Z,z], key: K, had: var bool) {.inline.} =
   had = not t.missingOrExcl(key)
