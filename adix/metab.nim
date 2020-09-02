@@ -41,8 +41,8 @@ when defined(stdlibTab):
                    robinHood=false): Set[K] {.inline.} =
     initHashSet[K](sz)
 elif defined(directIndex):
-  import adix/ditabo
-  export ditabo
+  import adix/ditab
+  export ditab
   doAlias("di", "DITab", "[K,V]", "[K,void]")
 elif defined(orderedLinear):
   import adix/oltabzo # Extra generic params here are void|not sentinel flag, z,
