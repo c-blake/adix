@@ -45,7 +45,7 @@ proc init*(s: var SeqUint, initialSize=0, numBound=0) {.inline.} =
   let bitsz = initialSize * bits
   if bitsz > 0:
     s.data.setLen (roundUp(bitsz) shr iShf)
-    s.len  = 0
+    s.len  = initialSize
     s.bits = bits.int8
 
 proc initSeqUint*(initialSize=0, numBound=0): SeqUint {.inline.} =
@@ -107,7 +107,7 @@ proc `[]=`*(s: var SeqUint, i: int|uint, x: int|uint) {.inline.} =
 proc setLen*(s: var SeqUint, size: int) {.inline.} =
   let bitsz = size * s.bits
   s.data.setLen (roundUp(bitsz) shr iShf)
-  s.len  = size
+  s.len = size
 
 proc add*(s: var SeqUint, v: uint) {.inline.} =
   let i = s.len
