@@ -609,8 +609,7 @@ proc map*[K, A,Z;z:static[int]](data: LPTabz[K,void,Z,z], op: proc (x: K): A {.c
   result.init data.len
   for item in data: result.incl op(item)
 
-#XXX Check user saying `toLPTabz[K,void,Z,z]` when K is a 2-tuple works right.
-proc `to LPTabz`*[K,Z;z:static[int]](keys: openArray[K]): LPTabz[K,void,Z,z] =
+proc toLPTabz*[K,Z;z:static[int]](keys: openArray[K]): LPTabz[K,void,Z,z] =
   result.init keys.len
   for item in keys: result.add item
 
@@ -649,7 +648,7 @@ proc depthStats*[K,V,Z;z:static[int]](s: LPTabz[K,V,Z,z]): tuple[m1, m2: float; 
   result.m2 *= norm
   result.mx = ds.len
 
-proc `to LPTabz`*[K,V: not void,Z;z:static[int]](pairs: openArray[(K,V)]): LPTabz[K,V,Z,z] =
+proc toLPTabz*[K,V: not void,Z;z:static[int]](pairs: openArray[(K,V)]): LPTabz[K,V,Z,z] =
   result.init pairs.len
   for key, val in pairs: result.add(key, val)  # clobber w/result[key] = val?
 
