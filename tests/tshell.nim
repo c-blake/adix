@@ -9,19 +9,22 @@ proc main() =
   var t0, t1, tL0, tL1: int64
   var stopped = false
   var op: seq[char] = @[]                     # operation, Key, Val seqs
-  var ky: seq[int]  = @[]
+  when defined(directIndex):
+    var ky: seq[int8]  = @[]
+  else:
+    var ky: seq[int]  = @[]
   var vl: seq[int]  = @[]
   var inp: string = stdin.readAll             # Pre-read+parse to not time that
   inp.setLen inp.len - 1                      # Chop last nl; .. is inclusive
   for line in inp.split('\n'):
     let cols = line.split
     op.add cols[0][0]
-    ky.add(if cols[0].len > 1: parseInt(cols[0][1 .. ^1]) else: 0)
+    ky.add(typeof(ky[0])(if cols[0].len > 1: parseInt(cols[0][1..^1]) else: 0))
     vl.add(if cols.len > 1: parseInt(cols[1])             else: 0)
   if op.len < 1 or paramCount() > 1:
     echo "Usage:\n  ", paramStr(0), "< [gpdaTZzLl.PD]K V"
     quit 1
-  var t = initTab[int, int](size, rehash=false)
+  var t = initTab[typeof(ky[0]), int](size, rehash=false)
   var had: bool
   t0 = now()
   for i in 0 ..< ky.len:                      # Dispatch operations
