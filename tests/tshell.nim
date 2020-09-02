@@ -37,6 +37,9 @@ proc main() =
       of 'd':
         t.del k, had
         if had: nD1.inc else: nD0.inc
+      of '-':
+        if k == 0: discard t.pop()
+        else: (var kk = k; var vv = v; discard t.pop(kk, vv))
       of 'a': t.add(k, v)
       of 'T': echo t
       of 'Z': t0 = now(); nP0 = 0; nP1 = 0; nG0 = 0; nG1 = 0; nD0 = 0; nD1 = 0

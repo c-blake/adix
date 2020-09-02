@@ -29,6 +29,9 @@ proc main() =
       of 'g': (if k in s: nG1.inc else: nG0.inc)
       of 'p': (if s.containsOrIncl(k): nP0.inc else: nP1.inc)
       of 'd': (if s.missingOrExcl(k): nD0.inc else: nD1.inc)
+      of '-':
+        if k == 0: discard s.pop()
+        else: (var kk = k; discard s.pop(kk))
       of 'T': echo s
       of 'Z': t0 = now(); nP0 = 0; nP1 = 0; nG0 = 0; nG1 = 0; nD0 = 0; nD1 = 0
       of 'z': t1 = now(); stopped = true
