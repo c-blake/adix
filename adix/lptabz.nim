@@ -24,7 +24,7 @@
 ## 2..4/1 is probably most comparable to typical load-based resize rules, but if
 ## you have a near perfect hash you can profit greatly from that (100% 1 probe).
 
-import althash, memutil, bitop
+import althash, memutil, bitop, heapqueue
 export Hash
 type                  ## `K` is Key type; `V` is Value type (can be `void`)
   HCell*[K,V,Z;z:static[int]] = object
@@ -457,19 +457,19 @@ proc clear*[K,V,Z;z:static[int]](t: var LPTabz[K,V,Z,z]) =
         when V isnot void:
           t.data[i].val = default(V)
 
-iterator items*[K,V,Z;z:static[int]](s: LPTabz[K,V,Z,z]): K =
+iterator items*[K,Z;z:static[int]](s: LPTabz[K,void,Z,z]): K =
   let L = s.len
   for i in 0 ..< s.data.len:
     assert(s.len == L, "cannot change a set while iterating over it")
     if isUsed(s.data, i): yield s.data[i].key
 
-iterator mitems*[K,V,Z;z:static[int]](s: var LPTabz[K,V,Z,z]): var K =
+iterator mitems*[K,Z;z:static[int]](s: var LPTabz[K,void,Z,z]): var K =
   let L = s.len
   for i in 0 ..< s.data.len:
     assert(s.len == L, "cannot change a set while iterating over it")
     if isUsed(s.data, i): yield s.data[i].key
 
-iterator hcodes*[K,V,Z;z:static[int]](s: LPTabz[K,V,Z,z]): tuple[i: int, hc: Hash] =
+iterator hcodes*[K,Z;z:static[int]](s: LPTabz[K,void,Z,z]): tuple[i: int, hc: Hash] =
   let L = s.len
   for i in 0 ..< s.data.len:
     assert(s.len == L, "cannot change a set while iterating over it")
@@ -479,7 +479,7 @@ iterator hcodes*[K,V,Z;z:static[int]](s: LPTabz[K,V,Z,z]): tuple[i: int, hc: Has
       else:
         yield (i, s.hash(i))
 
-iterator allItems*[K,V,Z;z:static[int]](s: LPTabz[K,V,Z,z]; key: K): K =
+iterator allItems*[K,Z;z:static[int]](s: LPTabz[K,void,Z,z]; key: K): K =
   let L = s.len
   let hc0 = hash0[K,Z](key)
   for i in probeSeq(s.hashHc(hc0), s.data.high):
@@ -500,7 +500,7 @@ iterator pairs*[K,V,Z;z:static[int]](t: LPTabz[K,V,Z,z]): (K,V) =
     assert(t.len == L, "cannot change a tab while iterating over it")
     if isUsed(t.data, i): yield (t.data[i].key, t.data[i].val)
 
-iterator mpairs*[K,V,Z;z:static[int]](t: var LPTabz[K,V,Z,z]): tuple[key: var K, val: var V] =
+iterator mpairs*[K,V,Z;z:static[int]](t: var LPTabz[K,V,Z,z]): var tuple[key: K, val: V] =
   let L = t.len
   for i in 0 ..< t.data.len:
     assert(t.len == L, "cannot change a tab while iterating over it")
@@ -624,19 +624,11 @@ proc `$`*[K,Z;z:static[int]](s: LPTabz[K,void,Z,z]): string =
   result.add("}")
 
 proc hash*[K,Z;z:static[int]](s: LPTabz[K,void,Z,z]): Hash =
-  #Important to use a COMMUTATIVE combiner
   for i, hc in 0 .. s.hcodes: result = result xor hc
-  result = !$result
-
-# Performance Forensics
-proc normalized*[T](x: openArray[T]): seq[float] =
-  var norm = 0.0
-  for n in x: norm += n.float
-  norm = 1.0 / norm
-  result.setLen x.len
-  for i, n in x: result[i] = n.float * norm
+  result = !$result  #Important to use a COMMUTATIVE combiner above
 
 proc depthStats*[K,V,Z;z:static[int]](s: LPTabz[K,V,Z,z]): tuple[m1, m2: float; mx: int] = # non-central!
+  ## Performance Forensics
   result.m1 = 0.0
   result.m2 = 0.0
   var norm = 0.0
@@ -655,7 +647,7 @@ proc toLPTabz*[K,V: not void,Z;z:static[int]](pairs: openArray[(K,V)], dups=fals
   if dups:
     for key, val in pairs: result.add(key, val) # append; multi-table
   else:
-    for key, val in pairs: result[key] = val    # clobber
+    for key, val in pairs: result[key] = val    # replace
 
 proc `$`*[K,V: not void,Z;z:static[int]](t: LPTabz[K,V,Z,z]): string =
   if t.len == 0: return "{:}"
@@ -666,12 +658,6 @@ proc `$`*[K,V: not void,Z;z:static[int]](t: LPTabz[K,V,Z,z]): string =
     result.add(": ")
     result.addQuoted(val)
   result.add("}")
-
-proc raiseNotFound[K](key: K) =
-  when compiles($key):
-    raise newException(KeyError, "key not found: " & $key)
-  else:
-    raise newException(KeyError, "key not found")
 
 proc pop*[K,V: not void,Z;z:static[int]](t: var LPTabz[K,V,Z,z]; key: K; val: var V):
     bool {.inline.} = t.take key, val
@@ -741,56 +727,25 @@ proc indexBy*[A, K,V,Z;z:static[int]](collection: A, index: proc(x: V): K): LPTa
   result.init
   for item in collection: result[index(item)] = item
 
-########################## CountTable stuff #############################
-import algorithm
-proc sort*[K,V,Z;z:static[int]](s: var LPTabz[K,V,Z,z], cmp: proc(x,y:K): int, order=SortOrder.Ascending) =
-  sort(s.data, cmp, order)  #Includes all empty cells in non-dense variants
-
-proc cmpKey*[K,V,Z;z:static[int]](a, b: HCell[K,V,Z,z]) {.inline.} =
-  cmp(a.key, b.key)
-
-proc sortByKey*[K,V,Z;z:static[int]](t: var LPTabz[K,V,Z,z], order = Ascending) =
-  t.sort(cmpKey, order)
-
-proc cmpVal*[K,V,Z;z:static[int]](a, b: HCell[K,V,Z,z]) {.inline.} =
-  cmp(a.val, b.val)
-
-proc sortByVal*[K,V,Z;z:static[int]](t: var LPTabz[K,V,Z,z], order = Ascending) =
-  t.sort(cmpVal, order)
-
-#A few procs to maybe totally obviate CountTable or let it be a type alias
-proc sort*[K,V,Z;z:static[int]](t: var LPTabz[K,V,Z,z], order = Descending) {.deprecated:
-  "Deprecated since vXX, use 'sortByVal Descending'".} = t.sortByVal(order)
-
+#A few things to maybe totally obviate CountTable or let it be a type alias
 proc inc*[K,V: SomeInteger,Z;z:static[int]](t: var LPTabz[K,V,Z,z], key: K, amount: SomeInteger=1) {.inline.} =
   t.mgetOrPut(key, 0).inc amount
 
 proc merge*[K,V: SomeInteger,Z;z:static[int]](s: var LPTabz[K,V,Z,z], t: LPTabz[K,V,Z,z]) =
   for key, val in t: s.inc(key, val)
 
-proc valRange*[K,V: SomeInteger,Z;z:static[int]](t: LPTabz[K,V,Z,z], above: V=0):
-    tuple[min, max: tuple[key: K, val: V]] =
-  result.min.val = V.high
-  result.max.val = V.low
-  for key, val in t:
+iterator topPairsByVal*[K,V: SomeInteger,Z;z:static[int]](h: LPTabz[K,V,Z,z], n=10,
+                                                          above=V.low): tuple[key: K; val: V] =
+  var q = initHeapQueue[tuple[val: V; key: T]]()
+  for key, val in h:
     if val > above:
-      if val <= min.val:
-        result.min.key = key
-        result.min.val = val
-      if val >= max.val:
-        result.max.key = key
-        result.max.val = val
-
-proc smallest*[K,V: SomeInteger,Z;z:static[int]](t: LPTabz[K,V,Z,z], above: V=0): tuple[key: K, val: V] =
-  result.min.val = V.high
-  for key, val in t:
-    if val > 0 and val <= result.min.val:
-      result.min.key = key
-      result.min.val = val
-
-proc largest*[K,V: SomeInteger,Z;z:static[int]](t: LPTabz[K,V,Z,z], above: V=0): tuple[key: K, val: V] =
-  result.max.val = V.low
-  for key, val in t:
-    if val > 0 and val >= result.max.val:
-      result.max.key = key
-      result.max.val = val
+      if q.len < n:
+        q.push((val, key))
+      elif (val, key) > q[0]:
+        discard q.replace((val, key))
+  var r: tuple[key: K; val: V]
+  while q.len > 0:        # q now has top n entries
+    let next = q.pop
+    r.key = next.key
+    r.val = next.val
+    yield r               # yield in ascending order
