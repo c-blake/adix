@@ -4,14 +4,15 @@ proc now(): int64 {.inline.} = cast[int64](epochTime() * 1e9)
 
 proc main() =
   var verb = getEnv("VERB", "xyzpdq") != "xyzpdq"
-  var size = parseInt(getEnv("SIZE", "2"))
   var nLoop0, nLoop1, nP0, nP1, nG0, nG1, nD0, nD1: int = 0
   var t0, t1, tL0, tL1: int64
   var stopped = false
   var op: seq[char] = @[]                     # operation, Key, Val seqs
   when defined(directIndex):
+    var size = parseInt(getEnv("SIZE", "0"))
     var ky: seq[int8]  = @[]
   else:
+    var size = parseInt(getEnv("SIZE", "2"))
     var ky: seq[int]  = @[]
   var vl: seq[int]  = @[]
   var inp: string = stdin.readAll             # Pre-read+parse to not time that
