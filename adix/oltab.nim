@@ -1,7 +1,11 @@
-import tabkey, deftab, olset
+import oltabzo
 
-defTab(OLTab, OLSet, ol)
+type
+  OLTab*[K,V] = OLTabzo[K,V,void,0,8] ## OLTabZO specialized to no-sentinel,8-bit-hcode tables
 
-when isMainModule:
-  proc initTab(): auto = initOLTab[uint32, uint8](4)
-  include tests/testTab
+proc initLPTab*[K,V](initialSize=olInitialSize, numer=olNumer, denom=olDenom,
+                     minFree=olMinFree, growPow2=olGrowPow2, rehash=olRehash,
+                     robinhood=olRobinHood): OLTab[K,V] {.inline.} =
+  ## Return an OLTabzo specialized to tables with no sentinel key.
+  ## See initOLTabzo for parameter details.
+  result.init initialSize, numer, denom, minFree, growPow2, rehash, robinhood
