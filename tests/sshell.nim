@@ -4,7 +4,7 @@ proc now(): int64 {.inline.} = cast[int64](epochTime() * 1e9)
 
 proc main() =
   var verb = getEnv("VERB", "xyzpdq") != "xyzpdq"
-  var lgsz = parseInt(getEnv("LGSZ", "2"))
+  var size = parseInt(getEnv("SIZE", "2"))
   var nLoop0, nLoop1, nP0, nP1, nG0, nG1, nD0, nD1: int = 0
   var t0, t1, tL0, tL1: int64
   var stopped = false
@@ -18,7 +18,7 @@ proc main() =
   if op.len < 1 or paramCount() > 1:
     echo("Usage:\n  ", paramStr(0), "< [gpdTZzLl.]K [..]")
     quit(1)
-  var s = initSet[int](1 shl lgsz, rehash=false, numer=3, denom=1)
+  var s = initSet[int](size, rehash=false, numer=3, denom=1)
   t0 = now()
   for i in 0 ..< ky.len:                      # Dispatch operations
     let c = op[i]
@@ -26,15 +26,9 @@ proc main() =
     if verb: echo c, k                        # Verb mode helpful to trap bugs
     case c
       of 'a': s.add k
-      of 'g':
-        if k in s: nG1.inc
-        else     : nG0.inc
-      of 'p':
-        if s.containsOrIncl(k): nP0.inc
-        else                  : nP1.inc
-      of 'd':
-        if s.missingOrExcl(k): nD0.inc
-        else                 : nD1.inc
+      of 'g': (if k in s: nG1.inc else: nG0.inc)
+      of 'p': (if s.containsOrIncl(k): nP0.inc else: nP1.inc)
+      of 'd': (if s.missingOrExcl(k): nD0.inc else: nD1.inc)
       of 'T': echo s
       of 'Z': t0 = now(); nP0 = 0; nP1 = 0; nG0 = 0; nG1 = 0; nD0 = 0; nD1 = 0
       of 'z': t1 = now(); stopped = true

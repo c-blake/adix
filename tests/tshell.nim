@@ -4,7 +4,7 @@ proc now(): int64 {.inline.} = cast[int64](epochTime() * 1e9)
 
 proc main() =
   var verb = getEnv("VERB", "xyzpdq") != "xyzpdq"
-  var lgsz = parseInt(getEnv("LGSZ", "2"))
+  var size = parseInt(getEnv("SIZE", "2"))
   var nLoop0, nLoop1, nP0, nP1, nG0, nG1, nD0, nD1: int = 0
   var t0, t1, tL0, tL1: int64
   var stopped = false
@@ -21,7 +21,7 @@ proc main() =
   if op.len < 1 or paramCount() > 1:
     echo "Usage:\n  ", paramStr(0), "< [gpdaTZzLl.PD]K V"
     quit 1
-  var t = initTab[int, int](1 shl lgsz, rehash=false)
+  var t = initTab[int, int](size, rehash=false)
   var had: bool
   t0 = now()
   for i in 0 ..< ky.len:                      # Dispatch operations
@@ -30,17 +30,13 @@ proc main() =
     let v = vl[i]
     if verb: echo c, k, " ", v                # Verb mode helpful to trap bugs
     case c
-      of 'g':
-        if k in t: nG1.inc
-        else     : nG0.inc
+      of 'g': (if k in t: nG1.inc else: nG0.inc)
       of 'p':
         discard t.mgetOrPut(k, v, had)
-        if had: nP1.inc
-        else  : nP0.inc
+        if had: nP1.inc else: nP0.inc
       of 'd':
         t.del k, had
-        if had: nD1.inc
-        else  : nD0.inc
+        if had: nD1.inc else: nD0.inc
       of 'a': t.add(k, v)
       of 'T': echo t
       of 'Z': t0 = now(); nP0 = 0; nP1 = 0; nG0 = 0; nG1 = 0; nD0 = 0; nD1 = 0
