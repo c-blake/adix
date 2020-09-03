@@ -1,4 +1,4 @@
-import strutils, times, iltab, althash, cligen, cligen/[mfile, mslice]
+import strutils, times, lptabz, althash, cligen, cligen/[mfile, mslice]
 proc hash(x: uint64): Hash {.inline.} = hashRoMu1(x) # =~ 1.03x faster
 
 type Word = distinct uint32 # 24 bits of byte-offset, 8 bits of word length
@@ -24,7 +24,7 @@ proc qry(dict="words", stats=false, query: seq[string]) =
   let mf = mopen(dict)
   if mf == nil: return
   # tables should allow file-backed allocation to make saving answer easy
-  var ana = initILTab[uint64, Word, 0](mf.len div 10, numer=3, denom=1)
+  var ana = initLPTabz[uint64, Word, int, 0](mf.len div 10, numer=3, denom=1)
   for word in mf.mSlices:
     ana.add word.sig, initWord(word.mem -! mf.mem, word.len)
   let t1 = getTime()
