@@ -1,10 +1,9 @@
-## This module implements a directly indexed set.  The idea is simple - keep an
-## ordinary unordered dense sequence of data records but accelerate searching
-## with an direct index array ("direct" == of the same size as the key space or
-## "alphabet") which tells the index of the record for each (unique) key.  This
-## allows any unordered set operation to be done at guaranteed unit cost per
-## element: make, insert, delete, member query & iteration with follow-ons to
-## optimal union/intersect/etc. all with an arbitrarily "aged" set.
+## This module provides a directly indexed set/table representation via a dense
+## ``seq[T]`` with an auxilliary sparse direct index to accelerate searching.
+## "direct" means the same size as the key space or "alphabet".  The index says
+## what ``seq`` index has each (unique) key.  This can do any unordered set op
+## in guaranteed unit time cost per element -- make, insert, delete, member
+## query, iterate, union/intersect/etc. -- all with arbitrarily "aged" sets.
 ##
 ## The catch is that the "unit" in said cost will only be small if the key space
 ## is small enough to afford allocating index space & if the working set of the

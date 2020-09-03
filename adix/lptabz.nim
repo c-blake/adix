@@ -1,12 +1,12 @@
-## This module implements an unordered set representation via linear probing
-## with aging friendly Backshift Delete (Knuth TAOCPv3) and optional Robin Hood
-## reorganization (Celis,1986).  Linear probing collision clusters yields "no
-## tuning needed" locality of reference - 1 DRAM hit per access for small items.
-## RH keeps cluster items sorted by search depth which adds nice properties:
-## faster missing search (eg. for inserts, usually more than compensating for
-## data motion) and min over-table variance (no unlucky keys). The latter allows
-## high table space utilization.  It is not crazy to run a Robin Hood table at
-## 100% full (though here we require 1 empty slot to terminate certain loops).
+## This module provides an unordered multiset/multitable representation via
+## linear probing with aging friendly Backshift Delete (Knuth TAOCPv3) and
+## optional Robin Hood reorg (Celis,1986).  Linear probing collision clusters
+## yields "no tuning needed" locality of reference - 1 DRAM hit per access for
+## large tables of small items.  RH keeps clusters sorted by search depth which
+## adds nice properties: faster miss searches (eg. for inserts, usually more
+## than compensating for data motion) and min depth variance (no unlucky keys).
+## The latter enables almost 100% table space utilization (though here we need
+## an empty slot to terminate certain loops).
 ##
 ## Misuse/attack is always possible.  So, we provide an early warning system,
 ## disabled in ``danger`` mode, for overlong scans on underfull tables.  We also
