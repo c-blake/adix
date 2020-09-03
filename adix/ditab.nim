@@ -88,6 +88,7 @@ proc depths*[K,V](t: DITab[K,V]): seq[int] =
   result.setLen 1; result[0] = t.len
 
 ##############################################################################
+var diInitialSize* = 0   ## default numerator (unused)
 var diNumer*     = 0     ## default numerator (unused)
 var diDenom*     = 0     ## default denominator (unused)
 var diMinFree*   = 0     ## default min free slots (unused)

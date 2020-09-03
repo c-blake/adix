@@ -1,3 +1,5 @@
+## This module provides an easy way to do compile-time switched impl swaps for
+## various table/set reprs with various compile-time switched defaults.
 import macros, strformat
 
 when defined(noRehash):
@@ -12,25 +14,24 @@ else:
 
 proc rightSz*(x: Natural): int {.inline,deprecated: "Only identity now".} = x
 
-#NOTE: When caller just declares var x: Tab, we cannot control initialization :(
 macro doAlias(ns: string, root: string, tabP: string, setP: string) =
   let inline = "{.inline.}"
   parseStmt(&"""
 type Tab*[K,V] = {root}{tabP}
 type Set*[K]   = {root}{setP}
 
-proc initTab*[K,V](sz=4, numer={ns}Numer, denom={ns}Denom, minFree={ns}MinFree,
-                   growPow2={ns}GrowPow2, rehash=rDefault, robinHood=rhDefault):
-    Tab[K,V] {inline} =
+proc initTab*[K,V](sz={ns}InitialSize, numer={ns}Numer, denom={ns}Denom,
+                   minFree={ns}MinFree, growPow2={ns}GrowPow2, rehash=rDefault,
+                   robinHood=rhDefault): Tab[K,V] {inline} =
   init{root}{tabP}(sz, numer, denom, minFree, growPow2, rehash, robinHood)
 
-proc initSet*[K](sz=4, numer={ns}Numer, denom={ns}Denom, minFree={ns}MinFree,
-                 growPow2={ns}GrowPow2, rehash=rDefault, robinHood=rhDefault):
-    Set[K] {inline} =
+proc initSet*[K](sz={ns}InitialSize, numer={ns}Numer, denom={ns}Denom,
+                 minFree={ns}MinFree, growPow2={ns}GrowPow2, rehash=rDefault,
+                 robinHood=rhDefault): Set[K] {inline} =
   init{root}{setP}(sz, numer, denom, minFree, growPow2, rehash, robinHood)""")
 
-when defined(stdlibTab):
-  import tables, sets
+when defined(stdlibTab):  #NOTE: stdlib version cannot ctrl, e.g. `initialSize`
+  import tables, sets     #      when client just declares `var x: Tab`.
   export tables, sets
   type Tab*[K,V] = Table[K,V]
   type Set*[K]   = HashSet[K]
