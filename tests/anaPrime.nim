@@ -24,7 +24,7 @@ proc qry(dict="words", stats=false, query: seq[string]) =
   let mf = mopen(dict)
   if mf == nil: return
   # tables should allow file-backed allocation to make saving answer easy
-  var ana = initLPTabz[uint64, Word, int, 0](mf.len div 10, numer=3, denom=1)
+  var ana = initLPTabz[uint64, Word, uint64, 0](mf.len div 10, numer=3, denom=1)
   for word in mf.mSlices:
     ana.add word.sig, initWord(word.mem -! mf.mem, word.len)
   let t1 = getTime()
