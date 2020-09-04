@@ -1,30 +1,37 @@
-## This module provides an unordered multiset/multitable representation via
+## This module provides an (in|un)ordered multiset/multitable representation via
 ## linear probing with aging friendly Backshift Delete (Knuth TAOCPv3) and
 ## optional Robin Hood reorg (Celis,1986).  Linear probing collision clusters
 ## yields "no tuning needed" locality of reference - 1 DRAM hit per access for
-## large tables of small items.  RH keeps clusters sorted by search depth which
-## adds nice properties: faster miss searches (eg. for inserts, usually more
-## than compensating for data motion) and min depth variance (no unlucky keys).
-## The latter enables almost 100% table space utilization (though here we need
-## an empty slot to terminate certain loops).
+## large tables of small items.  RH sorts collision clusters by search depth
+## which adds nice properties: faster miss searches (eg. for inserts, usually
+## more than compensating for data motion) and min depth variance (no unlucky
+## keys).  The latter enables almost 100% table space utilization (though here
+## we need one empty slot to terminate certain loops).
 ##
-## Misuse/attack is always possible.  So, we provide an early warning system,
-## disabled in ``danger`` mode, for overlong scans on underfull tables.  We also
-## allow "re-hashing" the output of hash() to mix bits more in case that helps
-## and switch to that mode automatically on overlong probe sequences.  Defaults
-## are to always rehash and use RobinHood re-org since this is safest, but with
-## all parameters here a user can both change defaults as well as tune on a
-## per-instance basis.
+## Misuse/attack is always possible.  We provide several mitigations triggered,
+## like table growth, by overlong scans on underfull tables: A) auto-activated
+## rehash of user `hash` output with a strong hash, B) overlong scan warnings
+## (disabled in ``danger`` mode), and C) automatic Robin Hood re-org activation.
+## Defaults are to always rehash and use RobinHood re-org since this is safest,
+## but all parameters here can be tuned per program and per instance.
 ##
-## With Robin Hood, performance responds more to your hash() and to rehash=true
-## than to ``numer, denom, minFree``.  Nevertheless, some very approximate lg(N)
-## depth ratio advice: ``numer/denom`` for *random* (i.e. well hashed) data are
-## are =~ RH(1/1) => ~71% data load & rmsDepth 2, RH(4/1) => ~73% data load,
-## rmsDepth 2.1 while for vanilla LP (1/1) => ~37% and (4/1) => ~62%.  So, about
-## 2..4/1 is probably most comparable to typical load-based resize rules, but if
-## you have a near perfect hash you can profit greatly from that (100% 1 probe).
+## Multiset personality ensues when the ``V`` value type generic parameter is
+## ``void``.  Otherwise the style of interface is multitable.  Every attempt is
+## made for either to be drop-in compatible with Nim's standard library sets &
+## tables, but extra features provided here.
+##
+## Space-time optimization of a sentinel key (a value of ``K`` disallowed for
+## ordinary keys) is supported through the final two generic parameters, ``Z``,
+## and ``z``.  If ``Z`` is `void`, hash codes are saved and ``z`` is ignored.
+## If ``Z==K``, ``z`` is the sentinel key value.
+##
+## If ``Z`` is neither ``K`` nor ``void`` then compact, insertion-ordered mode
+## is used and ``z`` means how many bits of hcode are saved beside an index into
+## a dense ``seq[(K,V)]``.  6..8 bits avoids most "double cache misses" for miss
+## lookups/inserts while 20..50 are needed to support ``hash`` call elision in
+## ``setCap`` for large tables.  ``z=0`` works if space matters more than time.
 
-import althash, memutil, bitop, heapqueue
+import althash, memutil, bitop, heapqueue, sequint
 export Hash
 type                  ## `K` is Key type; `V` is Value type (can be `void`)
   HCell*[K,V,Z;z:static[int]] = object
@@ -34,16 +41,25 @@ type                  ## `K` is Key type; `V` is Value type (can be `void`)
     when V isnot void:
       val: V
   #XXX `seq`->`UncheckedArray` and add `save`, `loadLPTabz`, `mmapLPTabz` procs
-  LPTabz*[K,V,Z;z:static[int]] = object                        ## Robin Hood Hash Set
-    data: seq[HCell[K,V,Z,z]]                     # data array
-    count: int                                # count of used slots
-    salt: Hash
-    numer, denom, minFree, growPow2, pow2: uint8 # size policy parameters
-    rehash, robin: bool
+  LPTabz*[K,V,Z;z:static[int]] = object           ## Robin Hood Hash Set
+    when Z is K or Z is void:
+      data: seq[HCell[K,V,Z,z]]                   # RobinHoodOptional LP HashTab
+      count: int                                  # count of used slots
+    else: # User set 3rd param to non-void, non-K; e.g. int8; => compact, z=bits
+      data: seq[HCell[K,V,Z,z]]                   # data array; len == count
+      idx: SeqUint                                # RobinHoodOptional LP HashTab
+    salt: Hash                                    # maybe unpredictable salt
+    rehash, robin: bool                           # Steal 2-bits from `salt`?
+    numer, denom, minFree, growPow2, pow2: uint8  # size policy parameters
 
-proc len*[K,V,Z;z:static[int]](t: LPTabz[K,V,Z,z]): int {.inline.} = t.count
+proc len*[K,V,Z;z:static[int]](t: LPTabz[K,V,Z,z]): int {.inline.} =
+  when Z is K or Z is void:
+    t.count
+  else:
+    t.data.len
 
-proc isUsed[K,V,Z;z:static[int]](data: seq[HCell[K,V,Z,z]], i: int): bool {.inline.} =
+proc isUsed[K,V,Z;z:static[int]](data: seq[HCell[K,V,Z,z]], i: int):
+    bool {.inline.} =
   when Z is void:
     data[i].hcode != 0
   elif compiles(data[i].key.getKey):
