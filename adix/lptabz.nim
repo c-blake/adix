@@ -1,12 +1,11 @@
 ## This module provides an (in|un)ordered multiset/multitable representation via
-## linear probing with aging friendly Backshift Delete (Knuth TAOCPv3) and
-## optional Robin Hood reorg (Celis,1986).  Linear probing collision clusters
-## yields "no tuning needed" locality of reference - 1 DRAM hit per access for
-## large tables of small items.  RH sorts collision clusters by search depth
-## which adds nice properties: faster miss searches (eg. for inserts, usually
-## more than compensating for data motion) and min depth variance (no unlucky
-## keys).  The latter enables almost 100% table space utilization (though here
-## we need one empty slot to terminate certain loops).
+## Linear Probing with aging friendly Backshift Delete(Knuth TAOCPv3) & optional
+## Robin Hood reorg (Celis,1986).  Linear probing collision clusters yields "no
+## tuning needed" locality of reference - 1 DRAM hit per access for large tables
+## of small items.  RH sorts collision clusters by search depth which adds nice
+## properties: faster miss search (eg. for inserts, usually compensating for
+## data motion) and min depth variance (no unlucky keys).  The latter enables
+## ~100% table space utilization (we need one empty slot to stop some loops).
 ##
 ## Misuse/attack is always possible.  We provide several mitigations triggered,
 ## like table growth, by overlong scans on underfull tables: A) auto-activated
@@ -798,18 +797,15 @@ proc merge*[K,V: SomeInteger,Z;z:static[int]](c: var LPTabz[K,V,Z,z],
                                               b: LPTabz[K,V,Z,z]) =
   for key, val in b: c.inc(key, val)
 
-iterator topPairs*[K,V:SomeInteger,Z;z:static[int]](
-                   c: LPTabz[K,V,Z,z], n=10, above=V.low): tuple[key:K; val:V] =
-  var q = initHeapQueue[tuple[val: V; key: T]]()
+iterator topPairs*[K,V:SomeInteger,Z;z:static[int]](c: LPTabz[K,V,Z,z], n=10,
+                                                    above=V.low): (K,V) =
+  var q = initHeapQueue[(V,K)]()
   for key, val in c:
     if val > above:
       if q.len < n:
         q.push((val, key))
       elif (val, key) > q[0]:
         discard q.replace((val, key))
-  var r: tuple[key: K; val: V]
   while q.len > 0:        # q now has top n entries
-    let next = q.pop
-    r.key = next.key
-    r.val = next.val
-    yield r               # yield in ascending order
+    let r = q.pop
+    yield (r[1], r[0])    # yield in ascending order
