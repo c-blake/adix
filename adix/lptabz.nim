@@ -58,23 +58,88 @@ proc len*[K,V,Z;z:static[int]](t: LPTabz[K,V,Z,z]): int {.inline.} =
   else:
     t.data.len
 
-proc isUsed[K,V,Z;z:static[int]](data: seq[HCell[K,V,Z,z]], i: int):
-    bool {.inline.} =
-  when Z is void:
-    data[i].hcode != 0
-  elif compiles(data[i].key.getKey):
-    data[i].key.getKey != z
+proc high[K,V,Z;z:static[int]](t: LPTabz[K,V,Z,z]): int {.inline.} =
+  when Z is K or Z is void:
+    t.data.high
   else:
-    data[i].key != z
+    t.idx.high
 
-proc unUse[K,V,Z;z:static[int]](data: var seq[HCell[K,V,Z,z]],
-                                i: int) {.inline.} =
-  when Z is void:
-    data[i].hcode = 0
-  elif compiles(data[i].key.setKey):
-    data[i].key.setKey z
+proc key[K,V,Z;z:static[int]](t: LPTabz[K,V,Z,z], i: int): K {.inline.} =
+  when Z is K or Z is void:
+    t.data[i].key
   else:
-    data[i].key = z
+    t.data[t.idx[i] - 1].key
+
+proc getCap*[K,V,Z;z:static[int]](t: LPTabz[K,V,Z,z]): int {.inline.} =
+  when Z is K or Z is void:
+    t.data.len
+  else:
+    t.idx.len
+
+proc isUsed[K,V,Z;z:static[int]](cell: HCell[K,V,Z,z]): bool {.inline.} =
+  when Z is void:
+    cell.hcode != 0
+  else:
+    cell.key != z
+
+proc isUsed[K,V,Z;z:static[int]](t: LPTabz[K,V,Z,z], i: int): bool {.inline.} =
+  when Z is K or Z is void:
+    t.data[i].isUsed
+  else:
+    t.idx[i] != 0
+
+proc unUse[K,V,Z;z:static[int]](t: var LPTabz[K,V,Z,z], i: int, clear=true) {.inline.} =
+  when Z is K or Z is void:
+    when Z is void:
+      t.data[i].hcode = 0
+      when compiles(default(t.data[i].val)):
+        if clear:
+          t.data[i].key = default(t.data[i].key)
+    else:
+      t.data[i].key = z
+    when V isnot void and compiles(default(t.data[i].val)):
+      if clear:
+        t.data[i].val = default(t.data[i].val)
+  else:
+    t.idx[i] = 0
+
+proc equal[K,V,Z;z:static[int]](t: LPTabz[K,V,Z,z]; i: int, key: K, hc: Hash):
+    bool {.inline.} =
+  when Z is K or Z is void:
+    when type(key) is SomeInteger or Z isnot void:
+      t.data[i].key == key
+    else: # Compare hc 1st so missing => ~0 key cmp; Present => ~1 key cmp
+      t.data[i].hcode == hc and t.data[i].key == key
+  else:
+    when type(key) is SomeInteger or Z isnot void:
+      t.data[t.idx[i] - 1].key == key
+    else: #XXX extract hcode from idx, etc.
+      t.data[t.idx[i] - 1].key == key
+
+proc pushUp[K,V,Z;z:static[int]](t: var LPTabz[K,V,Z,z], i, n: int) {.inline.} =
+  when Z is K or Z is void:
+    t.data.pushUp i, n
+  else:
+    for j in countdown(i + n - 1, i): t.idx[j+1] = t.idx[j]
+
+proc set1[K,V,Z;z:static[int]](t: var LPTabz[K,V,Z,z]; i, j: int) {.inline.} =
+  when Z is K or Z is void:
+    t.data[i] = t.data[j]
+  else:
+    t.idx[i] = t.idx[j]
+
+proc pullDown[K,V,Z;z:static[int]](t: var LPTabz[K,V,Z,z], i, n: int) {.inline.} =
+  when Z is K or Z is void:
+    t.data.pullDown i, n
+  else:
+    for j in countup(i, i + n - 1): t.idx[j] = t.idx[j+1]
+
+proc cell[K,V,Z;z:static[int]](t: LPTabz[K,V,Z,z],
+                               i: int): ptr HCell[K,V,Z,z] {.inline.} =
+  when Z is K or Z is void:
+    t.data[i].unsafeAddr
+  else:
+    t.data[t.idx[i] - 1].unsafeAddr
 
 when defined(hashStats):    # Power user inspectable/zeroable stats.  These are
   template ifStats(x) = x   # all kind of like "times" - you v0=val;...; val-v0
@@ -91,33 +156,20 @@ when defined(lpWarn) or not defined(danger):
 
 # t.salt here is just a hash of the VM address of data[] that can give distinct
 # tabs distinct home addr locations at least as independent as `getSalt`.
-proc hashHc[K,V,Z;z:static[int]](t: LPTabz[K,V,Z,z]; hc: Hash):
-    Hash {.inline.} =
+proc hashHc[K,V,Z;z:static[int]](t: LPTabz[K,V,Z,z]; hc: Hash): Hash {.inline.}=
   if t.rehash: hash(hc, t.salt) else: hc
 
 proc hash[K,V,Z;z:static[int]](t: LPTabz[K,V,Z,z]; i: int): Hash {.inline.} =
   when Z is void:
     t.hashHc t.data[i].hcode
   else:
-    t.hashHc hash(t.data[i].key)
+    t.hashHc hash(t.key(i))
 
 proc hash0[K,Z](key: K): Hash {.inline.} =
   result = hash(key)
   when Z is void:         # Account for hash==0, FREE marker
     if result == 0:       # Rarely taken branch very predictable
       result = 314159265  # Value matters little; More bits spread while growing
-
-proc equal[K,V,Z;z:static[int]](t: LPTabz[K,V,Z,z]; i: int, key: K, hc: Hash):
-    bool {.inline.} =
-  when compiles(key.getKey):
-    when type(key.getKey) is SomeInteger:
-      t.data[i].key.getKey == key.getKey  # Do not waste time on `hc` cmp
-    else:
-      t.data[i].hcode == hc and t.data[i].key.getKey == key.getKey
-  elif type(key) is SomeInteger:
-    t.data[i].key == key
-  else: # Prefix compare hc so missing => ~0 key cmp; Present => ~1 key cmp
-    t.data[i].hcode == hc and t.data[i].key == key
 
 proc depth(i, hc, mask: Hash): Hash {.inline.} =
   let i = uint(i)
@@ -133,14 +185,14 @@ iterator probeSeq(hc, mask: Hash): int =  # WTF generic over K caused codegenbug
 
 proc rawGet[K,V,Z;z:static[int]](t: LPTabz[K,V,Z,z]; key: K;
                                  hc, d: var Hash): int {.inline.} =
-  assert(t.data.len > 0, "Uninitialized LPTabz") # Ensure in *caller* not here
+  assert(t.getCap > 0, "Uninitialized LPTabz")  # Ensure in *caller* not here
   hc = hash0[K,Z](key)
   var j {.noInit.}: int                         # Where to insert if missing
-  for i in probeSeq(t.hashHc(hc), t.data.high):
+  for i in probeSeq(t.hashHc(hc), t.high):
     j = i
-    if not isUsed(t.data, i):                # Need >=1 FREE slot to terminate
+    if not t.isUsed(i):                   # Need >=1 FREE slot to terminate
       break
-    if t.robin and d > depth(i, t.hash(i), t.data.high):
+    if t.robin and d > depth(i, t.hash(i), t.high):
       break
     if t.equal(i, key, hc):
       return i
@@ -149,17 +201,17 @@ proc rawGet[K,V,Z;z:static[int]](t: LPTabz[K,V,Z,z]; key: K;
   result = -1 - j               # < 0 => MISSING and insert idx = -1 - result
 
 proc rawGetDeep[K,V,Z;z:static[int]](t: LPTabz[K,V,Z,z]; key: K;
-                                     hc, d: var Hash): int{.inline.} =
-  assert(t.data.len > 0, "Uninitialized LPTabz") # Ensure in *caller* not here
+                                     hc, d: var Hash): int {.inline.} =
+  assert(t.getCap > 0, "Uninitialized LPTabz") # Ensure in *caller* not here
   if d == 1:
     d = 0
   else:
     hc = hash0[K,Z](key)
-  for i in probeSeq(t.hashHc(hc), t.data.high):
+  for i in probeSeq(t.hashHc(hc), t.high):
     result = i
-    if not isUsed(t.data, i):                # Need >=1 FREE slot to terminate
+    if not t.isUsed(i):                # Need >=1 FREE slot to terminate
       break
-    if t.robin and d > depth(i, t.hash(i), t.data.high):
+    if t.robin and d > depth(i, t.hash(i), t.high):
       break
     d.inc
     ifStats lpDepth.inc
@@ -167,6 +219,11 @@ proc rawGetDeep[K,V,Z;z:static[int]](t: LPTabz[K,V,Z,z]; key: K;
 proc rawGet[K,V,Z;z:static[int]](t: LPTabz[K,V,Z,z]; key: K): int {.inline.} =
   var hc, d: Hash
   rawGet(t, key, hc, d)        # < 0 => MISSING and insert idx = -1 - result
+
+proc rawGetLast[K,V,Z;z:static[int]](s: LPTabz[K,V,Z,z]): int {.inline,used.} =
+  let hc = hash0[K,Z](s.data[^1].key)         #XXX get hc out of idx[]
+  for i in probeSeq(s.hashHc(hc), s.idx.high):
+    if s.idx[i].int == s.data.len: return i
 
 proc depth[K,V,Z;z:static[int]](t: LPTabz[K,V,Z,z]; key: K): int {.inline.} =
   var hc, d: Hash
@@ -183,21 +240,21 @@ proc depths*[K,V,Z;z:static[int]](t: LPTabz[K,V,Z,z]): seq[int] =
 proc tooFull[K,V,Z;z:static[int]](t: var LPTabz[K,V,Z,z]; d: int;
                                   newSize: var int): bool {.inline.} =
   result = true                 # Whether to call setCap or not
-  if t.data.len - t.count < t.minFree.int + 1:
-    dbg echo("Too little space (",t.data.len-t.count,") of ",t.data.len)
+  if t.getCap - t.len < t.minFree.int + 1:
+    dbg echo("Too little space (", t.getCap - t.len, ") of ", t.getCap)
     ifStats lpTooFull.inc
-    newSize = t.data.len shl t.growPow2
+    newSize = t.getCap shl t.growPow2
     return
   if t.denom.int * (d - 1) < t.numer.int * t.pow2.int:
     return false                # newSize will not matter
   dbg echo("Probe too deep: ",d," while lg(sz)=",t.pow2," depths: ",t.depths)
   ifStats lpTooDeep.inc
-  if t.count > t.data.len shr t.growPow2:
-    newSize = t.data.len shl t.growPow2
+  if t.len > t.getCap shr t.growPow2:
+    newSize = t.getCap shl t.growPow2
   else:
-    dbg echo("Too sparse to grow, ",t.count,"/",t.data.len," depth: ",d)
+    dbg echo("Too sparse to grow, ", t.len, "/", t.getCap, " depth: ", d)
     ifStats lpTooSparse.inc     # Normal resizing cannot restore performance
-    newSize = t.data.len
+    newSize = t.getCap
     var ext: string             # Extra text after primary message
     if t.rehash:                # Already re-hashing hash() output
       if t.robin:               # Already doing Robin Hood re-org
@@ -218,59 +275,62 @@ proc rawPut1[K,V,Z;z:static[int]](t: var LPTabz[K,V,Z,z]; i: Hash; d: var int):
     int {.inline.} =
   if t.robin:
     result = i                          # Linear probe to first empty slot
-    while isUsed(t.data, result):
-      result = (result + 1) and t.data.high
+    while t.isUsed(result):
+      result = (result + 1) and t.high
       d.inc
 
-proc rawPut2[K,V,Z;z:static[int]](t: var LPTabz[K,V,Z,z]; i, j: Hash):
-    int {.inline.} =
+proc rawPut2[K,V,Z;z:static[int]](t: var LPTabz[K,V,Z,z];
+                                  i, j: Hash): int {.inline.} =
   if t.robin:
     if j > i:                           # No table wrap around; just shift up
-      pushUp t.data, i, j - i
+      t.pushUp i, j - i
     elif j < i:                         # j wrapped to low indices
-      pushUp t.data, 0, j
-      t.data[0] = t.data[t.data.high]
-      pushUp t.data, i, t.data.high - i
+      t.pushUp 0, j
+      t.set1 0, t.high
+      t.pushUp i, t.high - i
   # else:                               # j == i => already have space @i; done
   result = i
 
 proc rawDel[K,V,Z;z:static[int]](t: var LPTabz[K,V,Z,z]; i: Hash) {.inline.} =
-  let mask = t.data.high
+  when not (Z is K or Z is void):
+    let j = t.idx[i] - 1                # To keep `data` density..
+    if j.int + 1 < t.len:               # ..unless already points to data[^1]
+      t.idx[t.rawGetLast] = j + 1       # ..retarget idx[data[^1]] -> j
+      t.data[j] = t.data[^1]            # Copy last elt to `[j]`; move?
+  let mask = t.high
   if t.robin:
     var k = i
     var j = (i + 1) and mask            # Find next empty|at home position entry
-    while isUsed(t.data, j) and j != (t.hash(j) and mask):
+    while t.isUsed(j) and j != (t.hash(j) and mask):
       j = (j + 1) and mask
     if j > i + 1:                       # No table wrap around; just shift down
-      pullDown t.data, i, j - 1 - i
+      t.pullDown i, j - 1 - i
       k = j - 1                         # Mark just-past-shift-block entry empty
     elif ((j + mask - i) and mask) > 0: # j wrapped to low indices; Did >0 j.inc
-      pullDown t.data, i, mask - i
-      t.data[mask] = t.data[0]
-      pullDown t.data, 0, j - 1
+      t.pullDown i, mask - i
+      t.set1 mask, 0
+      t.pullDown 0, j - 1
       k = (j + mask) and mask           # [j-1 mod tabSz] is now empty
 #   else:                               # k == i is already home position
-    t.data[k].key = default(type(t.data[k].key))
-    t.data.unUse k
+    t.unUse k
   else:
     var i = i             # KnuthV3 Algo6.4R adapted for i=i+1 instead of i=i-1
     while true:           # The correctness of this depends on (i+1) in probeSeq
       var j = i           #..though may be adaptable to other simple sequences.
-      t.data[i].key = default(type(t.data[i].key))
-      t.data.unUse i                        # Mark current FREE
+      t.unUse i                         # Mark current FREE
       while true:
-        i = (i + 1) and mask                # Increment mod table size
-        if not isUsed(t.data, i):           # End of collision cluster; All done
+        i = (i + 1) and mask            # Increment mod table size
+        if not t.isUsed(i):             # End of collision cluster; All done
           return
-        let h = t.hash(i) and mask    # "home" slot of key@i
+        let h = t.hash(i) and mask      # "home" slot of key@i
         if not ((i >= h and h > j) or (h > j and j > i) or (j > i and i >= h)):
           break
-      t.data[j] = move(t.data[i])     # data[i] will be marked FREE next loop
+      t.set1 j, i                       # data[i] will be marked FREE next loop
+  when not (Z is K or Z is void):
+    discard t.data.pop
 
-# From here down is very similar for any open addr table (maybe w/getData(i)..)
-# except for unkeyed-`pop` and `allItems` which do care about internal layout.
 template getPut(present: untyped, missing: untyped) {.dirty.} =
-  if t.data.len == 0: t.init
+  if t.getCap == 0: t.init
   var hc, d, newSize: Hash
   var i = t.rawGet(key, hc, d)
   if i < 0:
@@ -280,24 +340,27 @@ template getPut(present: untyped, missing: untyped) {.dirty.} =
       d = 0
       i = t.rawGet(key, hc, d)
       j = t.rawPut1(-1 - i, d)
-    let k = t.rawPut2(-1 - i, j)        # Maybe allocate a slot
-    t.count.inc
+    var k = t.rawPut2(-1 - i, j)        # Maybe allocate a slot
+    when compiles(t.count):
+      t.count.inc
     when compiles(t.data[k].hcode):
       t.data[k].hcode = hc
+    when compiles(t.idx):
+      t.idx[k] = t.data.len + 1
+      t.data.setLen t.data.len + 1
     missing
   else:
     present
 
 template popRet(present: untyped, missing: untyped) {.dirty.} =
-  if t.data.len == 0:
+  var i: int
+  if t.getCap == 0 or (i = t.rawGet(key); i) < 0:
     missing
-  let i = t.rawGet(key)
-  if i >= 0:
-    t.data.unUse i
-    t.count.dec
-    present
   else:
-    missing
+    when compiles(t.count):
+      t.count.dec
+    present
+    t.unUse i, false
 
 var lpInitialSize* = 4 ## default initial size aka capacity aka cap
 var lpNumer*       = 2 ## default numerator for lg(n) probe depth limit
@@ -315,18 +378,23 @@ proc init*[K,V,Z;z:static[int]](t: var LPTabz[K,V,Z,z];
     growPow2=lpGrowPow2, rehash=lpRehash, robinhood=lpRobinHood) {.inline.} =
   let initialSize = slotsGuess(initialSize)
   t.data     = newSeq[HCell[K,V,Z,z]](initialSize)
-  when Z isnot void:
+  when Z is K:
     if z != K(0):
-      for i in 0 ..< initialSize: t.data.unUse(i)
-  t.salt     = getSalt(t.data[0].addr)
+      for i in 0 ..< initialSize: t.unUse(i, false)
+  when Z is K or Z is void:
+    t.salt   = getSalt(t.data[0].addr)
+    t.count  = 0
+  else:
+    t.idx    = initSeqUint(initialSize) #XXX add hcode space
+    t.salt   = getSalt(t.idx.addr0)
+    t.data.setLen 0                   #Should make above newSeq like newSeqOfCap
   t.numer    = numer.uint8
   t.denom    = denom.uint8
-  t.minFree  = max(1, minFree).uint8 # Block user allowing inf loop possibility
+  t.minFree  = max(1, minFree).uint8  #Block user allowing inf loop possibility
   t.growPow2 = uint8(growPow2)
   t.pow2     = uint8(initialSize.lg)
   t.rehash   = rehash
   t.robin    = robinhood
-  t.count    = 0
 
 proc initLPTabz*[K,V,Z;z:static[int]](initialSize=lpInitialSize, numer=lpNumer,
     denom=lpDenom, minFree=lpMinFree, growPow2=lpGrowPow2, rehash=lpRehash,
@@ -347,79 +415,86 @@ proc setPolicy*[K,V,Z;z:static[int]](t: var LPTabz[K,V,Z,z]; numer=lpNumer,
 proc rightSize*(count: int, numer=0, denom=0, minFree=0): int {.inline,
   deprecated: "Deprecated since 0.2; identity function".} = count
 
-proc getCap*[K,V,Z;z:static[int]](t: LPTabz[K,V,Z,z]): int {.inline.} =
-  t.data.len
-
 proc setCap*[K,V,Z;z:static[int]](t: var LPTabz[K,V,Z,z]; newSize = -1) =
-  if t.data.len == 0: t.init
+  if t.getCap == 0: t.init
   var newSz: int
   if newSize < 0:
-    newSz = t.data.len shl t.growPow2
+    newSz = t.getCap shl t.growPow2
     t.pow2 += t.growPow2
   else:
-    newSz = max(newSize, slotsGuess(t.count, minFree=t.minFree.int))
+    newSz = max(newSize, slotsGuess(t.len, minFree=t.minFree.int))
     t.pow2 = uint8(newSz.lg)
-  if newSz == t.data.len and newSize == -1:
+  if newSz == t.getCap and newSize == -1:
     return
-  dbg echo("RESIZE@ ",t.count,"/",t.data.len," ",t.count.float/t.data.len.float)
-  var old: seq[HCell[K,V,Z,z]]
-  newSeq(old, newSz)
-  if t.rehash: t.salt = getSalt(old[0].addr)
-  when defined(unstableHash):
-    dbg echo(" NEW SALT: ", t.salt)
-  swap(t.data, old)
-  when Z isnot void:
-    var hc: Hash
-    if z != K(0):
-      for i in 0 ..< t.data.len: t.data.unUse(i)
-  for i in 0 ..< old.len:
-    if isUsed(old, i):
-      when Z isnot void:
+  dbg echo("RESIZE@ ", t.len, "/", t.getCap, " ", t.len.float/t.getCap.float)
+  when Z is K or Z is void:
+    var old = newSeq[HCell[K,V,Z,z]](newSz)
+    if t.rehash: t.salt = getSalt(old[0].addr)
+    swap(t.data, old)
+    when Z is K:
+      var hc: Hash
+      if z != K(0):
+        for i in 0 ..< t.getCap: t.unUse(i, false)
+    for cell in old.mitems:
+      if not cell.isUsed: continue
+      when Z is K:
         var d: Hash = 0
-        let j = t.rawGetDeep(old[i].key, hc, d)
+        let j = t.rawGetDeep(cell.key, hc, d)
       else:
         var d: Hash = 1
-        let j = t.rawGetDeep(old[i].key, old[i].hcode, d)
-      t.data[t.rawPut2(j, t.rawPut1(j, d))] = move(old[i])
+        let j = t.rawGetDeep(cell.key, cell.hcode, d)
+      t.cell(t.rawPut2(j, t.rawPut1(j, d)))[] = cell
+  else:
+    t.idx = initSeqUint(newSz)
+    if t.rehash: t.salt = getSalt(t.idx.addr0)
+    var hc: Hash              #XXX must loop over idx[]!=0 for hc's
+    for i, cell in t.data:
+      var d: Hash = 0
+      let j = t.rawGetDeep(cell.key, hc, d)
+      t.idx[t.rawPut2(j, t.rawPut1(j, d))] = i + 1
+  when defined(unstableHash):
+    dbg echo(" NEW SALT: ", t.salt)
 
 proc contains*[K,V,Z;z:static[int]](t: LPTabz[K,V,Z,z]; key: K):
     bool {.inline.} =
-  t.data.len > 0 and t.rawGet(key) >= 0
+  t.getCap > 0 and t.rawGet(key) >= 0
 
 proc containsOrIncl*[K,Z;z:static[int]](t: var LPTabz[K,void,Z,z];
                                         key: K): bool {.inline.} =
   getPut do: result = true
-  do       : result = false; t.data[k].key = key
+  do       : result = false; t.cell(k)[].key = key
 
 proc setOrIncl*[K,Z;z:static[int]](t: var LPTabz[K,void,Z,z];
                                    key: K): bool {.inline.} =
-  getPut do: t.data[i].key = key; result = true
-  do       : t.data[k].key = key; result = false
+  getPut do: t.cell(i)[].key = key; result = true
+  do       : t.cell(k)[].key = key; result = false
 
 proc mgetOrPut*[K,V,Z;z:static[int]](t: var LPTabz[K,V,Z,z]; key: K;
                                      val: V): var V {.inline.} =
-  getPut do: result = t.data[i].val
-  do       : t.data[k].key = key; t.data[k].val = val; result = t.data[k].val
+  getPut do: result = t.cell(i)[].val
+  do       : (let c = t.cell(k); c[].key = key; c[].val = val; result = c[].val)
 
 proc mgetOrPut*[K,V,Z;z:static[int]](t: var LPTabz[K,V,Z,z]; key: K; val: V;
                                      had: var bool): var V {.inline.} =
   getPut do:
-    had=true ; result = t.data[i].val
+    had=true ; result = t.cell(i)[].val
   do:
-    had=false; t.data[k].key = key; t.data[k].val = val; result = t.data[k].val
+    had=false; (let c = t.cell(k)); c[].key = key; c[].val = val
+    result = c[].val
 
 template editOrInit*[K,V,Z;z:static[int]](t: var LPTabz[K,V,Z,z]; key: K;
                                           v, body1, body2: untyped) =
   getPut do:
-    var v {.inject.} = t.data[i].val.addr
+    var v {.inject.} = t.cell(i)[].val.addr
     body1
   do:
-    t.data[k].key = key
-    var v {.inject.} = t.data[k].val.addr
+    let c = t.cell(k)
+    c[].key = key
+    var v {.inject.} = c[].val.addr
     body2
 
 template doAdd(body: untyped) {.dirty.} =
-  if t.data.len == 0: t.init
+  if t.getCap == 0: t.init
   var hc, d, newSize: Hash
   var i = t.rawGetDeep(key, hc, d)
   var j = t.rawPut1(i, d)
@@ -431,16 +506,20 @@ template doAdd(body: untyped) {.dirty.} =
   let k = t.rawPut2(i, j)               # Maybe allocate a slot
   when compiles(t.data[k].hcode):
     t.data[k].hcode = hc
-  t.data[k].key = key
+  when Z is K or Z is void:
+    t.count.inc
+  when compiles(t.idx):
+    t.idx[i] = t.data.len + 1
+    t.data.setLen t.data.len + 1
+  t.cell(k)[].key = key
   body
-  t.count.inc
 
 proc add*[K,Z;z:static[int]](t: var LPTabz[K,void,Z,z]; key: K) {.inline.} =
   doAdd: discard
 
 proc add*[K,V,Z;z:static[int]](t: var LPTabz[K,V,Z,z]; key: K,
                                val: V) {.inline.} =
-  doAdd: t.data[k].val = val
+  doAdd: t.cell(k)[].val = val
 
 proc missingOrExcl*[K,V,Z;z:static[int]](t: var LPTabz[K,V,Z,z]; key: K): bool =
   popRet do: t.rawDel i
@@ -448,27 +527,31 @@ proc missingOrExcl*[K,V,Z;z:static[int]](t: var LPTabz[K,V,Z,z]; key: K): bool =
 
 proc take*[K,Z;z:static[int]](t: var LPTabz[K,void,Z,z];
                               key: var K): bool {.inline.} =
-  popRet do: key = move(t.data[i].key); t.rawDel i; result = true
+  popRet do: key = move(t.cell(i)[].key); t.rawDel i; result = true
   do: discard
 
 proc take*[K,V: not void,Z;z:static[int]](t: var LPTabz[K,V,Z,z]; key: K;
                                           val: var V): bool {.inline.} =
   popRet do:
-    val = move(t.data[i].val)
+    val = move(t.cell(i)[].val)
     t.rawDel i
     result = true
   do: discard
 
 proc pop*[K,Z;z:static[int]](t: var LPTabz[K,void,Z,z]): K {.inline.} =
-  if t.data.len == 0: raise newException(IndexError, formatErrorIndexBound(0,0))
-  for e in t:         # Cheaper than it may look due to early exit, BUT can get
-    result = e        #..slow as a set empties out.  Could keep running "min ix"
-    t.excl result     #..based on t.flag (cheaply updated by either ins/del.
-    return            #..Also broken if dups are present. XXX
+  if t.getCap == 0: raise newException(IndexError, formatErrorIndexBound(0,0))
+  when Z is K or Z is void:
+    for e in t:       # Cheaper than it may look due to early exit, BUT can get
+      result = e      #..slow as a set empties out.  Could keep running "min ix"
+      t.excl result   #..based on t.flag (cheaply updated by either ins/del.
+      return          #..Also broken if dups are present. XXX
+  else:
+    result = t.data[^1].key   # seq pop avoids O(len) shift on data
+    t.rawDel t.rawGetLast     # does the s.data.pop
 
 proc pop*[K,V: not void,Z;z:static[int]](t: var LPTabz[K,V,Z,z]):
     (K, V) {.inline.} =
-  if t.data.len == 0: raise newException(IndexError, formatErrorIndexBound(0,0))
+  if t.getCap == 0: raise newException(IndexError, formatErrorIndexBound(0,0))
   for k,v in t:
     result[0] = k
     result[1] = v
@@ -476,105 +559,95 @@ proc pop*[K,V: not void,Z;z:static[int]](t: var LPTabz[K,V,Z,z]):
     return            
 
 proc clear*[K,V,Z;z:static[int]](t: var LPTabz[K,V,Z,z]) =
-  if t.data.len == 0: return
-  t.count = 0
-  when Z is void:
-    zeroMem t.data[0].addr, t.data.len * t.data[0].sizeof
-  else:
-    if z == K(0):
-      zeroMem t.data[0].addr, t.data.len * t.data[0].sizeof
+  if t.getCap == 0: return
+  when Z is K or Z is void:
+    t.count = 0
+    when Z is void:
+      zeroMem t.data[0].addr, t.getCap * t.data[0].sizeof
     else:
-      for i in 0 ..< t.data.len:
-        t.data[i].key = default(K)
-        t.data.unUse i
-        when V isnot void:
-          t.data[i].val = default(V)
+      if z == K(0):
+        zeroMem t.data[0].addr, t.getCap * t.data[0].sizeof
+      else:
+        for i in 0 ..< t.getCap: t.unUse i
+  else:
+    t.idx.clear
+    t.data.setLen 0
+
+iterator cells[K,V,Z;z:static[int]](s: LPTabz[K,V,Z,z]): HCell[K,V,Z,z] =
+  let L = s.len
+  for cell in s.data:
+    assert(s.len == L, "cannot edit while iterating")
+    when Z is K or Z is void:
+      if not cell.isUsed: continue
+    yield cell
+
+iterator mcells[K,V,Z;z:static[int]](s: var LPTabz[K,V,Z,z]):ptr HCell[K,V,Z,z]=
+  let L = s.len
+  for i in 0 ..< s.data.len:
+    assert(s.len == L, "cannot edit while iterating")
+    when Z is K or Z is void:
+      if not s.isUsed(i): continue
+    yield s.data[i].addr
 
 iterator items*[K,Z;z:static[int]](s: LPTabz[K,void,Z,z]): K =
-  let L = s.len
-  for i in 0 ..< s.data.len:
-    assert(s.len == L, "cannot change a set while iterating over it")
-    if isUsed(s.data, i): yield s.data[i].key
+  for cell in s.cells: yield cell.key
 
 iterator mitems*[K,Z;z:static[int]](s: var LPTabz[K,void,Z,z]): var K =
-  let L = s.len
-  for i in 0 ..< s.data.len:
-    assert(s.len == L, "cannot change a set while iterating over it")
-    if isUsed(s.data, i): yield s.data[i].key
+  for cell in s.mcells: yield cell.key
 
-iterator hcodes*[K,Z;z:static[int]](s: LPTabz[K,void,Z,z]):
-    tuple[i: int, hc: Hash] =
-  let L = s.len
-  for i in 0 ..< s.data.len:
-    assert(s.len == L, "cannot change a set while iterating over it")
-    if isUsed(s.data, i):
-      when Z is void:
-        yield (i, s.data[i].hcode)
-      else:
-        yield (i, s.hash(i))
+iterator hcodes*[K,Z;z:static[int]](s: LPTabz[K,void,Z,z]): (int, Hash) =
+  when Z is void:
+    for cell in s.cells: yield (i, cell.hcode)
+  else:
+    for i, cell in 0 ..< s.getCap:
+      if s.isUsed(i): yield (i, s.hash(i))
 
 iterator allItems*[K,Z;z:static[int]](s: LPTabz[K,void,Z,z]; key: K): K =
   let L = s.len
   let hc0 = hash0[K,Z](key)
-  for i in probeSeq(s.hashHc(hc0), s.data.high):
-    assert(s.len == L, "cannot change a set while iterating over it")
-    if not isUsed(s.data, i): break
-    if s.equal(i, key, hc0): yield s.data[i].key
+  for i in probeSeq(s.hashHc(hc0), s.high):
+    assert(s.len == L, "cannot edit while iterating")
+    if not s.isUsed(i): break
+    if s.equal(i, key, hc0): yield s.key(i)
 
-iterator pairs*[K,Z;z:static[int]](t: LPTabz[K,void,Z,z]):
-    tuple[a: int; key: K] =
-  let L = t.len
+iterator pairs*[K,Z;z:static[int]](t: LPTabz[K,void,Z,z]): (int, K) =
   var j = 0
-  for i in 0 ..< t.data.len:
-    assert(t.len == L, "cannot change a tab while iterating over it")
-    if isUsed(t.data, i): yield (j, t.data[i].key); j.inc
+  for cell in t.cells: yield (j, cell.key); j.inc
 
 iterator pairs*[K,V,Z;z:static[int]](t: LPTabz[K,V,Z,z]): (K,V) =
-  let L = t.len
-  for i in 0 ..< t.data.len:
-    assert(t.len == L, "cannot change a tab while iterating over it")
-    if isUsed(t.data, i): yield (t.data[i].key, t.data[i].val)
+  for cell in t.cells: yield (cell.key, cell.val)
 
-iterator mpairs*[K,V,Z;z:static[int]](t: var LPTabz[K,V,Z,z]):
-    var tuple[key: K, val: V] =
-  let L = t.len
-  for i in 0 ..< t.data.len:
-    assert(t.len == L, "cannot change a tab while iterating over it")
-    if isUsed(t.data, i): yield (t.data[i].key, t.data[i].val)
+iterator mpairs*[K,V,Z;z:static[int]](t: var LPTabz[K,V,Z,z]): (K, var V) =
+  for cell in t.mcells: yield (cell.key, cell.val)
 
 iterator keys*[K,V,Z;z:static[int]](t: LPTabz[K,V,Z,z]): K =
-  let L = t.len
-  for i in 0 ..< t.data.len:
-    assert(t.len == L, "cannot change a tab while iterating over it")
-    if isUsed(t.data, i): yield t.data[i].key
+  for cell in t.cells: yield cell.key
 
 iterator values*[K,V,Z;z:static[int]](t: LPTabz[K,V,Z,z]): V =
-  let L = t.len
-  for i in 0 ..< t.data.len:
-    assert(t.len == L, "cannot change a tab while iterating over it")
-    if isUsed(t.data, i): yield t.data[i].val
+  for cell in t.cells: yield cell.val
 
 iterator mvalues*[K,V,Z;z:static[int]](t: var LPTabz[K,V,Z,z]): var V =
-  let L = t.len
-  for i in 0 ..< t.data.len:
-    assert(t.len == L, "cannot change a tab while iterating over it")
-    if isUsed(t.data, i): yield t.data[i].val
+  for cell in t.mcells: yield cell.val
 
 iterator allValues*[K,V,Z;z:static[int]](t: LPTabz[K,V,Z,z]; key: K): V =
   let L = t.len
   let hc0 = hash0[K,Z](key)
-  for i in probeSeq(t.hashHc(hc0), t.data.high):
+  for i in probeSeq(t.hashHc(hc0), t.high):
     assert(t.len == L, "cannot change a tab while iterating over it")
-    if not isUsed(t.data, i): break
-    if t.equal(i, key, hc0): yield t.data[i].val
+    if not t.isUsed(i): break
+    if t.equal(i, key, hc0): yield t.cell(i)[].val
 
 proc debugDump*[K,V,Z;z:static[int]](s: LPTabz[K,V,Z,z]; label="") =
   if label.len > 0: echo label
   echo s.len, " items"
   for i, cell in s.data:
     echo "i: ", i, " depth: ",
-         if isUsed(s.data, i): depth(i, s.hash(i), s.data.high) else: 0,
+         if s.isUsed(i): depth(i, s.hash(i), s.high) else: 0,
          " ", cell
+  when compiles(s.idx):
+    for i, j in s.idx:
+      echo "  i: ", i, " depth: ",
+           (if j == 0: 0 else: depth(i, s.hash(i), s.idx.high)), " idx: ", j
 
 proc pop*[K,Z;z:static[int]](s: var LPTabz[K,void,Z,z];
                              key: var K): bool {.inline.} =
@@ -718,7 +791,7 @@ template withValue*[K,V,Z;z:static[int]](t: var LPTabz[K,V,Z,z], key: K;
   mixin rawGet
   let i = t.rawGet(key)
   if i >= 0:
-    var value {.inject.} = t.data[i].val.addr
+    var value {.inject.} = t.cell(i).val.addr
     body
 
 template withValue*[K,V,Z;z:static[int]](t: var LPTabz[K,V,Z,z], key: K; value,
@@ -726,26 +799,27 @@ template withValue*[K,V,Z;z:static[int]](t: var LPTabz[K,V,Z,z], key: K; value,
   mixin rawGet
   let i = t.rawGet(key)
   if i >= 0:
-    var value {.inject.} = t.data[i].val.addr
+    var value {.inject.} = t.cell(i).val.addr
     body1
   else: body2
 
 proc `[]`*[K,V,Z;z:static[int]](t: LPTabz[K,V,Z,z], key: K): V {.inline.} =
   mixin rawGet
   let i = t.rawGet(key)
-  if i >= 0: result = t.data[i].val
+  if i >= 0: result = t.cell(i).val
   else: raiseNotFound(key)
 
 proc `[]`*[K,V,Z;z:static[int]](t: var LPTabz[K,V,Z,z],
                                 key: K): var V {.inline.} =
   mixin rawGet
   let i = t.rawGet(key)
-  if i >= 0: result = t.data[i].val
+  if i >= 0: result = t.cell(i).val
   else: raiseNotFound(key)
 
-proc `[]=`*[K,V,Z;z:static[int]](t: var LPTabz[K,V,Z,z], key: K, val: V) =
-  getPut do: t.data[i].val = val  # Replace FIRST FOUND item in multimap|insert
-  do       : t.data[k].key = key; t.data[k].val = val
+proc `[]=`*[K,V,Z;z:static[int]](t: var LPTabz[K,V,Z,z],
+                                 key: K, val: V) {.inline.} =
+  getPut do: t.cell(i)[].val = val # Replace FIRST FOUND item in multimap|insert
+  do       : (let c = t.cell(k); c[].key = key; c[].val = val)
 
 proc `{}`*[K,V,Z;z:static[int]](t: LPTabz[K,V,Z,z],
                                 key: K): V {.inline.} = t[key]
@@ -762,10 +836,10 @@ proc hasKeyOrPut*[K,V,Z;z:static[int]](t: var LPTabz[K,V,Z,z],
   discard t.mgetOrPut(key, val, result)
 
 proc getOrDefault*[K,V,Z;z:static[int]](t: LPTabz[K,V,Z,z], key: K,
-                                        default=default(V)): V{.inline.} =
+                                        default=default(V)): V {.inline.} =
   mixin rawGet
   let i = t.rawGet(key)
-  result = if i >= 0: t.data[i].val else: default
+  result = if i >= 0: t.cell(i)[].val else: default
 
 proc del*[K,V,Z;z:static[int]](t: var LPTabz[K,V,Z,z], key: K) {.inline.} =
   if t.missingOrExcl(key): key.raiseNotFound
