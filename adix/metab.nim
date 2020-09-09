@@ -30,7 +30,7 @@ proc initSet*[K](sz={ns}InitialSize, numer={ns}Numer, denom={ns}Denom,
                  robinHood=rhDefault): Set[K] {inline} =
   init{root}{setP}(sz, numer, denom, minFree, growPow2, rehash, robinHood)""")
 
-when defined(stdlibTab):  #NOTE: stdlib version cannot ctrl, e.g. `initialSize`
+when defined(axStdlib):  #NOTE: stdlib version cannot ctrl, e.g. `initialSize`
   import tables, sets     #      when client just declares `var x: Tab`.
   export tables, sets
   type Tab*[K,V] = Table[K,V]
@@ -41,25 +41,21 @@ when defined(stdlibTab):  #NOTE: stdlib version cannot ctrl, e.g. `initialSize`
   proc initSet*[K](sz=4, numer=1, denom=1, minFree=1, growPow2=1, rehash=false,
                    robinHood=false): Set[K] {.inline.} =
     initHashSet[K](sz)
-elif defined(directIndex):
+elif defined(axDirect):
   import adix/ditab
   export ditab
   doAlias("di", "DITab", "[K,V]", "[K,void]")
-elif defined(orderedLinear):
-  import adix/oltabzo # Extra generic params here are void|not sentinel flag, z,
-  export oltabzo      #..then number of bits for a hash code in the index part.
-  when defined(integerTab0):
-    doAlias("ol", "OLTabZO", "[K,V,int,0,8]", "[K,void,int,0,8]")
-  elif defined(integerTabM1):
-    doAlias("ol", "OLTabZO", "[K,V,int,-1,8]", "[K,void,int,-1,8]")
-  else:
-    doAlias("ol", "OLTabZO", "[K,V,void,0,8]", "[K,void,void,0,8]")
+elif defined(axInOrder):
+  import adix/lptabz  # Extra generic params are void|not|order sentinel flag,
+  export lptabz       #..then z|num bits for a hash code in the index part.
+  type Null = distinct int8 # 28 bits blocks hash() calls up to 1/4 GiEntries
+  doAlias("lp", "LPTabz", "[K,V,Null,28]", "[K,void,Null,28]")
 else:
   import adix/lptabz  # Extra generic params here are void|not sentinel flag, z.
   export lptabz
-  when defined(integerTab0):
-    doAlias("lp", "LPTabZ", "[K,V,int,0]", "[K,void,int,0]")
-  elif defined(integerTabM1):
-    doAlias("lp", "LPTabZ", "[K,V,int,-1]", "[K,void,int,-1]")
+  when defined(axIntTab0):
+    doAlias("lp", "LPTabz", "[K,V,K,0]", "[K,void,K,0]")
+  elif defined(axIntTabM1):
+    doAlias("lp", "LPTabz", "[K,V,K,-1]", "[K,void,K,-1]")
   else:
-    doAlias("lp", "LPTabZ", "[K,V,void,0]", "[K,void,void,0]")
+    doAlias("lp", "LPTabz", "[K,V,void,0]", "[K,void,void,0]")
