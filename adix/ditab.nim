@@ -27,6 +27,7 @@ type
       data: seq[tuple[key: K; val: V]]
     range: int
     idx: SeqUint
+  DISet*[K,V] = DITab[K,void] ## DITab specialized to sets
 
 proc len*[K,V](t: DITab[K,V]): int {.inline.} = t.data.len
 
@@ -396,3 +397,10 @@ iterator topPairsByVal*[K,V](c: DITab[K,V], n=10, min=V.low): (K,V) =
   while q.len > 0:        # q now has top n entries
     let r = q.pop
     yield (r[1], r[0])    # yield in ascending order
+
+proc initDISet*[K](initialSize=0, numer=diNumer, denom=diDenom,
+                   minFree=diMinFree, growPow2=diGrowPow2, rehash=diRehash,
+                   robinhood=diRobinHood): DISet[K] {.inline.} =
+  ## Return an DITab specialized to sets operations.
+  ## See initDITab for parameter details.
+  result.init initialSize, numer, denom, minFree, growPow2, rehash, robinhood

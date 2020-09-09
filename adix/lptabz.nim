@@ -51,6 +51,9 @@ type                  ## `K` is Key type; `V` is Value type (can be `void`)
     numer, denom, minFree, growPow2, pow2: uint8  # size policy parameters
     rehash, robin: bool                           # Steal 2-bits from `salt`?
     salt: Hash                                    # maybe unpredictable salt
+  LPSetz*[K,Z;z: static[int]] = LPTabz[K,void,Z,z] ## LPTabz specialized to sentinel sets
+  LPTab*[K,V] = LPTabz[K,V,void,0] ## LPTabz specialized to no-sentinel tables
+  LPSet*[K,V] = LPTabz[K,void,void,0] ## LPTabz specialized to no-sentinel sets
 
 proc len*[K,V,Z;z:static[int]](t: LPTabz[K,V,Z,z]): int {.inline.} =
   when Z is K or Z is void:
@@ -883,3 +886,26 @@ iterator topPairs*[K,V:SomeInteger,Z;z:static[int]](c: LPTabz[K,V,Z,z], n=10,
   while q.len > 0:        # q now has top n entries
     let r = q.pop
     yield (r[1], r[0])    # yield in ascending order
+
+# Specialization constructors
+proc initLPSetz*[K,Z;z: static[int]](initialSize=lpInitialSize, numer=lpNumer,
+                                     denom=lpDenom, minFree=lpMinFree,
+                                     growPow2=lpGrowPow2, rehash=lpRehash,
+                                     robinhood=lpRobinHood): LPSetz[K,Z;z] {.inline.} =
+  ## Return an LPTabz specialized to sets with a sentinel key.
+  ## See initLPTabz for parameter details.
+  result.init initialSize, numer, denom, minFree, growPow2, rehash, robinhood
+
+proc initLPSet*[K](initialSize=lpInitialSize, numer=lpNumer, denom=lpDenom,
+                   minFree=lpMinFree, growPow2=lpGrowPow2, rehash=lpRehash,
+                   robinhood=lpRobinHood): LPSet[K] {.inline.} =
+  ## Return an LPTabz specialized to non-sentinel sets.
+  ## See initLPTabz for parameter details.
+  result.init initialSize, numer, denom, minFree, growPow2, rehash, robinhood
+
+proc initLPTab*[K,V](initialSize=lpInitialSize, numer=lpNumer, denom=lpDenom,
+                     minFree=lpMinFree, growPow2=lpGrowPow2, rehash=lpRehash,
+                     robinhood=lpRobinHood): LPTab[K,V] {.inline.} =
+  ## Return an LPTabz specialized to tables with no sentinel key.
+  ## See initLPTabz for parameter details.
+  result.init initialSize, numer, denom, minFree, growPow2, rehash, robinhood
