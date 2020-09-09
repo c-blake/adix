@@ -163,7 +163,7 @@ proc take*[K,V: not void](t: var DITab[K,V]; key: K; val: var V): bool {.inline.
 
 proc pop*[K](t: var DITab[K,void]): K {.inline.} = t.data.pop
 
-proc pop*[K,V:not void](t: var DITab[K,V]): tuple[key: K; val: V] {.inline.} =
+proc pop*[K,V:not void](t: var DITab[K,V]): (K,V) {.inline.} =
   t.data.pop
 
 proc clear*[K,V](t: var DITab[K,V]) {.inline.} = t.data.setLen 0
@@ -183,10 +183,10 @@ iterator pairs*[K](t: DITab[K,void]): (int, K) =
 iterator pairs*[K,V: not void](t: DITab[K,V]): (K,V) =
   for e in t.data: yield e
 
-iterator mpairs*[K,V: not void](t: DITab[K,V]): var tuple[key: K; val: V] =
+iterator mpairs*[K,V: not void](t: DITab[K,V]): (K, var V) =
   for e in t.data: yield e
 
-iterator hcodes*[K,V](t: DITab[K,V]): tuple[i: int, hc: Hash] =
+iterator hcodes*[K,V](t: DITab[K,V]): (int, Hash) =
   for i, key in t.data: yield (i, Hash(key))
 
 proc debugDump*[K,V](t: DITab[K,V], label="") =
@@ -386,18 +386,13 @@ proc inc*[K,V: SomeInteger](t: var DITab[K,V], key: K, amount: SomeInteger=1) {.
 proc merge*[K,V: SomeInteger](s: var DITab[K,V], t: DITab[K,V]) =
   for key, val in t: s.inc(key, val)
 
-iterator topPairsByVal*[K,V](h: DITab[K,V], n=10, above=V.low):
-    tuple[key: K; val: V] =
-  var q = initHeapQueue[tuple[val: V; key: T]]()
-  for key, val in h:
-    if val > above:
-      if q.len < n:
-        q.push((val, key))
-      elif (val, key) > q[0]:
-        discard q.replace((val, key))
-  var r: tuple[key: K; val: V]
+iterator topPairsByVal*[K,V](c: DITab[K,V], n=10, min=V.low): (K,V) =
+  var q = initHeapQueue[(V,K)]()
+  for key, val in c:
+    if val >= min:
+      let e = (val, key)
+      if q.len < n: q.push(e)
+      elif e > q[0]: discard q.replace(e)
   while q.len > 0:        # q now has top n entries
-    let next = q.pop
-    r.key = next.key
-    r.val = next.val
-    yield r               # yield in ascending order
+    let r = q.pop
+    yield (r[1], r[0])    # yield in ascending order
