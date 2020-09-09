@@ -19,7 +19,6 @@
 ## keys are not allowed for this one.
 
 import althash, sequint, heapqueue
-
 type
   DITab*[K,V] = object  ## Alphabet size determines `K`; `V` may be `void`
     when V is void:
@@ -33,22 +32,13 @@ proc len*[K,V](t: DITab[K,V]): int {.inline.} = t.data.len
 
 proc key[K,V](t: DITab[K,V], i: int): int {.inline.} =
   when V is void:
-    when compiles(result.getKey):
-      int(t.data[i].getKey) - K.low.int
-    else:
-      int(t.data[i]) - K.low.int
+    int(t.data[i]) - K.low.int
   else:
-    when compiles(result.getKey):
-      int(t.data[i].key.getKey) - K.low.int
-    else:
-      int(t.data[i].key) - K.low.int
+    int(t.data[i].key) - K.low.int
 
 proc rawGet[K,V](t: DITab[K,V], key: K): int {.inline.} =
   assert(t.range > 0, "Uninitialized DITab")  # Adjust *caller* not here
-  when compiles(key.getKey):
-    let i = int(key.getKey) - key.low.int
-  else:
-    let i = int(key) - key.low.int
+  let i = int(key) - key.low.int
   if i >= t.range:
     raise newException(RangeError, "Direct Indexed key limit exceeded")
   let j = t.idx[i].int                  # Get idx, cmp key
@@ -197,10 +187,7 @@ iterator mpairs*[K,V: not void](t: DITab[K,V]): var tuple[key: K; val: V] =
   for e in t.data: yield e
 
 iterator hcodes*[K,V](t: DITab[K,V]): tuple[i: int, hc: Hash] =
-  when compiles(key.getKey):
-    for i, key in t.data: yield (i, Hash(key.getKey))
-  else:
-    for i, key in t.data: yield (i, Hash(key))
+  for i, key in t.data: yield (i, Hash(key))
 
 proc debugDump*[K,V](t: DITab[K,V], label="") =
   if label.len > 0: echo label
