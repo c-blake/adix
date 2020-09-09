@@ -8,7 +8,7 @@
 ## ~100% table space utilization (we need one empty slot to stop some loops).
 ##
 ## Misuse/attack is always possible.  We provide several mitigations triggered,
-## like table growth, by overlong scans on underfull tables: A) auto-activated
+## like table growth, by overlong scans (but on underfull tables): A) automatic
 ## rehash of user `hash` output with a strong hash, B) overlong scan warnings
 ## (disabled in ``danger`` mode), and C) automatic Robin Hood re-org activation.
 ## Defaults are to always rehash and use RobinHood re-org since this is safest,
@@ -31,11 +31,11 @@
 ## ``setCap`` for large tables.  ``z=0`` works if space matters more than time.
 
 import althash, memutil, bitop, heapqueue, sequint
-export Hash
+export Hash, sequint
 type                  ## `K` is Key type; `V` is Value type (can be `void`)
   HCell*[K,V,Z;z:static[int]] = object
     when Z is void:   ## void sentinel type => no sentinel; else `z` is sentinel
-      hcode: int
+      hcode: int      #NOTE: ins-order mode hcodes, if any, are in idx[]
     key: K
     when V isnot void:
       val: V
@@ -47,9 +47,10 @@ type                  ## `K` is Key type; `V` is Value type (can be `void`)
     else: # User set 3rd param to non-void, non-K; e.g. int8; => compact, z=bits
       data: seq[HCell[K,V,Z,z]]                   # data array; len == count
       idx: SeqUint                                # RobinHoodOptional LP HashTab
-    salt: Hash                                    # maybe unpredictable salt
-    rehash, robin: bool                           # Steal 2-bits from `salt`?
+      hcBits: uint8                               # hcode bits to put in idx[]
     numer, denom, minFree, growPow2, pow2: uint8  # size policy parameters
+    rehash, robin: bool                           # Steal 2-bits from `salt`?
+    salt: Hash                                    # maybe unpredictable salt
 
 proc len*[K,V,Z;z:static[int]](t: LPTabz[K,V,Z,z]): int {.inline.} =
   when Z is K or Z is void:
@@ -798,14 +799,13 @@ proc merge*[K,V: SomeInteger,Z;z:static[int]](c: var LPTabz[K,V,Z,z],
   for key, val in b: c.inc(key, val)
 
 iterator topPairs*[K,V:SomeInteger,Z;z:static[int]](c: LPTabz[K,V,Z,z], n=10,
-                                                    above=V.low): (K,V) =
+                                                    min=V.low): (K,V) =
   var q = initHeapQueue[(V,K)]()
   for key, val in c:
-    if val > above:
-      if q.len < n:
-        q.push((val, key))
-      elif (val, key) > q[0]:
-        discard q.replace((val, key))
+    if val >= min:
+      let e = (val, key)
+      if q.len < n: q.push(e)
+      elif e > q[0]: discard q.replace(e)
   while q.len > 0:        # q now has top n entries
     let r = q.pop
     yield (r[1], r[0])    # yield in ascending order
