@@ -32,6 +32,10 @@ proc bits*(s: SeqUint): int {.inline.} = int(s.bits)
 
 proc low*(s: SeqUint): int {.inline.} = 0
 
+proc addr0*(s: SeqUint): pointer {.inline.} = s.data[0].unsafeAddr
+
+proc len*(s: SeqUint): int {.inline.} = int(s.len)
+
 proc high*(s: SeqUint): int {.inline.} = int(s.len) - 1
 
 proc clear*(s: var SeqUint) {.inline.} =
