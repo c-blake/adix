@@ -121,7 +121,7 @@ proc add*(s: var SeqUint, v: uint) {.inline.} =
 iterator items*(s: SeqUint): uint =
   for i in 0 ..< s.len: yield s[i]
 
-iterator pairs*(s: SeqUint): tuple[i: int, v: uint] =
+iterator pairs*(s: SeqUint): (int, uint) =
   for i in 0 ..< s.len: yield (i, s[i])
 
 proc `$`*(s: SeqUint): string =
