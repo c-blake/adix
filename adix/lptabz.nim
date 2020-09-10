@@ -143,6 +143,7 @@ proc equal[K,V,Z;z:static[int]](t: LPTabz[K,V,Z,z]; i: int, key: K, hc: Hash):
     else:
       t.data[t.idx[i] - 1].key == key
 
+# These 3 do basic operations on the sparse table or compact index as relevant
 proc pushUp[K,V,Z;z:static[int]](t: var LPTabz[K,V,Z,z], i, n: int) {.inline.} =
   when Z is K or Z is void:
     t.data.pushUp i, n
@@ -163,11 +164,10 @@ proc pullDown[K,V,Z;z:static[int]](t: var LPTabz[K,V,Z,z], i, n: int){.inline.}=
 
 proc cell[K,V,Z;z:static[int]](t: LPTabz[K,V,Z,z],
                                i: int): ptr HCell[K,V,Z,z] {.inline.} =
-  when Z is K or Z is void:
+  when Z is K or Z is void:             # Get ptr to whole cell from slot num
     t.data[i].unsafeAddr
   else:
     t.data[t.idx[i] - 1].unsafeAddr
-
 
 proc hashHc[K,V,Z;z:static[int]](t: LPTabz[K,V,Z,z]; hc: Hash): Hash {.inline.}=
   if t.rehash: hash(hc, t.salt) else: hc
