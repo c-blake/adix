@@ -373,7 +373,6 @@ template popRet(present: untyped, missing: untyped) {.dirty.} =
     when compiles(t.count):
       t.count.dec
     present
-    t.unUse i, false
 
 proc slotsGuess(count: int, numer=lpNumer, denom=lpDenom, minFree=lpMinFree):
     int {.inline.} = ceilPow2(count + minFree) # Might have a great hash
