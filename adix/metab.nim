@@ -1,5 +1,6 @@
 ## This module provides an easy way to do compile-time switched impl swaps for
-## various table/set reprs with various compile-time switched defaults.
+## various table/set reprs with various compile-time switched defaults.  You
+## should really just learn how to use LPTabz[] directly, though.
 import macros, strformat
 
 when defined(noRehash):
@@ -30,7 +31,7 @@ proc initSet*[K](sz={ns}InitialSize, numer={ns}Numer, denom={ns}Denom,
                  robinHood=rhDefault): Set[K] {inline} =
   init{root}{setP}(sz, numer, denom, minFree, growPow2, rehash, robinHood)""")
 
-when defined(axStdlib):  #NOTE: stdlib version cannot ctrl, e.g. `initialSize`
+when defined(axStdlib):   #NOTE: stdlib version cannot ctrl, e.g. `initialSize`
   import tables, sets     #      when client just declares `var x: Tab`.
   export tables, sets
   type Tab*[K,V] = Table[K,V]
