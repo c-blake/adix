@@ -12,7 +12,9 @@
 ## rehash of user `hash` output with a strong hash, B) overlong scan warnings
 ## (disabled in ``danger`` mode), and C) automatic Robin Hood re-org activation.
 ## Defaults are to always rehash and use RobinHood re-org since this is safest,
-## but all parameters here can be tuned per program and per instance.
+## but all parameters here can be tuned per program and per instance.  This
+## module uses `althash.getSalt` to allow override of the per-instance per-
+## table space hash salt, allowing it to be as easy/hard to predict as desired.
 ##
 ## Multiset personality ensues when the ``V`` value type generic parameter is
 ## ``void``.  Otherwise the style of interface is multitable.  Every attempt is
@@ -51,9 +53,30 @@ type                  ## `K` is Key type; `V` is Value type (can be `void`)
     numer, denom, minFree, growPow2, pow2: uint8  # size policy parameters
     rehash, robin: bool                           # Steal 2-bits from `salt`?
     salt: Hash                                    # maybe unpredictable salt
-  LPSetz*[K,Z;z: static[int]] = LPTabz[K,void,Z,z] ## LPTabz specialized to sentinel sets
-  LPTab*[K,V] = LPTabz[K,V,void,0] ## LPTabz specialized to no-sentinel tables
-  LPSet*[K,V] = LPTabz[K,void,void,0] ## LPTabz specialized to no-sentinel sets
+  LPSetz*[K,Z;z:static[int]] = LPTabz[K,void,Z,z] ## LPTabz for sentinel Set
+  LPTab*[K,V] = LPTabz[K,V,void,0]                ## LPTabz for no-sentinel Tab
+  LPSet*[K] = LPTabz[K,void,void,0]               ## LPTabz for no-sentinel Set
+
+var lpInitialSize* = 4 ## default initial size aka capacity aka cap
+var lpNumer*       = 2 ## default numerator for lg(n) probe depth limit
+var lpDenom*       = 1 ## default denominator for lg(n) probe depth limit
+var lpMinFree*     = 1 ## default min free slots; (>= 1)
+var lpGrowPow2*    = 1 ## default growth power of 2; 1 means double
+var lpRehash*      = false ## default hcode rehashing behavior; auto-activated
+var lpRobinHood*   = true ## default to Robin Hood re-org on insert/delete
+
+when defined(hashStats):    # Power user inspectable/zeroable stats.  These are
+  template ifStats(x) = x   # all kind of like "times" - you v0=val;...; val-v0
+  var lpDepth* = 0      ## Counts total search depth
+  var lpTooFull* = 0    ## Counts resizes from minFree boundary
+  var lpTooDeep* = 0    ## Counts resizes from deep probe sequences
+  var lpTooSparse* = 0  ## Counts skips of depth-triggered resize from sparsity
+else:
+  template ifStats(x) = discard
+when defined(lpWarn) or not defined(danger):
+  var lpWarn* = stderr  ## Set to wherever you want warnings to go
+  var lpMaxWarn* = 10   ## Most warnings per program invocation
+  var lpWarnCnt = 0     # Running counter of warnings issued
 
 proc len*[K,V,Z;z:static[int]](t: LPTabz[K,V,Z,z]): int {.inline.} =
   when Z is K or Z is void:
@@ -91,7 +114,8 @@ proc isUsed[K,V,Z;z:static[int]](t: LPTabz[K,V,Z,z], i: int): bool {.inline.} =
   else:
     t.idx[i] != 0
 
-proc unUse[K,V,Z;z:static[int]](t: var LPTabz[K,V,Z,z], i: int, clear=true) {.inline.} =
+proc unUse[K,V,Z;z:static[int]](t: var LPTabz[K,V,Z,z], i: int,
+                                clear=true) {.inline.} =
   when Z is K or Z is void:
     when Z is void:
       t.data[i].hcode = 0
@@ -131,7 +155,7 @@ proc set1[K,V,Z;z:static[int]](t: var LPTabz[K,V,Z,z]; i, j: int) {.inline.} =
   else:
     t.idx[i] = t.idx[j]
 
-proc pullDown[K,V,Z;z:static[int]](t: var LPTabz[K,V,Z,z], i, n: int) {.inline.} =
+proc pullDown[K,V,Z;z:static[int]](t: var LPTabz[K,V,Z,z], i, n: int){.inline.}=
   when Z is K or Z is void:
     t.data.pullDown i, n
   else:
@@ -144,21 +168,7 @@ proc cell[K,V,Z;z:static[int]](t: LPTabz[K,V,Z,z],
   else:
     t.data[t.idx[i] - 1].unsafeAddr
 
-when defined(hashStats):    # Power user inspectable/zeroable stats.  These are
-  template ifStats(x) = x   # all kind of like "times" - you v0=val;...; val-v0
-  var lpDepth* = 0      ## Counts total search depth
-  var lpTooFull* = 0    ## Counts resizes from minFree boundary
-  var lpTooDeep* = 0    ## Counts resizes from deep probe sequences
-  var lpTooSparse* = 0  ## Counts skips of depth-triggered resize from sparsity
-else:
-  template ifStats(x) = discard
-when defined(lpWarn) or not defined(danger):
-  var lpWarn* = stderr  ## Set to wherever you want warnings to go
-  var lpMaxWarn* = 10   ## Most warnings per program invocation
-  var lpWarnCnt = 0     # Running counter of warnings issued
 
-# t.salt here is just a hash of the VM address of data[] that can give distinct
-# tabs distinct home addr locations at least as independent as `getSalt`.
 proc hashHc[K,V,Z;z:static[int]](t: LPTabz[K,V,Z,z]; hc: Hash): Hash {.inline.}=
   if t.rehash: hash(hc, t.salt) else: hc
 
@@ -365,14 +375,6 @@ template popRet(present: untyped, missing: untyped) {.dirty.} =
     present
     t.unUse i, false
 
-var lpInitialSize* = 4 ## default initial size aka capacity aka cap
-var lpNumer*       = 2 ## default numerator for lg(n) probe depth limit
-var lpDenom*       = 1 ## default denominator for lg(n) probe depth limit
-var lpMinFree*     = 1 ## default min free slots; (>= 1)
-var lpGrowPow2*    = 1 ## default growth power of 2; 1 means double
-var lpRehash*      = false ## default hcode rehashing behavior; auto-activated
-var lpRobinHood*   = true ## default to Robin Hood re-org on insert/delete
-
 proc slotsGuess(count: int, numer=lpNumer, denom=lpDenom, minFree=lpMinFree):
     int {.inline.} = ceilPow2(count + minFree) # Might have a great hash
 
@@ -547,7 +549,7 @@ proc pop*[K,Z;z:static[int]](t: var LPTabz[K,void,Z,z]): K {.inline.} =
     for e in t:       # Cheaper than it may look due to early exit, BUT can get
       result = e      #..slow as a set empties out.  Could keep running "min ix"
       t.excl result   #..based on t.flag (cheaply updated by either ins/del.
-      return          #..Also broken if dups are present. XXX
+      return          #..Also broken if dups are present.  Performance XXX
   else:
     result = t.data[^1].key   # seq pop avoids O(len) shift on data
     t.rawDel t.rawGetLast     # does the s.data.pop
@@ -725,8 +727,7 @@ proc `<`*[K,Z;z:static[int]](s, t: LPTabz[K,void,Z,z]): bool =
 proc `==`*[K,Z;z:static[int]](s, t: LPTabz[K,void,Z,z]): bool =
   s.counter == t.counter and s <= t
 
-#XXX map has distinct output type, but ornate syntax to alter optional sentinel.
-proc map*[K, A,Z;z:static[int]](data: LPTabz[K,void,Z,z], op: proc (x: K):
+proc map*[K,A,Z;z:static[int]](data: LPTabz[K,void,Z,z], op: proc (x: K):
     A {.closure.}): LPTabz[A,void,Z,z] =
   result.init data.len
   for item in data: result.incl op(item)
@@ -887,11 +888,10 @@ iterator topPairs*[K,V:SomeInteger,Z;z:static[int]](c: LPTabz[K,V,Z,z], n=10,
     let r = q.pop
     yield (r[1], r[0])    # yield in ascending order
 
-# Specialization constructors
-proc initLPSetz*[K,Z;z: static[int]](initialSize=lpInitialSize, numer=lpNumer,
-                                     denom=lpDenom, minFree=lpMinFree,
-                                     growPow2=lpGrowPow2, rehash=lpRehash,
-                                     robinhood=lpRobinHood): LPSetz[K,Z;z] {.inline.} =
+# Specializations;  Q: add ILSet/OLSet/etc. for back compat..?
+proc initLPSetz*[K,Z;z:static[int]](initialSize=lpInitialSize, numer=lpNumer,
+        denom=lpDenom, minFree=lpMinFree, growPow2=lpGrowPow2, rehash=lpRehash,
+        robinhood=lpRobinHood): LPSetz[K,Z,z] {.inline.} =
   ## Return an LPTabz specialized to sets with a sentinel key.
   ## See initLPTabz for parameter details.
   result.init initialSize, numer, denom, minFree, growPow2, rehash, robinhood
