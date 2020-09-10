@@ -114,9 +114,9 @@ proc equal[K,V,Z;z:static[int]](t: LPTabz[K,V,Z,z]; i: int, key: K, hc: Hash):
     else: # Compare hc 1st so missing => ~0 key cmp; Present => ~1 key cmp
       t.data[i].hcode == hc and t.data[i].key == key
   else:
-    when type(key) is SomeInteger or Z isnot void:
+    if z > 0: #XXX extract hcode from idx, etc.
       t.data[t.idx[i] - 1].key == key
-    else: #XXX extract hcode from idx, etc.
+    else:
       t.data[t.idx[i] - 1].key == key
 
 proc pushUp[K,V,Z;z:static[int]](t: var LPTabz[K,V,Z,z], i, n: int) {.inline.} =
@@ -224,7 +224,7 @@ proc rawGet[K,V,Z;z:static[int]](t: LPTabz[K,V,Z,z]; key: K): int {.inline.} =
   rawGet(t, key, hc, d)        # < 0 => MISSING and insert idx = -1 - result
 
 proc rawGetLast[K,V,Z;z:static[int]](s: LPTabz[K,V,Z,z]): int {.inline,used.} =
-  let hc = hash0[K,Z](s.data[^1].key)         #XXX get hc out of idx[]
+  let hc = hash0[K,Z](s.data[^1].key) # Can't get out of idx without a back-link
   for i in probeSeq(s.hashHc(hc), s.idx.high):
     if s.idx[i].int == s.data.len: return i
 
