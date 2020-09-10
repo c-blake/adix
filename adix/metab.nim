@@ -3,15 +3,15 @@
 ## should really just learn how to use LPTabz[] directly, though.
 import macros, strformat
 
-when defined(noRehash):
-  let rDefault = false
-else:
+when defined(axRehash):
   let rDefault = true
-
-when defined(noRobinHood):
-  let rhDefault = false
 else:
+  let rDefault = false
+
+when defined(axRobinHood):
   let rhDefault = true
+else:
+  let rhDefault = false
 
 proc rightSz*(x: Natural): int {.inline,deprecated: "Only identity now".} = x
 

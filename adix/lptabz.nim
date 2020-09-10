@@ -57,13 +57,13 @@ type                  ## `K` is Key type; `V` is Value type (can be `void`)
   LPTab*[K,V] = LPTabz[K,V,void,0]                ## LPTabz for no-sentinel Tab
   LPSet*[K] = LPTabz[K,void,void,0]               ## LPTabz for no-sentinel Set
 
-var lpInitialSize* = 4 ## default initial size aka capacity aka cap
-var lpNumer*       = 2 ## default numerator for lg(n) probe depth limit
+var lpInitialSize* = 2 ## default initial size aka capacity aka cap
+var lpNumer*       = 3 ## default numerator for lg(n) probe depth limit
 var lpDenom*       = 1 ## default denominator for lg(n) probe depth limit
 var lpMinFree*     = 1 ## default min free slots; (>= 1)
 var lpGrowPow2*    = 1 ## default growth power of 2; 1 means double
 var lpRehash*      = false ## default hcode rehashing behavior; auto-activated
-var lpRobinHood*   = true ## default to Robin Hood re-org on insert/delete
+var lpRobinHood*   = false ## default to Robin Hood re-org; auto-activated
 
 when defined(hashStats):    # Power user inspectable/zeroable stats.  These are
   template ifStats(x) = x   # all kind of like "times" - you v0=val;...; val-v0
