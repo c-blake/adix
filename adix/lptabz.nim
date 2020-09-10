@@ -899,7 +899,7 @@ proc initLPSetz*[K,Z;z: static[int]](initialSize=lpInitialSize, numer=lpNumer,
 proc initLPSet*[K](initialSize=lpInitialSize, numer=lpNumer, denom=lpDenom,
                    minFree=lpMinFree, growPow2=lpGrowPow2, rehash=lpRehash,
                    robinhood=lpRobinHood): LPSet[K] {.inline.} =
-  ## Return an LPTabz specialized to non-sentinel sets.
+  ## Return an LPTabz specialized to sets with no sentinel key.
   ## See initLPTabz for parameter details.
   result.init initialSize, numer, denom, minFree, growPow2, rehash, robinhood
 
