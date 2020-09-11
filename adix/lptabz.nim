@@ -342,7 +342,8 @@ proc rawDel[K,V,Z;z:static[int]](t: var LPTabz[K,V,Z,z]; i: Hash) {.inline.} =
   when not (Z is K or Z is void):
     discard t.data.pop
 
-template getPut(present: untyped, missing: untyped) {.dirty.} =
+template getPut(t, i, k, key, present, missing: untyped) =
+  mixin rawPut1, rawPut2, tooFull
   if t.getCap == 0: t.init
   var hc, d, newSize: Hash
   var i = t.rawGet(key, hc, d)
@@ -365,7 +366,7 @@ template getPut(present: untyped, missing: untyped) {.dirty.} =
   else:
     present
 
-template popRet(present: untyped, missing: untyped) {.dirty.} =
+template popRet(t, i, key, present, missing: untyped) =
   var i: int
   if t.getCap == 0 or (i = t.rawGet(key); i) < 0:
     missing
@@ -465,22 +466,22 @@ proc contains*[K,V,Z;z:static[int]](t: LPTabz[K,V,Z,z]; key: K):
 
 proc containsOrIncl*[K,Z;z:static[int]](t: var LPTabz[K,void,Z,z];
                                         key: K): bool {.inline.} =
-  getPut do: result = true
-  do       : result = false; t.cell(k)[].key = key
+  t.getPut(i, k, key) do: result = true
+  do: result = false; t.cell(k)[].key = key
 
 proc setOrIncl*[K,Z;z:static[int]](t: var LPTabz[K,void,Z,z];
                                    key: K): bool {.inline.} =
-  getPut do: t.cell(i)[].key = key; result = true
-  do       : t.cell(k)[].key = key; result = false
+  t.getPut(i, k, key) do: t.cell(i)[].key = key; result = true
+  do: t.cell(k)[].key = key; result = false
 
 proc mgetOrPut*[K,V,Z;z:static[int]](t: var LPTabz[K,V,Z,z]; key: K;
                                      val: V): var V {.inline.} =
-  getPut do: result = t.cell(i)[].val
-  do       : (let c = t.cell(k); c[].key = key; c[].val = val; result = c[].val)
+  t.getPut(i, k, key) do: result = t.cell(i)[].val
+  do: (let c = t.cell(k); c[].key = key; c[].val = val; result = c[].val)
 
 proc mgetOrPut*[K,V,Z;z:static[int]](t: var LPTabz[K,V,Z,z]; key: K; val: V;
                                      had: var bool): var V {.inline.} =
-  getPut do:
+  t.getPut(i, k, key) do:
     had=true ; result = t.cell(i)[].val
   do:
     had=false; (let c = t.cell(k)); c[].key = key; c[].val = val
@@ -488,7 +489,8 @@ proc mgetOrPut*[K,V,Z;z:static[int]](t: var LPTabz[K,V,Z,z]; key: K; val: V;
 
 template editOrInit*[K,V,Z;z:static[int]](t: var LPTabz[K,V,Z,z]; key: K;
                                           v, body1, body2: untyped) =
-  getPut do:
+  mixin cell
+  getPut(t, i, k, key) do:
     var v {.inject.} = t.cell(i)[].val.addr
     body1
   do:
@@ -526,17 +528,17 @@ proc add*[K,V,Z;z:static[int]](t: var LPTabz[K,V,Z,z]; key: K,
   doAdd: t.cell(k)[].val = val
 
 proc missingOrExcl*[K,V,Z;z:static[int]](t: var LPTabz[K,V,Z,z]; key: K): bool =
-  popRet do: t.rawDel i
+  t.popRet(i, key) do: t.rawDel i
   do: result = true
 
 proc take*[K,Z;z:static[int]](t: var LPTabz[K,void,Z,z];
                               key: var K): bool {.inline.} =
-  popRet do: key = move(t.cell(i)[].key); t.rawDel i; result = true
+  t.popRet(i, key) do: key = move(t.cell(i)[].key); t.rawDel i; result = true
   do: discard
 
 proc take*[K,V: not void,Z;z:static[int]](t: var LPTabz[K,V,Z,z]; key: K;
                                           val: var V): bool {.inline.} =
-  popRet do:
+  t.popRet(i, key) do:
     val = move(t.cell(i)[].val)
     t.rawDel i
     result = true
@@ -821,8 +823,8 @@ proc `[]`*[K,V,Z;z:static[int]](t: var LPTabz[K,V,Z,z],
 
 proc `[]=`*[K,V,Z;z:static[int]](t: var LPTabz[K,V,Z,z],
                                  key: K, val: V) {.inline.} =
-  getPut do: t.cell(i)[].val = val # Replace FIRST FOUND item in multimap|insert
-  do       : (let c = t.cell(k); c[].key = key; c[].val = val)
+  t.getPut(i,k,key) do: t.cell(i)[].val = val #Replace 1st FOUND elt in multimap|put
+  do: (let c = t.cell(k); c[].key = key; c[].val = val)
 
 proc `{}`*[K,V,Z;z:static[int]](t: LPTabz[K,V,Z,z],
                                 key: K): V {.inline.} = t[key]
@@ -867,25 +869,33 @@ proc indexBy*[A, K,V,Z;z:static[int]](collection: A,
   for item in collection: result[index(item)] = item
 
 #A few things to maybe totally obviate CountTable or let it be a type alias
-proc inc*[K,V: SomeInteger,Z;z:static[int]](c: var LPTabz[K,V,Z,z], key: K,
+proc inc*[K,V: SomeInteger,Z;z:static[int]](t: var LPTabz[K,V,Z,z], key: K,
                                             amount: SomeInteger=1) {.inline.} =
-  c.mgetOrPut(key, 0).inc amount
+  mixin rawGet
+  t.editOrInit(key, val):
+    val[] += amount
+    if val[] == 0: c.del key
+  do:
+    val[] = amount
 
 proc merge*[K,V: SomeInteger,Z;z:static[int]](c: var LPTabz[K,V,Z,z],
                                               b: LPTabz[K,V,Z,z]) =
   for key, val in b: c.inc(key, val)
 
-iterator topPairs*[K,V:SomeInteger,Z;z:static[int]](c: LPTabz[K,V,Z,z], n=10,
-                                                    min=V.low): (K,V) =
-  var q = initHeapQueue[(V,K)]()
+iterator topByVal*[K,V,Z;z:static[int]](c: LPTabz[K,V,Z,z], n=10,
+                                        min=V.low): (K, V) =
+  var q = initHeapQueue[(V, K)]()
   for key, val in c:
     if val >= min:
       let e = (val, key)
       if q.len < n: q.push(e)
       elif e > q[0]: discard q.replace(e)
+  var y: (K, V)
   while q.len > 0:        # q now has top n entries
     let r = q.pop
-    yield (r[1], r[0])    # yield in ascending order
+    y[0] = r[1]
+    y[1] = r[0]
+    yield y               # yield in ascending order
 
 # Specializations;  Q: add ILSet/OLSet/etc. for back compat..?
 proc initLPSetz*[K,Z;z:static[int]](initialSize=lpInitialSize, numer=lpNumer,
