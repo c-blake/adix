@@ -1,5 +1,5 @@
-import lptabz
-var c = initLPTab[int,int]()
+import metab
+var c = initTab[int8,int]()
 c.inc 2
 c.inc 3
 c.inc 3

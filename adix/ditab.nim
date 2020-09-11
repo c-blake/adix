@@ -27,7 +27,7 @@ type
       data: seq[tuple[key: K; val: V]]
     range: int
     idx: SeqUint
-  DISet*[K,V] = DITab[K,void] ## DITab specialized to sets
+  DISet*[K] = DITab[K,void] ## DITab specialized to sets
 
 proc len*[K,V](t: DITab[K,V]): int {.inline.} = t.data.len
 
@@ -57,7 +57,8 @@ proc rawDel[K,V](t: var DITab[K,V], i: int) {.inline.} =
     t.data[i] = t.data.pop              # Move end to idx(del tgt)
     t.idx[t.key(i)] = uint(i)           # Update idx(end key)
 
-template getPut(present: untyped, missing: untyped) {.dirty.} =
+template getPut(t, i, k, key, present, missing: untyped) =
+  mixin rawGet, rawPut
   if t.range == 0: t.init               # Ensure initialized table
   let i = t.rawGet(key)
   if i < 0:
@@ -66,7 +67,8 @@ template getPut(present: untyped, missing: untyped) {.dirty.} =
   else:
     present
 
-template popRet(present: untyped, missing: untyped) {.dirty.} =
+template popRet(t, i, key, present, missing: untyped) =
+  mixin rawGet
   if t.data.len == 0:
     missing
   let i = t.rawGet(key)
@@ -116,24 +118,25 @@ proc setCap*[K,V](t: var DITab[K,V], newSize = -1) = discard
 proc contains*[K,V](t: DITab[K,V]; key: K): bool {.inline.} = t.rawGet(key) >= 0
 
 proc containsOrIncl*[K](t: var DITab[K,void]; key: K): bool {.inline.} =
-  getPut do: result = true
-  do       : result = false; t.data[k] = key
+  t.getPut(i, k, key) do: result = true
+  do: result = false; t.data[k] = key
 
 proc setOrIncl*[K](t: var DITab[K,void]; key: K): bool {.inline.} =
-  getPut do: t.data[i] = key; result = true
-  do       : t.data[k] = key; result = false
+  t.getPut(i, k, key) do: t.data[i] = key; result = true
+  do: t.data[k] = key; result = false
 
 proc mgetOrPut*[K,V](t: var DITab[K,V]; key: K; val: V): var V {.inline.} =
-  getPut do: return t.data[i].val
-  do       : t.data[k].key = key; t.data[k].val = val; return t.data[k].val
+  t.getPut(i, k, key) do: return t.data[i].val
+  do: t.data[k].key = key; t.data[k].val = val; return t.data[k].val
 
 proc mgetOrPut*[K,V](t: var DITab[K,V]; key: K; val: V;
                      had: var bool): var V {.inline.} =
-  getPut do: had = true ; return t.data[i].val
-  do       : had = false; t.data[k].key = key; t.data[k].val = val; return t.data[k].val
+  t.getPut(i, k, key) do: had = true ; return t.data[i].val
+  do: had = false; t.data[k].key = key; t.data[k].val = val; return t.data[k].val
 
 template editOrInit*[K,V](t: var DITab[K,V]; key: K; v,body1,body2: untyped) =
-  getPut do:
+  mixin getPut
+  t.getPut(i, k, key) do:
     var v {.inject.} = t.data[i].val.addr
     body1
   do:
@@ -148,15 +151,15 @@ proc add*[K,V](t: var DITab[K,V]; key: K, val: V) {.inline.} =
   assert(false, "Direct Indexed tables cannot be multisets")
 
 proc missingOrExcl*[K,V](t: var DITab[K,V], key: K): bool =
-  popRet do: t.rawDel i
+  t.popRet(i, key) do: t.rawDel i
   do       : return true
 
 proc take*[K](t: var DITab[K,void]; key: var K): bool {.inline.} =
-  popRet do: key = move(t.data[i]); t.rawDel i; return true
+  t.popRet(i, key) do: key = move(t.data[i]); t.rawDel i; return true
   do: return false
 
 proc take*[K,V: not void](t: var DITab[K,V]; key: K; val: var V): bool {.inline.} =
-  popRet do:
+  t.popRet(i, key) do:
     val = move(t.data[i].val)
     t.rawDel i
     result = true
@@ -345,8 +348,8 @@ proc `[]`*[K,V](t: var DITab[K,V], key: K): var V {.inline.} =
   else: raiseNotFound(key)
 
 proc `[]=`*[K,V](t: var DITab[K,V], key: K, val: V) =
-  getPut do: t.data[i].val = val
-  do       : t.data[k].key = key; t.data[k].val = val
+  t.getPut(i, k, key) do: t.data[i].val = val
+  do: t.data[k].key = key; t.data[k].val = val
 
 proc `{}`*[K,V](t: DITab[K,V], key: K): V {.inline.} = t[key]
 proc `{}`*[K,V](t: var DITab[K,V], key: K): var V {.inline.} = t[key]
@@ -381,22 +384,30 @@ proc indexBy*[A, K,V](collection: A, index: proc(x: V): K): DITab[K,V] =
   for item in collection: result[index(item)] = item
 
 #A few things to maybe totally obviate CountTable or let it be a type alias
-proc inc*[K,V: SomeInteger](t: var DITab[K,V], key: K, amount: SomeInteger=1) {.inline.} =
-  t.mgetOrPut(key, 0).inc amount
+proc inc*[K,V: SomeInteger](t: var DITab[K,V], key: K,
+                            amount: SomeInteger=1) {.inline.} =
+  t.editOrInit(key, val):
+    val[] += amount
+    if val[] == 0: c.del key
+  do:
+    val[] = amount
 
-proc merge*[K,V: SomeInteger](s: var DITab[K,V], t: DITab[K,V]) =
-  for key, val in t: s.inc(key, val)
+proc merge*[K,V: SomeInteger](c: var DITab[K,V], b: DITab[K,V]) =
+  for key, val in b: c.inc(key, val)
 
-iterator topPairsByVal*[K,V](c: DITab[K,V], n=10, min=V.low): (K,V) =
-  var q = initHeapQueue[(V,K)]()
+iterator topByVal*[K,V](c: DITab[K,V], n=10, min=V.low): (K, V) =
+  var q = initHeapQueue[(V, K)]()
   for key, val in c:
     if val >= min:
       let e = (val, key)
       if q.len < n: q.push(e)
       elif e > q[0]: discard q.replace(e)
+  var y: (K, V)
   while q.len > 0:        # q now has top n entries
     let r = q.pop
-    yield (r[1], r[0])    # yield in ascending order
+    y[0] = r[1]
+    y[1] = r[0]
+    yield y               # yield in ascending order
 
 proc initDISet*[K](initialSize=0, numer=diNumer, denom=diDenom,
                    minFree=diMinFree, growPow2=diGrowPow2, rehash=diRehash,
