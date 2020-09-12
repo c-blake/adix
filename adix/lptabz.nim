@@ -562,7 +562,7 @@ proc pop*[K,V: not void,Z;z:static[int]](t: var LPTabz[K,V,Z,z]):
     result[0] = k
     result[1] = v
     discard t.missingOrExcl(k)
-    return            
+    return
 
 proc clear*[K,V,Z;z:static[int]](t: var LPTabz[K,V,Z,z]) =
   if t.getCap == 0: return
@@ -616,6 +616,15 @@ iterator allItems*[K,Z;z:static[int]](s: LPTabz[K,void,Z,z]; key: K): K =
     if not s.isUsed(i): break
     if s.equal(i, key, hc0): yield s.key(i)
 
+# Optimizable, but wraparound makes tricky.  Low index slots may be follow-on of
+# high end collision cluster.  Could start iterators after 1st unused slot, but
+# that slot could be the very last one & don't want *all* to be slower.  Etc.
+proc numItems*[K,Z;z:static[int]](t: LPTabz[K,void,Z,z]; key: K): int{.inline.}=
+  for key in t.allItems(key): result.inc
+
+iterator numItems*[K,Z;z:static[int]](t: LPTabz[K,void,Z,z]): (K, int) =
+  for key in t.keys: yield (key, t.numItems(key))
+
 iterator pairs*[K,Z;z:static[int]](t: LPTabz[K,void,Z,z]): (int, K) =
   var j = 0
   for cell in t.cells: yield (j, cell.key); j.inc
@@ -642,6 +651,19 @@ iterator allValues*[K,V,Z;z:static[int]](t: LPTabz[K,V,Z,z]; key: K): V =
     assert(t.len == L, "cannot change a tab while iterating over it")
     if not t.isUsed(i): break
     if t.equal(i, key, hc0): yield t.cell(i)[].val
+
+iterator allValues*[K,V,Z;z:static[int]](t: LPTabz[K,V,Z,z];
+                                         vals: var seq[V]): K =
+  for key in t.keys:
+    vals.setLen 0
+    for val in t.allValues(key): vals.add val
+    yield key
+
+proc allValues*[K,V,Z;z:static[int]](t: LPTabz[K,V,Z,z]; key: K,
+                                     vals: var seq[V]): bool {.inline.} =
+  vals.setLen 0
+  for val in t.allValues(key): vals.add val
+  vals.len > 0
 
 proc debugDump*[K,V,Z;z:static[int]](s: LPTabz[K,V,Z,z]; label="") =
   if label.len > 0: echo label
@@ -715,26 +737,41 @@ proc disjoint*[K,Z;z:static[int]](s1, s2: LPTabz[K,void,Z,z]): bool =
     if item in s2: return
   result = true
 
-#XXX ALGO BUG: As written DOES NOT ACCOUNT FOR DUP KV pairs.
 proc `<=`*[K,Z;z:static[int]](s, t: LPTabz[K,void,Z,z]): bool =
-  if s.counter <= t.counter:
-    for item in s:
-      if item notin t: return
-    result = true
+  if s.len == 0: return t.len == 0
+  if t.len == 0: return false             # s non-nil, but t nil
+  var keyLast: K                          # multiset .len uninformative as to s
+  var first = true                        #..having < #keys but ># degeneracies.
+  for key, snum in s.numItems:            # Generalization of subsetness w/dups
+    if first or key != keyLast:           #..means count in s <= count in t
+      first = false                       #..and every key in s is also in t.
+      if t.numItems(key) < snum: return false
+      keyLast = key
+  result = true
 
 proc `<`*[K,Z;z:static[int]](s, t: LPTabz[K,void,Z,z]): bool =
-  s.counter != t.counter and s <= t
+  s.len != t.len and s <= t
 
 proc `==`*[K,Z;z:static[int]](s, t: LPTabz[K,void,Z,z]): bool =
-  s.counter == t.counter and s <= t
+  if s.len == 0: return t.len == 0        # 2 nil => true
+  if t.len == 0: return false             # 1 nil => false
+  if s.len != t.len: return false         # diff size => false
+  var keyLast: K
+  var first = true
+  for key, snum in s.numItems:
+    if first or key != keyLast:
+      first = false
+      if t.numItems(key) != snum: return false
+      keyLast = key
+  return true
 
 proc map*[K,A,Z;z:static[int]](data: LPTabz[K,void,Z,z], op: proc (x: K):
     A {.closure.}): LPTabz[A,void,Z,z] =
   result.init data.len
   for item in data: result.incl op(item)
 
-proc toLPTabz*[K,Z;z:static[int]](keys: openArray[K],
-                                  dups=false): LPTabz[K,void,Z,z] =
+proc toLPTabz*[K;V:void;Z;z:static[int]](keys: openArray[K],
+                                         dups=false): LPTabz[K,V,Z,z] =
   result.init keys.len
   if dups:
     for item in keys: result.add item   # append; multi-set
@@ -769,13 +806,13 @@ proc depthStats*[K,V,Z;z:static[int]](s: LPTabz[K,V,Z,z]):
   result.m2 *= norm
   result.mx = ds.len
 
-proc toLPTabz*[K,V: not void,Z;z:static[int]](pairs: openArray[(K,V)],
+proc toLPTabz*[K;V: not void,Z;z:static[int]](pairs: openArray[(K,V)],
                                               dups=false): LPTabz[K,V,Z,z] =
   result.init pairs.len
   if dups:
-    for key, val in pairs: result.add(key, val) # append; multi-table
+    for key, val in items(pairs): result.add(key, val) # append; multi-table
   else:
-    for key, val in pairs: result[key] = val    # replace
+    for key, val in items(pairs): result[key] = val    # replace
 
 proc `$`*[K,V: not void,Z;z:static[int]](t: LPTabz[K,V,Z,z]): string =
   if t.len == 0: return "{:}"
@@ -853,14 +890,19 @@ proc del*[K,V,Z;z:static[int]](t: var LPTabz[K,V,Z,z], key: K,
                                had: var bool) {.inline.} =
   had = not t.missingOrExcl(key)
 
-#XXX ALGO BUG: As written DOES NOT ACCOUNT FOR DUP KV pairs.  Must lift into
-#    the low-level impl and do custom-rawGetDeep like loop.
-proc `==`*[K,V,Z;z:static[int]](x, y: LPTabz[K,V,Z,z]): bool =
-  if isNil(x): return isNil(y)            # 2 nil => true
-  if isNil(y): return false               # 1 nil => false
-  if x.counter != y.counter: return false # diff size => false
-  for key, val in x:                      # diff insert orders => diff `data`
-    if not y.hasKey(key) or y.getOrDefault(key) != val: return false
+proc `==`*[K,V: not void,Z;z:static[int]](x, y: LPTabz[K,V,Z,z]): bool =
+  if x.len == 0: return y.len == 0        # 2 nil => true
+  if y.len == 0: return false             # 1 nil => false
+  if x.len != y.len: return false         # diff size => false
+  var xvals, yvals: seq[V]
+  var keyLast: K
+  var first = true
+  for key in x.allValues(xvals):
+    if first or key != keyLast:
+      first = false
+      if not y.allValues(key, yvals) or yvals != xvals:
+        return false
+      keyLast = key
   return true
 
 proc indexBy*[A, K,V,Z;z:static[int]](collection: A,
