@@ -328,17 +328,18 @@ proc rawDel[K,V,Z;z:static[int]](t: var LPTabz[K,V,Z,z]; i: Hash) {.inline.} =
     t.unUse k
   else:
     var i = i             # KnuthV3 Algo6.4R adapted for i=i+1 instead of i=i-1
-    while true:           # The correctness of this depends on (i+1) in probeSeq
-      var j = i           #..though may be adaptable to other simple sequences.
-      t.unUse i                         # Mark current FREE
-      while true:
-        i = (i + 1) and mask            # Increment mod table size
-        if not t.isUsed(i):             # End of collision cluster; All done
-          return
-        let h = t.hash(i) and mask      # "home" slot of key@i
-        if not ((i >= h and h > j) or (h > j and j > i) or (j > i and i >= h)):
-          break
-      t.set1 j, i                       # data[i] will be marked FREE next loop
+    block outer:
+      while true:         # The correctness of this depends on (i+1) in probeSeq
+        var j = i         #..though may be adaptable to other simple sequences.
+        t.unUse i                       # Mark current FREE
+        while true:
+          i = (i + 1) and mask          # Increment mod table size
+          if not t.isUsed(i):           # End of collision cluster; All done
+            break outer
+          let h = t.hash(i) and mask    # "home" slot of key@i
+          if not((i >= h and h > j) or (h > j and j > i) or (j > i and i >= h)):
+            break
+        t.set1 j, i                     # data[i] will be marked FREE next loop
   when not (Z is K or Z is void):
     discard t.data.pop
 
