@@ -18,8 +18,8 @@
 ##
 ## Multiset personality ensues when the ``V`` value type generic parameter is
 ## ``void``.  Otherwise the style of interface is multitable.  Every attempt is
-## made for either to be drop-in compatible with Nim's standard library sets &
-## tables, but extra features provided here.
+## made for either personality to be drop-in compatible with Nim's standard
+## library sets & tables, but extra features are provided here.
 ##
 ## Space-time optimization of a sentinel key (a value of ``K`` disallowed for
 ## ordinary keys) is supported through the final two generic parameters, ``Z``,
@@ -29,7 +29,7 @@
 ## If ``Z`` is neither ``K`` nor ``void`` then compact, insertion-ordered mode
 ## is used and ``z`` means how many bits of hcode are saved beside an index into
 ## a dense ``seq[(K,V)]``.  6..8 bits avoids most "double cache misses" for miss
-## lookups/inserts while 20..50 are needed to support ``hash`` call elision in
+## lookups/inserts while 20..40 are needed to support ``hash`` call elision in
 ## ``setCap`` for large tables.  ``z=0`` works if space matters more than time.
 
 import althash, memutil, bitop, heapqueue, sequint
