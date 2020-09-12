@@ -545,24 +545,29 @@ proc take*[K,V: not void,Z;z:static[int]](t: var LPTabz[K,V,Z,z]; key: K;
   do: discard
 
 proc pop*[K,Z;z:static[int]](t: var LPTabz[K,void,Z,z]): K {.inline.} =
-  if t.getCap == 0: raise newException(IndexError, formatErrorIndexBound(0,0))
+  if t.len == 0: raise newException(IndexError, formatErrorIndexBound(0,0))
   when Z is K or Z is void:
     for e in t:       # Cheaper than it may look due to early exit, BUT can get
       result = e      #..slow as a set empties out.  Could keep running "min ix"
-      t.excl result   #..based on t.flag (cheaply updated by either ins/del.
-      return          #..Also broken if dups are present.  Performance XXX
-  else:
-    result = t.data[^1].key   # seq pop avoids O(len) shift on data
-    t.rawDel t.rawGetLast     # does the s.data.pop
+      t.excl result   #..based on t.flag, cheaply updated by either ins/del.
+      return          #..Performance XXX
+  else:                           # This branch should delete the right dup.
+    result = t.data[^1].key       # seq pop avoids O(len) shift on data
+    t.rawDel t.rawGetLast         # does the s.data.pop internally
 
 proc pop*[K,V: not void,Z;z:static[int]](t: var LPTabz[K,V,Z,z]):
     (K, V) {.inline.} =
-  if t.getCap == 0: raise newException(IndexError, formatErrorIndexBound(0,0))
-  for k,v in t:
-    result[0] = k
-    result[1] = v
-    discard t.missingOrExcl(k)
-    return
+  if t.len == 0: raise newException(IndexError, formatErrorIndexBound(0,0))
+  when Z is K or Z is void:       # See performance note for unkeyed set pop
+    for k, v in t:
+      result[0] = k               # Should really delete by index with rawDel
+      result[1] = v               # not by key with excl's since dups. XXX
+      discard t.missingOrExcl(k)
+      return
+  else:                           # This branch should delete the right dup.
+    result[0] = t.data[^1].key    # seq pop avoids O(len) shift on data
+    result[1] = t.data[^1].val
+    t.rawDel t.rawGetLast         # does the s.data.pop internally
 
 proc clear*[K,V,Z;z:static[int]](t: var LPTabz[K,V,Z,z]) =
   if t.getCap == 0: return
