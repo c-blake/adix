@@ -550,7 +550,7 @@ proc pop*[K,Z;z:static[int]](t: var LPTabz[K,void,Z,z]): K {.inline.} =
     for e in t:       # Cheaper than it may look due to early exit, BUT can get
       result = e      #..slow as a set empties out.  Could keep running "min ix"
       t.excl result   #..based on t.flag, cheaply updated by either ins/del.
-      return          #..Performance XXX
+      return          #..Performance XXX Also dups as for unkeyed table pop
   else:                           # This branch should delete the right dup.
     result = t.data[^1].key       # seq pop avoids O(len) shift on data
     t.rawDel t.rawGetLast         # does the s.data.pop internally
