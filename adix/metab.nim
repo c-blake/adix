@@ -19,17 +19,32 @@ macro doAlias(ns: string, root: string, tabP: string, setP: string) =
   let inline = "{.inline.}"
   parseStmt(&"""
 type Tab*[K,V] = {root}{tabP}
-type Set*[K]   = {root}{setP}
 
 proc initTab*[K,V](sz={ns}InitialSize, numer={ns}Numer, denom={ns}Denom,
                    minFree={ns}MinFree, growPow2={ns}GrowPow2, rehash=rDefault,
                    robinHood=rhDefault): Tab[K,V] {inline} =
-  init{root}{tabP}(sz, numer, denom, minFree, growPow2, rehash, robinHood)
+  result.init(sz, numer, denom, minFree, growPow2, rehash, robinHood)
+
+proc toTab*[K,V](pairs: openArray[(K,V)], dups=false): Tab[K,V] =
+  result.init pairs.len
+  if dups:
+    for k, v in items(pairs): result.add(k, v)
+  else:
+    for k, v in items(pairs): result[k] = v
+
+type Set*[K] = {root}{setP}
 
 proc initSet*[K](sz={ns}InitialSize, numer={ns}Numer, denom={ns}Denom,
                  minFree={ns}MinFree, growPow2={ns}GrowPow2, rehash=rDefault,
                  robinHood=rhDefault): Set[K] {inline} =
-  init{root}{setP}(sz, numer, denom, minFree, growPow2, rehash, robinHood)""")
+  result.init(sz, numer, denom, minFree, growPow2, rehash, robinHood)
+
+proc toSet*[K](keys: openArray[K], dups=false): Set[K] =
+  result.init keys.len
+  if dups:
+    for k in keys: result.add k
+  else:
+    for k in keys: result.incl k""")
 
 when defined(axStdlib):   #NOTE: stdlib version cannot ctrl, e.g. `initialSize`
   import tables, sets     #      when client just declares `var x: Tab`.
