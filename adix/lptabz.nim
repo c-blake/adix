@@ -683,8 +683,7 @@ proc debugDump*[K,V,Z;z:static[int]](s: LPTabz[K,V,Z,z]; label="") =
   echo s.len, " items"
   for i, cell in s.data:
     echo "i: ", i, " depth: ",
-         if s.isUsed(i): depth(i, s.hash(i), s.high) else: 0,
-         " ", cell
+         if s.isUsed(i): depth(i, s.hash(i), s.high) else: 0, " ", cell
   when compiles(s.idx):
     for i, j in s.idx:
       echo "  i: ", i, " depth: ",
@@ -692,8 +691,7 @@ proc debugDump*[K,V,Z;z:static[int]](s: LPTabz[K,V,Z,z]; label="") =
            " idx: ", j shr z, " hc: ", j and ((1 shl z) - 1)
 
 proc pop*[K,Z;z:static[int]](s: var LPTabz[K,void,Z,z];
-                             key: var K): bool {.inline.} =
-  s.take key
+                             key: var K): bool {.inline.} = s.take key
 
 proc incl*[K,Z;z:static[int]](s: var LPTabz[K,void,Z,z], elt: K) {.inline.} =
   discard s.containsOrIncl(elt)
