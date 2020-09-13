@@ -459,8 +459,8 @@ proc setCap*[K,V,Z;z:static[int]](t: var LPTabz[K,V,Z,z]; newSize = -1) =
     t.idx = initSeqUint(newSz, newSz shl z)
     if t.rehash: t.salt = getSalt(t.idx.addr0)
     var hc: Hash            #XXX Must loop over idx[]!=0 for hc's OR re-calc if
-    for i, cell in t.data:  #XXX table > z bits BUT also want data/ins.ord. Hmm.
-      var d: Hash = 0       #XXX uplink? Full hcode? Mk Compact&InsOrd distinct?
+    for i, cell in t.data:  #table > z bits BUT also want data/ins.ord.  Uplink?
+      var d: Hash = 0       #Save full hcode? Mk Compact&InsOrd distinct?  Etc.
       let j = t.rawGetDeep(cell.key, hc, d)
       t.idx[t.rawPut2(j, t.rawPut1(j, d))] = ixHc(i + 1, hc, z)
   when defined(unstableHash):
@@ -553,10 +553,11 @@ proc take*[K,V: not void,Z;z:static[int]](t: var LPTabz[K,V,Z,z]; key: K;
 proc pop*[K,Z;z:static[int]](t: var LPTabz[K,void,Z,z]): K {.inline.} =
   if t.len == 0: raise newException(IndexError, formatErrorIndexBound(0,0))
   when Z is K or Z is void:
-    for e in t:       # Cheaper than it may look due to early exit, BUT can get
-      result = e      #..slow as a set empties out.  Could keep running "min ix"
-      t.excl result   #..based on t.flag, cheaply updated by either ins/del.
-      return          #..Performance XXX Also dups as for unkeyed table pop
+    for i in 0 ..< t.getCap:
+      if t.isUsed(i):             # Slows down as a set empties (as does regular
+        result = t.data[i].key    #..iteration).  Could keep a running "min ix"
+        t.rawDel i                #..updated by ins/del ops. XXX Performance
+        return                    # Early exit => cheaper than it may look
   else:                           # This branch should delete the right dup.
     result = t.data[^1].key       # seq pop avoids O(len) shift on data
     t.rawDel t.rawGetLast         # does the s.data.pop internally
@@ -564,12 +565,13 @@ proc pop*[K,Z;z:static[int]](t: var LPTabz[K,void,Z,z]): K {.inline.} =
 proc pop*[K,V: not void,Z;z:static[int]](t: var LPTabz[K,V,Z,z]):
     (K, V) {.inline.} =
   if t.len == 0: raise newException(IndexError, formatErrorIndexBound(0,0))
-  when Z is K or Z is void:       # See performance note for unkeyed set pop
-    for k, v in t:
-      result[0] = k               # Should really delete by index with rawDel
-      result[1] = v               # not by key with excl's since dups. XXX
-      discard t.missingOrExcl(k)
-      return
+  when Z is K or Z is void:
+    for i in 0 ..< t.getCap:      # See performance note for unkeyed set pop
+      if t.isUsed(i):
+        result[0] = t.data[i].key
+        result[1] = t.data[i].val
+        t.rawDel i
+        return
   else:                           # This branch should delete the right dup.
     result[0] = t.data[^1].key    # seq pop avoids O(len) shift on data
     result[1] = t.data[^1].val
