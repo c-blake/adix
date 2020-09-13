@@ -64,8 +64,8 @@ elif defined(axDirect):
 elif defined(axInOrder):
   import adix/lptabz  # Extra generic params are void|not|order sentinel flag,
   export lptabz       #..then z|num bits for a hash code in the index part.
-  type Null = distinct int8 # 28 bits blocks hash() calls up to 1/4 GiEntries
-  doAlias("lp", "LPTabz", "[K,V,Null,28]", "[K,void,Null,28]")
+  type InsOrd = distinct int8 # 8 bits blocks most dbl indirections on misses
+  doAlias("lp", "LPTabz", "[K,V,InsOrd,8]", "[K,void,InsOrd,8]")
 else:
   import adix/lptabz  # Extra generic params here are void|not sentinel flag, z.
   export lptabz

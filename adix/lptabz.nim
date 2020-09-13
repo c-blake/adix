@@ -29,8 +29,7 @@
 ## If ``Z`` is neither ``K`` nor ``void`` then compact, insertion-ordered mode
 ## is used and ``z`` means how many bits of hcode are saved beside an index into
 ## a dense ``seq[(K,V)]``.  6..8 bits avoids most "double cache misses" for miss
-## lookups/inserts while 20..40 are needed to support ``hash`` call elision in
-## ``setCap`` for large tables.  ``z=0`` works if space matters more than time.
+## lookups/inserts. ``z=0`` works if space matters more than time.
 
 import althash, memutil, bitop, heapqueue, sequint
 export Hash, sequint
@@ -94,7 +93,7 @@ proc key[K,V,Z;z:static[int]](t: LPTabz[K,V,Z,z], i: int): K {.inline.} =
   when Z is K or Z is void:
     t.data[i].key
   else:
-    t.data[t.idx[i] - 1].key
+    t.data[(t.idx[i] shr z) - 1].key
 
 proc getCap*[K,V,Z;z:static[int]](t: LPTabz[K,V,Z,z]): int {.inline.} =
   when Z is K or Z is void:
@@ -138,12 +137,12 @@ proc equal[K,V,Z;z:static[int]](t: LPTabz[K,V,Z,z]; i: int, key: K, hc: Hash):
     else: # Compare hc 1st so missing => ~0 key cmp; Present => ~1 key cmp
       t.data[i].hcode == hc and t.data[i].key == key
   else:
-    if z > 0: #XXX extract hcode from idx, etc.
-      t.data[t.idx[i] - 1].key == key
-    else:
-      t.data[t.idx[i] - 1].key == key
+    let msk = (1 shl z) - 1
+    let hq = hc and msk
+    let hk = int(t.idx[i]) and msk
+    hq == hk and t.data[(t.idx[i] shr z) - 1].key == key
 
-# These 3 do basic operations on the sparse table or compact index as relevant
+# These 4 do basic operations on the sparse table or compact index as relevant
 proc pushUp[K,V,Z;z:static[int]](t: var LPTabz[K,V,Z,z], i, n: int) {.inline.} =
   when Z is K or Z is void:
     t.data.pushUp i, n
@@ -167,7 +166,7 @@ proc cell[K,V,Z;z:static[int]](t: LPTabz[K,V,Z,z],
   when Z is K or Z is void:             # Get ptr to whole cell from slot num
     t.data[i].unsafeAddr
   else:
-    t.data[t.idx[i] - 1].unsafeAddr
+    t.data[(t.idx[i] shr z) - 1].unsafeAddr
 
 proc hashHc[K,V,Z;z:static[int]](t: LPTabz[K,V,Z,z]; hc: Hash): Hash {.inline.}=
   if t.rehash: hash(hc, t.salt) else: hc
@@ -236,7 +235,7 @@ proc rawGet[K,V,Z;z:static[int]](t: LPTabz[K,V,Z,z]; key: K): int {.inline.} =
 proc rawGetLast[K,V,Z;z:static[int]](s: LPTabz[K,V,Z,z]): int {.inline,used.} =
   let hc = hash0[K,Z](s.data[^1].key) # Can't get out of idx without a back-link
   for i in probeSeq(s.hashHc(hc), s.idx.high):
-    if s.idx[i].int == s.data.len: return i
+    if int(s.idx[i] shr z) == s.data.len: return i
 
 proc depth[K,V,Z;z:static[int]](t: LPTabz[K,V,Z,z]; key: K): int {.inline.} =
   var hc, d: Hash
@@ -304,11 +303,17 @@ proc rawPut2[K,V,Z;z:static[int]](t: var LPTabz[K,V,Z,z];
   # else:                               # j == i => already have space @i; done
   result = i
 
+proc ixHc(i: int; hc: Hash; z: int): int =
+  int(i shl z) or int(hc and ((Hash(1) shl z) - 1))
+
 proc rawDel[K,V,Z;z:static[int]](t: var LPTabz[K,V,Z,z]; i: Hash) {.inline.} =
   when not (Z is K or Z is void):
-    let j = t.idx[i] - 1                # To keep `data` density..
-    if j.int + 1 < t.len:               # ..unless already points to data[^1]
-      t.idx[t.rawGetLast] = j + 1       # ..retarget idx[data[^1]] -> j
+    let j = (t.idx[i] shr z) - 1        # To keep `data` density..
+    let jp1 = j.int + 1
+    if jp1 < t.len:                     # ..unless already points to data[^1]
+      let m  = t.rawGetLast
+      let hc = cast[Hash](t.idx[m])
+      t.idx[m] = ixHc(jp1, hc, z)       # ..retarget idx[data[^1]] -> j
       t.data[j] = t.data[^1]            # Copy last elt to `[j]`; move?
   let mask = t.high
   if t.robin:
@@ -361,7 +366,7 @@ template getPut(t, i, k, key, present, missing: untyped) =
     when compiles(t.data[k].hcode):
       t.data[k].hcode = hc
     when compiles(t.idx):
-      t.idx[k] = t.data.len + 1
+      t.idx[k] = ixHc(t.data.len + 1, hc, z)
       t.data.setLen t.data.len + 1
     missing
   else:
@@ -391,7 +396,7 @@ proc init*[K,V,Z;z:static[int]](t: var LPTabz[K,V,Z,z];
     t.salt   = getSalt(t.data[0].addr)
     t.count  = 0
   else:
-    t.idx    = initSeqUint(initialSize) #XXX add hcode space
+    t.idx    = initSeqUint(initialSize, initialSize shl z)
     t.salt   = getSalt(t.idx.addr0)
     t.data.setLen 0                   #Should make above newSeq like newSeqOfCap
   t.numer    = numer.uint8
@@ -451,13 +456,13 @@ proc setCap*[K,V,Z;z:static[int]](t: var LPTabz[K,V,Z,z]; newSize = -1) =
         let j = t.rawGetDeep(cell.key, cell.hcode, d)
       t.cell(t.rawPut2(j, t.rawPut1(j, d)))[] = cell
   else:
-    t.idx = initSeqUint(newSz)
+    t.idx = initSeqUint(newSz, newSz shl z)
     if t.rehash: t.salt = getSalt(t.idx.addr0)
-    var hc: Hash              #XXX must loop over idx[]!=0 for hc's
-    for i, cell in t.data:
-      var d: Hash = 0
+    var hc: Hash            #XXX Must loop over idx[]!=0 for hc's OR re-calc if
+    for i, cell in t.data:  #XXX table > z bits BUT also want data/ins.ord. Hmm.
+      var d: Hash = 0       #XXX uplink? Full hcode? Mk Compact&InsOrd distinct?
       let j = t.rawGetDeep(cell.key, hc, d)
-      t.idx[t.rawPut2(j, t.rawPut1(j, d))] = i + 1
+      t.idx[t.rawPut2(j, t.rawPut1(j, d))] = ixHc(i + 1, hc, z)
   when defined(unstableHash):
     dbg echo(" NEW SALT: ", t.salt)
 
@@ -516,7 +521,7 @@ template doAdd(body: untyped) {.dirty.} =
   when Z is K or Z is void:
     t.count.inc
   when compiles(t.idx):
-    t.idx[i] = t.data.len + 1
+    t.idx[i] = ixHc(t.data.len + 1, hc, z)
     t.data.setLen t.data.len + 1
   t.cell(k)[].key = key
   body
@@ -681,7 +686,8 @@ proc debugDump*[K,V,Z;z:static[int]](s: LPTabz[K,V,Z,z]; label="") =
   when compiles(s.idx):
     for i, j in s.idx:
       echo "  i: ", i, " depth: ",
-           (if j == 0: 0 else: depth(i, s.hash(i), s.idx.high)), " idx: ", j
+           (if j == 0: 0 else: depth(i, s.hash(i), s.idx.high)),
+           " idx: ", j shr z, " hc: ", j and ((1 shl z) - 1)
 
 proc pop*[K,Z;z:static[int]](s: var LPTabz[K,void,Z,z];
                              key: var K): bool {.inline.} =
