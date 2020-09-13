@@ -592,19 +592,21 @@ proc clear*[K,V,Z;z:static[int]](t: var LPTabz[K,V,Z,z]) =
 
 iterator cells[K,V,Z;z:static[int]](s: LPTabz[K,V,Z,z]): HCell[K,V,Z,z] =
   let L = s.len
-  for cell in s.data:
-    assert(s.len == L, "cannot edit while iterating")
-    when Z is K or Z is void:
-      if not cell.isUsed: continue
-    yield cell
+  if s.len > 0:
+    for cell in s.data:
+      assert(s.len == L, "cannot edit while iterating")
+      when Z is K or Z is void:
+        if not cell.isUsed: continue
+      yield cell
 
 iterator mcells[K,V,Z;z:static[int]](s: var LPTabz[K,V,Z,z]):ptr HCell[K,V,Z,z]=
   let L = s.len
-  for i in 0 ..< s.data.len:
-    assert(s.len == L, "cannot edit while iterating")
-    when Z is K or Z is void:
-      if not s.isUsed(i): continue
-    yield s.data[i].addr
+  if s.len > 0:
+    for i in 0 ..< s.data.len:
+      assert(s.len == L, "cannot edit while iterating")
+      when Z is K or Z is void:
+        if not s.isUsed(i): continue
+      yield s.data[i].addr
 
 iterator items*[K,Z;z:static[int]](s: LPTabz[K,void,Z,z]): K =
   for cell in s.cells: yield cell.key
