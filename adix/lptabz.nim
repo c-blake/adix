@@ -270,7 +270,7 @@ proc tooFull[K,V,Z;z:static[int]](t: var LPTabz[K,V,Z,z]; d: int;
     var ext: string             # Extra text after primary message
     if t.rehash:                # Already re-hashing hash() output
       if t.robin:               # Already doing Robin Hood re-org
-        ext = "; Switch to tree|seq for dups"
+        ext = "; Switch to tree|seq for many dups"
         result = false          # Could potentially auto-convert to B-tree here
       else:
         ext = "; Adapting by Robin Hood re-org"
