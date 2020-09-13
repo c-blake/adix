@@ -26,7 +26,7 @@ proc initTab*[K,V](sz={ns}InitialSize, numer={ns}Numer, denom={ns}Denom,
   result.init(sz, numer, denom, minFree, growPow2, rehash, robinHood)
 
 proc toTab*[K,V](pairs: openArray[(K,V)], dups=false): Tab[K,V] =
-  result.init pairs.len
+  result.init pairs.len     # calling to{root}{tabp}(pairs, dups) fails; mixin?
   if dups:
     for k, v in items(pairs): result.add(k, v)
   else:
@@ -40,7 +40,7 @@ proc initSet*[K](sz={ns}InitialSize, numer={ns}Numer, denom={ns}Denom,
   result.init(sz, numer, denom, minFree, growPow2, rehash, robinHood)
 
 proc toSet*[K](keys: openArray[K], dups=false): Set[K] =
-  result.init keys.len
+  result.init keys.len      # calling to{root}{tabp}(pairs, dups) fails; mixin?
   if dups:
     for k in keys: result.add k
   else:
