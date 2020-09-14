@@ -31,7 +31,7 @@
 ## a dense ``seq[(K,V)]``.  6..8 bits avoids most "double cache misses" for miss
 ## lookups/inserts. ``z=0`` works if space matters more than time.
 
-import althash, memutil, bitop, heapqueue, sequint, strutils
+import althash, memutil, bitop, heapqueue, sequint, strutils, memfiles
 export Hash, sequint
 type                  ## `K` is Key type; `V` is Value type (can be `void`)
   HCell*[K,V,Z;z:static[int]] = object
@@ -40,7 +40,7 @@ type                  ## `K` is Key type; `V` is Value type (can be `void`)
     key: K
     when V isnot void:
       val: V
-  #XXX `seq`->`UncheckedArray` and add read-only `mmapLPTabz` proc?
+
   LPTabz*[K,V,Z;z:static[int]] = object           ## Robin Hood Hash Set
     when Z is K or Z is void:
       data: seq[HCell[K,V,Z,z]]                   # RobinHoodOptional LP HashTab
@@ -84,7 +84,10 @@ proc save*[K,V,Z;z:static[int]](t: LPTabz[K,V,Z,z], pathStub: string) =
                                      (if t.rehash: "R" else: "")
     when defined(unstableHash):
       ext.add "-0x" & t.salt.toHex
-    let f = open(pathStub & ext, fmWrite)
+    let f = system.open(pathStub & ext, fmWrite)
+    let n = t.data.len
+    let wr1 {.used.} = f.writeBuffer(n.unsafeAddr, n.sizeof)
+    let wr2 {.used.} = f.writeBuffer(n.unsafeAddr, n.sizeof)
     let wr = f.writeBuffer(t.data[0].unsafeAddr, t.getCap * t.data[0].sizeof)
     if wr < t.getCap * t.data[0].sizeof:
       raise newException(IOError, "incomplete LPTabz save")
@@ -102,9 +105,12 @@ proc load*[K,V,Z;z:static[int]](t: var LPTabz[K,V,Z,z], path: string) =
     t.rehash = 'r' in comps[1]
     when defined(unstableHash):
       if comps.len > 2: t.salt = parseInt(comps[2])
-    let f  = open(path)
-    let sz = f.getFileSize
+    let f  = system.open(path)
+    let sz = f.getFileSize - 2*sizeof(int)
     t.data = newSeq[HCell[K,V,Z,z]](sz div sizeof(HCell[K,V,Z,z]))
+    var junk: int
+    discard f.readBuffer(junk.addr, sizeof(int))
+    discard f.readBuffer(junk.addr, sizeof(int))
     let rd = f.readBuffer(t.data[0].addr, t.getCap * t.data[0].sizeof)
     f.close
     if rd < t.getCap * t.data[0].sizeof:
@@ -118,6 +124,25 @@ proc load*[K,V,Z;z:static[int]](t: var LPTabz[K,V,Z,z], path: string) =
 
 proc loadLPTabz*[K,V,Z;z:static[int]](path: string): LPTabz[K,V,Z,z] =
   result.load path
+
+proc mmap*[K,V,Z;z:static[int]](t: var LPTabz[K,V,Z,z], path: string) =
+  ##NOTE: Read-Only memory map; Attempted edits => run-time errors (like SEGV).
+  when Z is K or Z is void:
+    let ext   = path.split('.')[^1]
+    let comps = ext.split('-')
+    t.count  = parseInt(comps[0])
+    t.robin  = 'R' in comps[1]
+    t.rehash = 'r' in comps[1]
+    when defined(unstableHash):
+      if comps.len > 2: t.salt = parseInt(comps[2])
+    let mf {.used.} = memfiles.open(path)
+    {.emit: "t->data = `mf.mem`;".}
+    t.pow2    = uint8(lg(t.getCap))
+    t.numer   = uint8(lpNumer)
+    t.denom   = uint8(lpDenom)
+    t.minFree = uint8(lpMinFree)
+  else:
+    assert "only implemented for one-level LPTabz"
 
 proc len*[K,V,Z;z:static[int]](t: LPTabz[K,V,Z,z]): int {.inline.} =
   when Z is K or Z is void:
