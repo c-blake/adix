@@ -20,7 +20,7 @@ proc sig(word: MSlice): uint64 {.inline.} = # word signature
   for ch in word: result *= prime[ord(ch) - ord('A')]
 
 proc getAna(dict="words", mf: MFile): LPTabz[uint64,Word,uint64,0] =
-  try: result.load(findPathPattern(dict & '.'))
+  try: result.mmap(findPathPattern(dict & '.'))
   except:
     result.init(mf.len div 10, numer=3, denom=1)
     for word in mf.mSlices:
