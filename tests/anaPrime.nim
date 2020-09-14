@@ -19,26 +19,30 @@ proc sig(word: MSlice): uint64 {.inline.} = # word signature
   result = 1'u64
   for ch in word: result *= prime[ord(ch) - ord('A')]
 
+proc getAna(dict="words", mf: MFile): LPTabz[uint64,Word,uint64,0] =
+  try: result.load(findPathPattern(dict & '.'))
+  except:
+    result.init(mf.len div 10, numer=3, denom=1)
+    for word in mf.mSlices:
+      result.add word.sig, initWord(word.mem -! mf.mem, word.len)
+    result.save(dict)
+
 proc qry(dict="words", stats=false, query: seq[string]) =
   let t0 = getTime()
-  let mf = mopen(dict)
-  if mf == nil: return
-  # tables should allow file-backed allocation to make saving answer easy
-  var ana = initLPTabz[uint64, Word, uint64, 0](mf.len div 10, numer=3, denom=1)
-  for word in mf.mSlices:
-    ana.add word.sig, initWord(word.mem -! mf.mem, word.len)
-  let t1 = getTime()
-  for word in query:
-    let word = word.toUpperAscii
-    let key = word.toMSlice.sig
-    echo word, ":"
-    for ana in ana.allValues(key):
-      echo "  ", ana.toString(mf)
-  if stats:
-    echo "Build Time: ", (t1 - t0).inMicroseconds, " us"
-    when compiles(ana.depths):
-      echo "Depths: ", ana.depths    # hash table perf
-      echo "FinalTable: ", ana.len, "/", ana.getCap
-  mf.close
+  if (let mf = mopen(dict); mf) != nil:
+    let ana = dict.getAna(mf)
+    let t1 = getTime()
+    for word in query:
+      let word = word.toUpperAscii
+      let key = word.toMSlice.sig
+      echo word, ":"
+      for ana in ana.allValues(key):
+        echo "  ", ana.toString(mf)
+    if stats:
+      echo "Prep Time: ", (t1 - t0).inMicroseconds, " us"
+      when compiles(ana.depths):
+        echo "Depths: ", ana.depths    # hash table perf
+        echo "FinalTable: ", ana.len, "/", ana.getCap
+    mf.close
 
 when isMainModule: dispatch(qry, cmdName="anaPrime")
