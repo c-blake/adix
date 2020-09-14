@@ -31,7 +31,7 @@
 ## a dense ``seq[(K,V)]``.  6..8 bits avoids most "double cache misses" for miss
 ## lookups/inserts. ``z=0`` works if space matters more than time.
 
-import althash, memutil, bitop, heapqueue, sequint
+import althash, memutil, bitop, heapqueue, sequint, strutils
 export Hash, sequint
 type                  ## `K` is Key type; `V` is Value type (can be `void`)
   HCell*[K,V,Z;z:static[int]] = object
@@ -40,7 +40,7 @@ type                  ## `K` is Key type; `V` is Value type (can be `void`)
     key: K
     when V isnot void:
       val: V
-  #XXX `seq`->`UncheckedArray` and add `save`, `loadLPTabz`, `mmapLPTabz` procs
+  #XXX `seq`->`UncheckedArray` and add read-only `mmapLPTabz` proc?
   LPTabz*[K,V,Z;z:static[int]] = object           ## Robin Hood Hash Set
     when Z is K or Z is void:
       data: seq[HCell[K,V,Z,z]]                   # RobinHoodOptional LP HashTab
@@ -76,6 +76,48 @@ when defined(lpWarn) or not defined(danger):
   var lpWarn* = stderr  ## Set to wherever you want warnings to go
   var lpMaxWarn* = 10   ## Most warnings per program invocation
   var lpWarnCnt = 0     # Running counter of warnings issued
+
+proc save*[K,V,Z;z:static[int]](t: LPTabz[K,V,Z,z], pathStub: string) =
+  # Save to a file named "`pathStub`.count-Rr[-salt]" for later load.
+  when Z is K or Z is void:
+    var ext = "." & $t.count & "-" & (if t.robin: "r" else: "") &
+                                     (if t.rehash: "R" else: "")
+    when defined(unstableHash):
+      ext.add "-0x" & t.salt.toHex
+    let f = open(pathStub & ext, fmWrite)
+    let wr = f.writeBuffer(t.data[0].unsafeAddr, t.getCap * t.data[0].sizeof)
+    if wr < t.getCap * t.data[0].sizeof:
+      raise newException(IOError, "incomplete LPTabz save")
+    f.close
+  else:
+    assert "only implemented for one-level LPTabz"
+
+proc load*[K,V,Z;z:static[int]](t: var LPTabz[K,V,Z,z], path: string) =
+  # Filename extension only encodes non-dynamic params. `setPolicy` adjusts.
+  when Z is K or Z is void:
+    let ext   = path.split('.')[^1]
+    let comps = ext.split('-')
+    t.count  = parseInt(comps[0])
+    t.robin  = 'R' in comps[1]
+    t.rehash = 'r' in comps[1]
+    when defined(unstableHash):
+      if comps.len > 2: t.salt = parseInt(comps[2])
+    let f  = open(path)
+    let sz = f.getFileSize
+    t.data = newSeq[HCell[K,V,Z,z]](sz div sizeof(HCell[K,V,Z,z]))
+    let rd = f.readBuffer(t.data[0].addr, t.getCap * t.data[0].sizeof)
+    f.close
+    if rd < t.getCap * t.data[0].sizeof:
+      raise newException(IOError, "truncated LPTabz save file")
+    t.pow2    = uint8(lg(t.getCap))
+    t.numer   = uint8(lpNumer)
+    t.denom   = uint8(lpDenom)
+    t.minFree = uint8(lpMinFree)
+  else:
+    assert "only implemented for one-level LPTabz"
+
+proc loadLPTabz*[K,V,Z;z:static[int]](path: string): LPTabz[K,V,Z,z] =
+  result.load path
 
 proc len*[K,V,Z;z:static[int]](t: LPTabz[K,V,Z,z]): int {.inline.} =
   when Z is K or Z is void:
