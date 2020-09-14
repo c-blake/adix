@@ -247,7 +247,7 @@ else:
   proc hashRevFib*(x: int|uint): Hash {.inline.} = hashRevFib(uint32(x))
 
 when defined(unstableHash):
-  proc hash*(hsh, salt: Hash): Hash {.inline.} = hashWangYi1(hsh) xor Hash(salt)
+  proc hash*(hsh, salt: Hash): Hash {.inline.} = hashWangYi1(hsh xor Hash(salt))
 else:
   proc hash*(hsh, salt: Hash): Hash {.inline.} = hashWangYi1(hsh)
 
