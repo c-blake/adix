@@ -1,5 +1,5 @@
 import strutils, times, lptabz, althash, cligen, cligen/[mfile, mslice]
-proc hash(x: uint64): Hash {.inline.} = hashRoMu1(x) # =~ 1.03x faster
+proc hash(x: uint64): Hash {.inline.} = hashRoMu1(x) # =~ 1.05x faster
 
 type Word = distinct uint32 # 24 bits of byte-offset, 8 bits of word length
 
