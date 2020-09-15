@@ -562,7 +562,7 @@ proc mgetOrPut*[K,V,Z;z:static[int]](t: var LPTabz[K,V,Z,z]; key: K; val: V;
 
 template editOrInit*[K,V,Z;z:static[int]](t: var LPTabz[K,V,Z,z]; key: K;
                                           v, body1, body2: untyped) =
-  mixin cell
+  mixin cell, getPut
   getPut(t, i, k, key) do:
     var v {.inject.} = t.cell(i)[].val.addr
     body1
@@ -994,7 +994,6 @@ proc indexBy*[A, K,V,Z;z:static[int]](collection: A,
 #A few things to maybe totally obviate CountTable or let it be a type alias
 proc inc*[K,V: SomeInteger,Z;z:static[int]](t: var LPTabz[K,V,Z,z], key: K,
                                             amount: SomeInteger=1) {.inline.} =
-  mixin rawGet
   t.editOrInit(key, val):
     val[] += amount
     if val[] == 0: c.del key
