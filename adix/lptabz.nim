@@ -970,7 +970,7 @@ proc `[]`*[K,V,Z;z:static[int]](t: var LPTabz[K,V,Z,z],
   mixin rawGet
   let i = t.rawGet(key)
   if i >= 0: result = t.cell(i).val
-  else: raiseNotFound(key)
+  else: result = t.cell(0).val; raiseNotFound(key)
 
 proc `[]=`*[K,V,Z;z:static[int]](t: var LPTabz[K,V,Z,z],
                                  key: K, val: V) {.inline.} =
