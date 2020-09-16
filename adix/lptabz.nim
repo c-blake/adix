@@ -677,6 +677,29 @@ proc editKey*[K,V,Z;z:static[int]](t: var LPTabz[K,V,Z,z];
     else:                             #else point-edit new key index into table
       t.idx[t.rawPut2(j, t.rawPut1(j, d))] = ixHc(k + 1, hc, z)
 
+proc nthKey*[K,Z;z:static[int]](t: LPTabz[K,void,Z,z]; n: int): K {.inline.} =
+  ## Insertion-ordered multisets support 0-origin nth-in-order key.
+  when Z is K or Z is void:
+    assert false, "hash-order multisets do not support ins-order query"
+  else:
+    t.data[n].key
+
+proc nthPair*[K,V:not void,Z;z:static[int]](t: LPTabz[K,V,Z,z];
+                                            n: int): (K, V) {.inline.} =
+  ## Insertion-ordered tables support 0-origin nth-in-order pair.
+  when Z is K or Z is void:
+    assert false, "hash-order multitables do not support ins-order query"
+  else:
+    (t.data[n].key, t.data[n].val)
+
+proc nthPair*[K,V:not void,Z;z:static[int]](t: var LPTabz[K,V,Z,z];
+                                            n: int): (K, ptr V) {.inline.} =
+  ## Insertion-ordered tables support 0-origin nth-in-order pair w/editable val.
+  when Z is K or Z is void:
+    assert false, "hash-order multitables do not support ins-order query"
+  else:
+    (t.data[n].key, t.data[n].val.addr)
+
 proc clear*[K,V,Z;z:static[int]](t: var LPTabz[K,V,Z,z]) =
   if t.getCap == 0: return
   when Z is K or Z is void:

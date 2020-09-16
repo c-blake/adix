@@ -11,3 +11,10 @@ c.inc 9
 c.editKey 9, 8
 for i in 2'i8..8:
   echo i, " ", c[i]
+
+let t = c
+echo t.nthPair(6)
+let tup = c.nthPair(0)
+echo tup[0]
+tup[1][] = 9
+echo c
