@@ -136,14 +136,14 @@ proc mmap*[K,V,Z;z:static[int]](t: var LPTabz[K,V,Z,z], path: string) =
     when defined(unstableHash):
       if comps.len > 2: t.salt = parseInt(comps[2])
     let mf {.used.} = memfiles.open(path)
-    when defined(gcOrc):  #XXX Also need to block/hack destructor
-      when defined(cpp):
+    when defined(gcOrc):    #XXX Also need to block/hack destructor
+      when defined(cpp):    #XXX This is all horribly GC-unsafe
         {.emit: """t.data.len = *(long *)`mf.mem`;
                    t.data.p = (void*)((char *)`mf.mem` + 2*`sizeof(int)`);""".}
       else:
         {.emit: """t->data.len = *(long *)`mf.mem`;
                    t->data.p = (void*)((char *)`mf.mem` + 2*`sizeof(int)`);""".}
-    else:                 #XXX This is all horribly GC-unsafe
+    else:
       when defined(cpp):
         {.emit: "t.data = `mf.mem`;".}
       else:
@@ -537,8 +537,8 @@ proc setCap*[K,V,Z;z:static[int]](t: var LPTabz[K,V,Z,z]; newSize = -1) =
     t.idx = initSeqUint(newSz, newSz shl z)
     if t.rehash: t.salt = getSalt(t.idx.addr0)
     var hc: Hash            #XXX Must loop over idx[]!=0 for hc's OR re-calc if
-    for i, cell in t.data:  #table > z bits BUT also want data/ins.ord.  Uplink?
-      var d: Hash = 0       #Save full hcode? Mk Compact&InsOrd distinct?  Etc.
+    for i, cell in t.data:  #table > z bits BUT also want data/ins.ord.  Save
+      var d: Hash = 0       #full hcode iff Z is OrdCostlyKey is best solution.
       let j = t.rawGetDeep(cell.key, hc, d)
       t.idx[t.rawPut2(j, t.rawPut1(j, d))] = ixHc(i + 1, hc, z)
   when defined(unstableHash):
@@ -636,7 +636,7 @@ proc pop*[K,Z;z:static[int]](t: var LPTabz[K,void,Z,z]): K {.inline.} =
         result = t.data[i].key    #..iteration).  Could keep a running "min ix"
         t.rawDel i                #..updated by ins/del ops. XXX Performance
         return                    # Early exit => cheaper than it may look
-  else:                           # This branch should delete the right dup.
+  else:
     result = t.data[^1].key       # seq pop avoids O(len) shift on data
     t.rawDel t.rawGetLast         # does the s.data.pop internally
 
