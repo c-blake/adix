@@ -381,7 +381,7 @@ proc rawPut2[K,V,Z;z:static[int]](t: var LPTabz[K,V,Z,z];
   # else:                               # j == i => already have space @i; done
   result = i
 
-proc ixHc(i: int; hc: Hash; z: int): int =
+proc ixHc(i: int; hc: Hash; z: int): int {.inline.} =
   int(i shl z) or int(hc and ((Hash(1) shl z) - 1))
 
 proc rawRawDel[K,V,Z;z:static[int]](t: var LPTabz[K,V,Z,z]; i: Hash) {.inline.}=
