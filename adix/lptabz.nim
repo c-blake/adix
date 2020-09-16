@@ -384,15 +384,7 @@ proc rawPut2[K,V,Z;z:static[int]](t: var LPTabz[K,V,Z,z];
 proc ixHc(i: int; hc: Hash; z: int): int =
   int(i shl z) or int(hc and ((Hash(1) shl z) - 1))
 
-proc rawDel[K,V,Z;z:static[int]](t: var LPTabz[K,V,Z,z]; i: Hash) {.inline.} =
-  when not (Z is K or Z is void):
-    let j = (t.idx[i] shr z) - 1        # To keep `data` density..
-    let jp1 = j.int + 1
-    if jp1 < t.len:                     # ..unless already points to data[^1]
-      let m  = t.rawGetLast
-      let hc = cast[Hash](t.idx[m])
-      t.idx[m] = ixHc(jp1, hc, z)       # ..retarget idx[data[^1]] -> j
-      t.data[j] = t.data[^1]            # Copy last elt to `[j]`; move?
+proc rawRawDel[K,V,Z;z:static[int]](t: var LPTabz[K,V,Z,z]; i: Hash) {.inline.}=
   let mask = t.high
   if t.robin:
     var k = i
@@ -423,6 +415,17 @@ proc rawDel[K,V,Z;z:static[int]](t: var LPTabz[K,V,Z,z]; i: Hash) {.inline.} =
           if not((i >= h and h > j) or (h > j and j > i) or (j > i and i >= h)):
             break
         t.set1 j, i                     # data[i] will be marked FREE next loop
+
+proc rawDel[K,V,Z;z:static[int]](t: var LPTabz[K,V,Z,z]; i: Hash) {.inline.} =
+  when not (Z is K or Z is void):
+    let j = (t.idx[i] shr z) - 1        # To keep `data` density..
+    let jp1 = j.int + 1
+    if jp1 < t.len:                     # ..unless already points to data[^1]
+      let m  = t.rawGetLast
+      let hc = cast[Hash](t.idx[m])
+      t.idx[m] = ixHc(jp1, hc, z)       # ..retarget idx[data[^1]] -> j
+      t.data[j] = t.data[^1]            # Copy last elt to `[j]`; move?
+  t.rawRawDel(i)
   when not (Z is K or Z is void):
     discard t.data.pop
 
@@ -654,6 +657,25 @@ proc pop*[K,V: not void,Z;z:static[int]](t: var LPTabz[K,V,Z,z]):
     result[0] = t.data[^1].key    # seq pop avoids O(len) shift on data
     result[1] = t.data[^1].val
     t.rawDel t.rawGetLast         # does the s.data.pop internally
+
+proc editKey*[K,V,Z;z:static[int]](t: var LPTabz[K,V,Z,z];
+                                   old, new: K) {.inline.} =
+  ##Insertion-ordered tables support editing keys while keeping iteration order.
+  when Z is K or Z is void:
+    assert false, "hash-order tables do not support key edits"
+  else:
+    let i = t.rawGet(old)
+    if i < 0: raiseNotFound(old)
+    let k = int((t.idx[i] shr z) - 1)
+    t.rawRawDel i
+    t.data[k].key = new
+    var hc, d: Hash
+    let j = t.rawGetDeep(new, hc, d)  #Allow `new` to be a dup key
+    var newSize: int
+    if t.tooFull(d, newSize):
+      t.setCap newSize                #`new` already in `data`; setCap does rest
+    else:                             #else point-edit new key index into table
+      t.idx[t.rawPut2(j, t.rawPut1(j, d))] = ixHc(k + 1, hc, z)
 
 proc clear*[K,V,Z;z:static[int]](t: var LPTabz[K,V,Z,z]) =
   if t.getCap == 0: return
