@@ -460,13 +460,13 @@ template popRet(t, i, key, present, missing: untyped) =
       t.count.dec
     present
 
-proc slotsGuess(count: int, numer=lpNumer, denom=lpDenom, minFree=lpMinFree):
-    int {.inline.} = ceilPow2(count + minFree) # Might have a great hash
+proc slotsGuess(count: int, minFree): int {.inline.} =
+  ceilPow2(count + minFree) # Might have a great hash
 
 proc init*[K,V,Z;z:static[int]](t: var LPTabz[K,V,Z,z];
     initialSize=lpInitialSize, numer=lpNumer, denom=lpDenom, minFree=lpMinFree,
     growPow2=lpGrowPow2, rehash=lpRehash, robinhood=lpRobinHood) {.inline.} =
-  let initialSize = slotsGuess(initialSize)
+  let initialSize = slotsGuess(initialSize, minFree)
   t.data     = newSeq[HCell[K,V,Z,z]](initialSize)
   when Z is K:
     if z != K(0):
@@ -512,7 +512,7 @@ proc setCap*[K,V,Z;z:static[int]](t: var LPTabz[K,V,Z,z]; newSize = -1) =
     newSz = t.getCap shl t.growPow2
     t.pow2 += t.growPow2
   else:
-    newSz = max(newSize, slotsGuess(t.len, minFree=t.minFree.int))
+    newSz = max(newSize, slotsGuess(t.len, t.minFree.int))
     t.pow2 = uint8(newSz.lg)
   if newSz == t.getCap and newSize == -1:
     return
