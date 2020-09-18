@@ -1,7 +1,8 @@
-## This module provides compact sets of non-0 B)-bit int keys L)inear Probing
+## This module provides dense sets of non-0 B)-bit `int` keys via L)inear Probes
 ## with optional Robin Hood re-organization via ``sequint``.  The only satellite
 ## data supported is a second b2-bit int (eg a counter).  Mnemonically, "BL" is
-## also the start of "Bloom filter", an occasionally competing data structure.
+## also the start of "BLoom filter", an occasionally competing data structure,
+## or B)it-L)evel.
 #XXX Make all above statements true by adding in b2 field defaulted to zero len
 #    and table ops; make Robin Hood re-org optional.  This is not ready to use!
 
@@ -9,7 +10,7 @@ import althash, sequint
 type
   BLtab* = object  ## RobinHoodLP set of B-bit int keys w/small false pos. rate
     data: SeqUint     # number array
-    count, mask: int  # count of entered slots
+    count: int        # count of entered slots
 
 when defined(hashStats):
   template ifStats(x) = x
@@ -162,34 +163,3 @@ proc debugDump*(s: BLtab, label="") =
   echo s.len, " items"
   for i, cell in s.data:
     echo "i: ", i, " depth: ", if cell != 0: depth(i, int(s.data[i]), s.data.high) else: 0, " ", cell
-
-when isMainModule:
-  import os, strutils
-  let nTab = parseInt(paramStr(1))
-  let mask = parseInt(paramStr(2))
-  var s = initBLtab(nTab, mask)
-  for i in 3 .. paramCount():
-    let j = parseInt(paramStr(i))
-    if j > 0:
-      let k = hashNASAM(j) and mask
-      if s.containsOrIncl(k): echo "had ", j
-      else: echo "added ", (j, k)
-    elif j < 0:
-      let k = hashNASAM(-j) and mask
-      if s.missingOrExcl(k): echo "did nothing"
-      else: echo "removed ", (-j, k)
-  echo s.data
-  let ds = s.depths
-  echo "hashLd: ", float(s.count)/float(s.getCap), " ", ds.len, " depths: ", ds
-  echo paramCount()-2-s.len, '/', paramCount()-2, ". false pos. (if all +)"
-# s.debugDump
-# ./bltab $[1<<17] $[(1<<26) - 1] {1..$[3<<15]} |tail -n2
-#   hashLd: 0.7494 19 depths: @[36541, 25619, 15310, 8917, 5087, 2965, 1708, 934, 486, 272, 174, 82, 56, 36, 17, 13, 5, 1, 2]
-#   79/98304. false pos. (if all +); fpr=0.0008; 19*26/8=61.75 < 64B cache line.
-# A Bloom filter is less space -1.44*lg.0008=14.8 bit/num (57% of 26 bits, 42.7%
-# adjusting for 75% hashLd), BUT needs -lg .0008 = 10.3 hash funs ~10 line lds.
-# *MANY* would pay a 1/.427=2.34X space increase to get a 10+X speed boost.  If
-# an aux counter field is 3 bits (29./26*2.34=2.61x space) then it saturates at
-# 8 (counting can start at zero) and buys deletes with high reliability (the
-# same-slot collision prob**8 which is very small).  Even compared with Cuckoo
-# filters things are about 2x faster for a bit over 2x the space.
