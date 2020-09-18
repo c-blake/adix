@@ -61,8 +61,8 @@ var lpNumer*       = 3 ## default numerator for lg(n) probe depth limit
 var lpDenom*       = 1 ## default denominator for lg(n) probe depth limit
 var lpMinFree*     = 1 ## default min free slots; (>= 1)
 var lpGrowPow2*    = 1 ## default growth power of 2; 1 means double
-var lpRehash*      = false ## default hcode rehashing behavior; auto-activated
 var lpRobinHood*   = false ## default to Robin Hood re-org; auto-activated
+var lpRehash*      = false ## default hcode rehashing behavior; auto-activated
 
 when defined(hashStats):    # Power user inspectable/zeroable stats.  These are
   template ifStats(x) = x   # all kind of like "times" - you v0=val;...; val-v0
