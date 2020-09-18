@@ -29,6 +29,11 @@ type
     idx: SeqUint
   DISet*[K] = DITab[K,void] ## DITab specialized to sets
 
+#proc save*[K,V](t: DITab[K,V], pathStub: string) = discard
+#proc load*[K,V](t: var DITab[K,V], path: string) = discard
+#proc loadLPTabz*[K,V](path: string): DITab[K,V] = discard
+#proc mmap*[K,V](t: var DITab[K,V], path: string) = discard
+
 proc len*[K,V](t: DITab[K,V]): int {.inline.} = t.data.len
 
 proc key[K,V](t: DITab[K,V], i: int): int {.inline.} =
@@ -144,11 +149,8 @@ template editOrInit*[K,V](t: var DITab[K,V]; key: K; v,body1,body2: untyped) =
     var v {.inject.} = t.data[k].val.addr
     body2
 
-proc add*[K](t: var DITab[K,void]; key: K) {.inline.} =
-  assert(false, "Direct Indexed tables cannot be multisets")
-
-proc add*[K,V](t: var DITab[K,V]; key: K, val: V) {.inline.} =
-  assert(false, "Direct Indexed tables cannot be multisets")
+#proc add*[K](t: var DITab[K,void]; key: K) {.inline.} = # no-dups
+#proc add*[K,V](t: var DITab[K,V]; key: K, val: V) {.inline.} = # no-dups
 
 proc missingOrExcl*[K,V](t: var DITab[K,V], key: K): bool =
   t.popRet(i, key) do: t.rawDel i
@@ -178,8 +180,8 @@ iterator items*[K](t: DITab[K,void]): K =
 iterator mitems*[K](t: var DITab[K,void]): var K =
   for key in t.data: yield key
 
-iterator allItems*[K](t: DITab[K,void]; key: K): K =
-  assert(false, "Direct Indexed tables cannot be multisets")
+#iterator allItems*[K](t: DITab[K,void]; key: K): K = # no-dups
+#iterator numItems*[K](t: DITab[K,void]): (K, int) = # no-dups
 
 iterator pairs*[K](t: DITab[K,void]): (int, K) =
   for i, key in t.data: yield (i, key)
@@ -192,6 +194,10 @@ iterator mpairs*[K,V: not void](t: DITab[K,V]): (K, var V) =
 
 iterator hcodes*[K,V](t: DITab[K,V]): (int, Hash) =
   for i, key in t.data: yield (i, Hash(key))
+
+#iterator allValues*[K,V](t: DITab[K,V]; key: K): V = # no-dups
+#iterator allValues*[K,V](t: DITab[K,V]; vals: var seq[V]): K = # no-dups
+#proc allValues*[K,V](t: DITab[K,V]; key: K, vals: var seq[V]): bool = # no-dups
 
 proc debugDump*[K,V](t: DITab[K,V], label="") =
   if label.len > 0: echo label
@@ -208,9 +214,6 @@ iterator values*[K,V](t: DITab[K,V]): V =
 
 iterator mvalues*[K,V](t: var DITab[K,V]): var V =
   for e in t.data: yield e.val
-
-iterator allValues*[K,V](t: DITab[K,V]; key: K): V =
-  assert(false, "Direct Indexed tables cannot be multisets")
 
 ## Below here is pretty standard except for the generic signatures
 proc pop*[K](s: var DITab[K,void]; key: var K): bool {.inline.} =
@@ -382,6 +385,30 @@ proc `==`*[K,V](x, y: DITab[K,V]): bool =
 proc indexBy*[A, K,V](collection: A, index: proc(x: V): K): DITab[K,V] =
   result.init
   for item in collection: result[index(item)] = item
+
+proc editKey*[K,V](t: var DITab[K,V]; old, new: K) {.inline.} =
+  if old == new: return
+  let i = int(old) - key.low.int
+  if i >= t.range:
+    raise newException(RangeError, "old exceeds Direct Indexed key limit")
+  let j = int(new) - key.low.int
+  if j >= t.range:
+    raise newException(RangeError, "new exceeds Direct Indexed key limit")
+  t.idx[j] = t.idx[i]
+  t.idx[i] = 0          #Not really needed, but may lead to less confusion
+
+proc nthKey*[K](t: DITab[K,void]; n: int): K {.inline.} =
+  t.data[n]
+
+proc nthPair*[K,V:not void](t: DITab[K,V]; n: int): (K, V) {.inline.} =
+  ## Insertion-ordered tables support 0-origin nth-in-order pair.
+  (t.data[n].key, t.data[n].val)
+
+proc nthPair*[K,V:not void](t: var DITab[K,V]; n: int): (K, ptr V) {.inline.} =
+  ## Insertion-ordered tables support 0-origin nth-in-order pair w/editable val.
+  (t.data[n].key, t.data[n].val.addr)
+
+#proc numItems*[K](t: DITab[K,void]; key: K): int = # no-dups
 
 #A few things to maybe totally obviate CountTable or let it be a type alias
 proc inc*[K,V: SomeInteger](t: var DITab[K,V], key: K,
