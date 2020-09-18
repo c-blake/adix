@@ -82,7 +82,7 @@ proc save*[K,V,Z;z:static[int]](t: LPTabz[K,V,Z,z], pathStub: string) =
   when Z is K or Z is void:
     var ext = "." & $t.count & "-" & (if t.robin: "r" else: "") &
                                      (if t.rehash: "R" else: "")
-    when defined(unstableHash):
+    if t.rehash:
       ext.add "-0x" & t.salt.toHex
     let f = system.open(pathStub & ext, fmWrite)
     let n = t.data.len
@@ -103,8 +103,7 @@ proc load*[K,V,Z;z:static[int]](t: var LPTabz[K,V,Z,z], path: string) =
     t.count  = parseInt(comps[0])
     t.robin  = 'R' in comps[1]
     t.rehash = 'r' in comps[1]
-    when defined(unstableHash):
-      if comps.len > 2: t.salt = parseInt(comps[2])
+    if t.rehash and comps.len > 2: t.salt = parseInt(comps[2])
     let f  = system.open(path)
     let sz = f.getFileSize - 2*sizeof(int)
     t.data = newSeq[HCell[K,V,Z,z]](sz div sizeof(HCell[K,V,Z,z]))
@@ -133,8 +132,7 @@ proc mmap*[K,V,Z;z:static[int]](t: var LPTabz[K,V,Z,z], path: string) =
     t.count  = parseInt(comps[0])
     t.robin  = 'R' in comps[1]
     t.rehash = 'r' in comps[1]
-    when defined(unstableHash):
-      if comps.len > 2: t.salt = parseInt(comps[2])
+    if t.rehash and comps.len > 2: t.salt = parseInt(comps[2])
     let mf {.used.} = memfiles.open(path)
     when defined(gcOrc):    #XXX Also need to block/hack destructor
       when defined(cpp):    #XXX This is all horribly GC-unsafe
@@ -346,16 +344,16 @@ proc tooFull[K,V,Z;z:static[int]](t: var LPTabz[K,V,Z,z]; d: int;
     ifStats lpTooSparse.inc     # Normal resizing cannot restore performance
     newSize = t.getCap
     var ext: string             # Extra text after primary message
-    if t.rehash:                # Already re-hashing hash() output
-      if t.robin:               # Already doing Robin Hood re-org
+    if t.robin:                 # Already doing Robin Hood re-org
+      if t.rehash:              # Already re-hashing hash() output
         ext = "; Switch to tree|seq for many dups"
         result = false          # Could potentially auto-convert to B-tree here
       else:
-        ext = "; Adapting by Robin Hood re-org"
-        t.robin = true
+        ext = "; Adapting by re-hashing hash()"
+        t.rehash = true
     else:                       # Turn on re-hashing hash() output
-      t.rehash = true
-      ext = "; Adapting by re-hashing hash()"
+      t.robin = true
+      ext = "; Adapting by Robin Hood re-org"
     when defined(lpWarn) or not defined(danger):
       lpWarnCnt.inc
       if lpWarnCnt <= lpMaxWarn:
@@ -544,7 +542,6 @@ proc setCap*[K,V,Z;z:static[int]](t: var LPTabz[K,V,Z,z]; newSize = -1) =
       var d: Hash = 0       #full hcode iff Z is OrdCostlyKey is best solution.
       let j = t.rawGetDeep(cell.key, hc, d)
       t.idx[t.rawPut2(j, t.rawPut1(j, d))] = ixHc(i + 1, hc, z)
-  when defined(unstableHash):
     dbg echo(" NEW SALT: ", t.salt)
 
 proc contains*[K,V,Z;z:static[int]](t: LPTabz[K,V,Z,z]; key: K):
