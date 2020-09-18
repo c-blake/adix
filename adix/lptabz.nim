@@ -542,7 +542,7 @@ proc setCap*[K,V,Z;z:static[int]](t: var LPTabz[K,V,Z,z]; newSize = -1) =
       var d: Hash = 0       #full hcode iff Z is OrdCostlyKey is best solution.
       let j = t.rawGetDeep(cell.key, hc, d)
       t.idx[t.rawPut2(j, t.rawPut1(j, d))] = ixHc(i + 1, hc, z)
-    dbg echo(" NEW SALT: ", t.salt)
+  dbg echo(" NEW SALT: ", t.salt)
 
 proc contains*[K,V,Z;z:static[int]](t: LPTabz[K,V,Z,z]; key: K):
     bool {.inline.} =
