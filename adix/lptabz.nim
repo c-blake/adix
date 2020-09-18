@@ -460,7 +460,7 @@ template popRet(t, i, key, present, missing: untyped) =
       t.count.dec
     present
 
-proc slotsGuess(count: int, minFree): int {.inline.} =
+proc slotsGuess(count: int, minFree: int): int {.inline.} =
   ceilPow2(count + minFree) # Might have a great hash
 
 proc init*[K,V,Z;z:static[int]](t: var LPTabz[K,V,Z,z];
