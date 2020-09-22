@@ -34,7 +34,7 @@
 import althash, memutil, bitop, heapqueue, sequint, strutils, memfiles
 export Hash, sequint
 type                  ## `K` is Key type; `V` is Value type (can be `void`)
-  HCell*[K,V,Z;z:static[int]] = object
+  HCell[K,V,Z;z:static[int]] = object
     when Z is void:   ## void sentinel type => no sentinel; else `z` is sentinel
       hcode: int      #NOTE: ins-order mode hcodes, if any, are in idx[]
     key: K
