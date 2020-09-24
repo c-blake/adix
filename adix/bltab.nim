@@ -16,6 +16,8 @@ type
     z: uint                                       # sentinel
 
 var blInitialSize* = 2     ## default initial size aka capacity aka cap
+var blValueBits*   = 0'u8  ## default bits for value in k+v-bit uint
+var blSentinel*    = 0'u8  ## default sentinel value for k+v-bit uint
 var blNumer*       = 3'u8  ## default numerator for lg(n) probe depth limit
 var blDenom*       = 1'u8  ## default denominator for lg(n) probe depth limit
 var blMinFree*     = 1'u8  ## default min free slots; (>= 1)
