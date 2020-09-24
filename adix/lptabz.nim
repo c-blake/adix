@@ -740,7 +740,7 @@ iterator hcodes*[K,Z;z:static[int]](s: LPTabz[K,void,Z,z]): (int, Hash) =
   when Z is void:
     for cell in s.cells: yield (i, cell.hcode)
   else:
-    for i, cell in 0 ..< s.getCap:
+    for i in 0 ..< s.getCap:
       if s.isUsed(i): yield (i, s.hash(i))
 
 iterator allItems*[K,Z;z:static[int]](s: LPTabz[K,void,Z,z]; key: K): K =
