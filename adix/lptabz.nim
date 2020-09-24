@@ -921,7 +921,7 @@ proc `$`*[K,Z;z:static[int]](s: LPTabz[K,void,Z,z]): string =
   result.add("}")
 
 proc hash*[K,Z;z:static[int]](s: LPTabz[K,void,Z,z]): Hash =
-  for i, hc in 0 .. s.hcodes: result = result xor hc
+  for i, hc in s.hcodes: result = result xor hc
   result = !$result  #Important to use a COMMUTATIVE combiner above
 
 proc depthStats*[K,V,Z;z:static[int]](s: LPTabz[K,V,Z,z]):
