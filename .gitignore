@@ -16,3 +16,4 @@ tests/tRandom
 tests/tshell
 tests/tSuperHigh
 tests/writeHash
+tests/bl
