@@ -5,17 +5,44 @@
 ## bits for the key.  Bits for values and the sentinel key default to 0. `BLtab`
 ## tries to be similar otherwise to hash-ordered variants of BLTab multisets.
 
-import althash, sequint
+import althash, bitop, sequint, strutils#, memfiles, heapqueue
 type
   BLtab* = object  ## RobinHoodLP set of B-bit int keys w/small false pos. rate
     data: SeqUint     # number array
     count: int        # count of entered slots
+    k, v, numer, denom, minFree, growPow2, pow2: uint8 # size policy parameters
+    rehash, robin: bool                           # Steal 2-bits from `salt`?
+    salt: Hash                                    # ~unpredictable salt
+    z: uint                                       # sentinel
 
-when defined(hashStats):
-  template ifStats(x) = x
-  var frDepth* = 0  ## Total search depth; like "getTime" v0=val;...; val-v0
+var blInitialSize* = 2     ## default initial size aka capacity aka cap
+var blNumer*       = 3'u8  ## default numerator for lg(n) probe depth limit
+var blDenom*       = 1'u8  ## default denominator for lg(n) probe depth limit
+var blMinFree*     = 1'u8  ## default min free slots; (>= 1)
+var blGrowPow2*    = 1'u8  ## default growth power of 2; 1 means double
+var blRobinHood*   = false ## default to Robin Hood re-org; auto-activated
+var blRehash*      = false ## default hcode rehashing behavior; auto-activated
+
+when defined(hashStats):   # Power user inspectable/zeroable stats.  These are
+  template ifStats(x) = x  # all kind of like "times" - you v0=val;...; val-v0
+  var blDepth*     = 0   ## Counts total search depth
+  var blTooFull*   = 0   ## Counts resizes from minFree boundary
+  var blTooDeep*   = 0   ## Counts resizes from deep probe sequences
+  var blTooSparse* = 0   ## Counts skips of depth-triggered resize from sparsity
 else:
   template ifStats(x) = discard
+when defined(blWarn) or not defined(danger):
+  var blWarn*    = stderr  ## Set to wherever you want warnings to go
+  var blMaxWarn* = 10      ## Most warnings per program invocation
+  var blWarnCnt  = 0       # Running counter of warnings issued
+
+proc len*(s: BLtab): int {.inline.} = s.count
+proc getCap*(s: BLtab): int {.inline.} = s.data.len
+
+proc save*(t: BLTab, pathStub: string) = discard
+proc load*(t: var BLTab, path: string) = discard
+proc loadBLTab*(path: string): BLTab = discard
+proc mmap*(t: var BLTab, path: string) = discard
 
 proc pushUp(x: var SeqUint, i, n: int) {.inline.} =   # move n items up 1
   for j in countdown(i + n - 1, i): x[j+1] = x[j]
@@ -49,7 +76,7 @@ proc rawGet(s: BLtab; hc: Hash, d: var Hash): int {.inline.} =
     if s.data[i] == uint(hc):
       return i
     d.inc
-    ifStats frDepth.inc
+    ifStats blDepth.inc
     if d == s.data.len:         # Handle fully saturated table case
       break
   result = -1 - t               # < 0 => MISSING and insert idx = -1 - result
@@ -102,10 +129,6 @@ proc init*(s: var BLtab, size, mask: int) {.inline.} =
   s.count = 0
 
 proc initBLtab*(size, mask: int): BLtab{.inline.} = result.init size, mask
-
-proc len*(s: BLtab): int {.inline.} = s.count
-
-proc getCap*(s: BLtab): int {.inline.} = s.data.len
 
 proc contains*(s: BLtab, hc: Hash): bool {.inline.} =
   assert(s.data.len > 0, "Uninitialized BLtab")  # Ensure in *caller* not here
