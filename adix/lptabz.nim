@@ -14,7 +14,7 @@
 ## Defaults are to always rehash and use RobinHood re-org since this is safest,
 ## but all parameters here can be tuned per program and per instance.  This
 ## module uses `althash.getSalt` to allow override of the per-instance per-
-## table space hash salt, allowing it to be as easy/hard to predict as desired.
+## table hash salt, allowing it to be as easy/hard to predict as desired.
 ##
 ## Multiset personality ensues when the ``V`` value type generic parameter is
 ## ``void``.  Otherwise the style of interface is multitable.  Every attempt is
@@ -1044,7 +1044,7 @@ proc indexBy*[A, K,V,Z;z:static[int]](collection: A,
   result.init
   for item in collection: result[index(item)] = item
 
-#A few things to maybe totally obviate CountTable or let it be a type alias
+# 3 defs to maybe obsolete `CountTable` or let it be a type alias.
 proc inc*[K,V: SomeInteger,Z;z:static[int]](t: var LPTabz[K,V,Z,z], key: K,
                                             amount: SomeInteger=1) {.inline.} =
   t.editOrInit(key, val):
