@@ -10,6 +10,9 @@
 ## index fits into low enough latency memory to not be too slow.  Otherwise,
 ## other data structures like hash tables & B-trees will outperform this.
 ## Iteration is always in insertion order whenever no deletes have occurred.
+## The "unit" is also 2 memory accesses per operation, vs. often 1 for lptabz.
+## So, very large scale can make this guaranteed to be ~2X slowe than a good
+## average case for `lptabz`, all depending upon exact requirements, of course.
 ##
 ## The earliest reference I have elaborating the properties of this approach is
 ## An Efficient Representation for Sparse Sets by Preston Briggs & Linda Torczon
