@@ -56,20 +56,11 @@
 import std/hashes, bitop    # For the Hash type and system `hash()`es
 export Hash, `!$`, hash
 
-proc hashRoMu1*[T: int8|uint8](x: T): Hash {.inline.}  =
-  Hash(rotateRightBits(uint64(uint16(x) * 0xd3'u16), 7))
-
-proc hashRoMu1*[T: int16|uint16](x: T): Hash {.inline.}  =
-  Hash(rotateRightBits(uint64(uint32(x) * 0xd383'u32), 15))
-
-proc hashRoMu1*[T: int32|uint32](x: T): Hash {.inline.} =
-  Hash(rotateRightBits(uint64(x) * 0xd3833e81'u64, 31))
-
-proc hashRoMu1*(x: int64|uint64|Hash): Hash {.inline.} =
+proc hashRoMu1*(x: SomeOrdinal|Hash): Hash {.inline.} =
   ## 1-hop of Romul-DuoJr using x as seed
   Hash(rotateLeftBits(uint64(x) * 15241094284759029579'u64, 27))
 
-proc hashRoMu2*(x: int64|uint64|Hash): Hash {.inline.} =
+proc hashRoMu2*(x: SomeOrdinal|Hash): Hash {.inline.} =
   ## Just the cross terms of 128-bit whole product
   # (h*s + l) * (a*s + b) = h*a*s*s + h*b*s + l*a*s + l*b.  Constants taken
   # from roMuDuoJr;  Could probably be tuned to get near avalanche.
