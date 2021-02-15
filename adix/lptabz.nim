@@ -181,7 +181,7 @@ proc isUsed[K,V,Z;z:static[int]](cell: HCell[K,V,Z,z]): bool {.inline.} =
   when Z is void:
     cell.hcode != 0
   else:
-    cell.key != z
+    cell.key != K(z)
 
 proc isUsed[K,V,Z;z:static[int]](t: LPTabz[K,V,Z,z], i: int): bool {.inline.} =
   when Z is K or Z is void:
@@ -198,7 +198,7 @@ proc unUse[K,V,Z;z:static[int]](t: var LPTabz[K,V,Z,z], i: int,
         if clear:
           t.data[i].key = default(t.data[i].key)
     else:
-      t.data[i].key = z
+      t.data[i].key = K(z)
     when V isnot void and compiles(default(t.data[i].val)):
       if clear:
         t.data[i].val = default(t.data[i].val)
