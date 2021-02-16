@@ -27,7 +27,8 @@ proc `==`(a, b: Word): bool {.inline.} =
 proc `==`(a: int, b: Word): bool {.inline.} = a == b.int # for z != K(0)
 
 proc `<`(a, b: Word): bool {.inline.} = # for heapqueue
-  cmemcmp(a.mem, b.mem, min(a.len, b.len)) < 0
+  let c = cmemcmp(a.mem, b.mem, min(a.len, b.len))
+  if c == 0: a.len < b.len else: c < 0
 
 proc `$`(w: Word): string =             # for output
   result.setLen w.len
