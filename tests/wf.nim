@@ -21,12 +21,12 @@ proc mem(w: Word): pointer = mf.mem +! int(w.uint32 shr 5)
 
 proc hash(w: Word): Hash {.inline.} = hashData(w.mem, w.len.int)
 
-proc `==`(a,b: Word): bool {.inline.} =
-  a.len==b.len and cmemcmp(a.mem, b.mem, a.len)==0
+proc `==`(a, b: Word): bool {.inline.} =
+  a.len == b.len and cmemcmp(a.mem, b.mem, a.len) == 0
 
 proc `==`(a: int, b: Word): bool {.inline.} = a == b.int # for z != K(0)
 
-proc `<`(a,b: Word): bool {.inline.} =  # for heapqueue
+proc `<`(a, b: Word): bool {.inline.} = # for heapqueue
   cmemcmp(a.mem, b.mem, min(a.len, b.len)) < 0
 
 proc `$`(w: Word): string =             # for output
