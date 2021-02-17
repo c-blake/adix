@@ -34,22 +34,24 @@ proc `$`(w: Word): string =             # for output
   result.setLen w.len
   copyMem result[0].addr, w.mem, w.len
 
-proc work(td: ThrDat) {.thread.} =
-  setAffinity()                         # pin to CPU initially assigned
+iterator lowCaseWords(ms: MSlice): Word =
   var wd, n: int
-  for i, ch in td.part[]:
+  for i, ch in ms:
     if ch in {'a'..'z'}:                # in-word ch
-      if n == 0: wd = (td.part[].mem +! i) -! mf.mem
+      if n == 0: wd = (ms.mem +! i) -! mf.mem
       n.inc                             # extend
     elif ch in {'A'..'Z'}:              # `tr A-Z a-z` preprocess to avoid
-      td.part[][i] = char(ord(ch) + 32) # needs MAP_PRIVATE
-      if n == 0: wd = (td.part[].mem +! i) -! mf.mem
-      n.inc
-    elif n > 0:                                 # non-word ch
-      td.hp[].mgetOrPut(initWord(wd, n), 0).inc # bump word &
-      n = 0                                     #..terminate
-  if n > 0:                             # part maybe ends in a word
-    td.hp[].mgetOrPut(initWord(wd, n), 0).inc
+      ms[i] = char(ord(ch) + 32)        # needs MAP_PRIVATE
+      if n == 0: wd = (ms.mem +! i) -! mf.mem
+      n.inc                             # extend
+    elif n > 0:                         # non-word ch & have data
+      yield initWord(wd, n); n = 0      # yield & reset
+  if n > 0: yield initWord(wd, n)       # any final word
+
+proc work(td: ThrDat) {.thread.} =
+  setAffinity()                         # pin to CPU initially assigned
+  for w in td.part[].lowCaseWords:
+    td.hp[].mgetOrPut(w, 0).inc
 
 proc count(p: int, path: string) =
   var (mfLoc, parts) = p.nSplit(path, flags=MAP_PRIVATE)
@@ -59,10 +61,8 @@ proc count(p: int, path: string) =
       for i in 0 ..< parts.len:         # spawn workers
         createThread thrs[i], work, (parts[i].addr, hs[i].addr)
       joinThreads thrs
-    else:                               # ST-mode does no spawn
-      work (parts[0].addr, hs[0].addr)
-  else:
-    stderr.write "wf: \"", path, "\" missing/irregular\n"
+    else: work (parts[0].addr, hs[0].addr) # ST-mode does no spawn
+  else: stderr.write "wf: \"", path, "\" missing/irregular\n"
 
 iterator top(h: Histo, n=10, tot: ptr uint32=nil): (Word, Count) =
   var q = initHeapQueue[(Count, Word)]()
