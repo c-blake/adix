@@ -80,7 +80,7 @@ iterator top(h: Histo, n=10, tot: ptr uint32=nil): (Word, Count) =
 
 proc wf(path: seq[string], n=10, grand=false, par=1, sz=9_718, time=false) =
   ## Parallel word frequency tool for one file < 128 MiB and words < 32 chars.
-  ## Aggregate multiple via, e.g., `cat **/*.txt > /dev/shm/inp`.
+  ## Aggregate multiple via, e.g., `cat \*\*/\*.txt > /dev/shm/inp`.
   if path.len != 1: raise newException(ValueError, "only 1 file supported")
   let t0 = epochTime()
   let p = if par > 0: par else: countProcessors()
