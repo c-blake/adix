@@ -13,11 +13,19 @@ var mf: MFile
 var hs: seq[Histo]                      # NEED -d:useMalloc
 var thrs: seq[Thread[ThrDat]]
 
-proc initWord(off, len: int): Word = Word((off.uint32 shl 5) or len.uint32)
+const wb = 5                            # word len bits
+const wm = (1 shl wb) - 1               # max word len
 
-proc len(w: Word): uint32 = uint32(w) and 31
+proc initWord(off, len: int): Word =
+  if len > wm:
+    var s = newStringOfCap(len)
+    copyMem s[0].addr, mf.mem +! off, len
+    raise newException(RangeError, "\"" & s & "\" too long")
+  Word((off.uint32 shl wb) or len.uint32)
 
-proc mem(w: Word): pointer = mf.mem +! int(w.uint32 shr 5)
+proc len(w: Word): uint32 = uint32(w) and wm
+
+proc mem(w: Word): pointer = mf.mem +! int(w.uint32 shr wb)
 
 proc hash(w: Word): Hash {.inline.} = hashData(w.mem, w.len.int)
 
@@ -57,6 +65,8 @@ proc count(p: int, path: string) =
   var (mfLoc, parts) = p.nSplit(path, flags=MAP_PRIVATE)
   mf = mfLoc
   if mf != nil:
+    if mf.len > 1 shl (32 - wb):
+      raise newException(RangeError, "\"" & path & "\" too large")
     if p > 1:                           # add mf.len > 65536|something?
       for i in 0 ..< parts.len:         # spawn workers
         createThread thrs[i], work, (parts[i].addr, hs[i].addr)
@@ -80,7 +90,9 @@ iterator top(h: Histo, n=10, tot: ptr uint32=nil): (Word, Count) =
 
 proc wf(path: seq[string], n=10, grand=false, par=1, sz=9_718, time=false) =
   ## Parallel word frequency tool for one file < 128 MiB and words < 32 chars.
-  ## Aggregate multiple via, e.g., `cat \*\*/\*.txt > /dev/shm/inp`.
+  ## Aggregate multiple via, e.g., `cat \*\*/\*.txt > /dev/shm/inp`.  Similar
+  ## to Knuth-McIlroy `tr A-Z a-z|tr -sc a-z \\n|sort|uniq -c|sort -n|tail`,
+  ## but ~46X faster than the pipeline (on TOTC; depends on vocab).
   if path.len != 1: raise newException(ValueError, "only 1 file supported")
   let t0 = epochTime()
   let p = if par > 0: par else: countProcessors()
