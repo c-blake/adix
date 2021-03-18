@@ -42,7 +42,22 @@ proc `$`(w: Word): string =             # for output
   result.setLen w.len
   copyMem result[0].addr, w.mem, w.len
 
-iterator lowCaseWords(ms: MSlice): Word =
+when defined(benhoyt): # Ben Hoyt definition of "words"
+ iterator lowCaseWords(ms: MSlice): Word =
+  var wd, n: int
+  for i, ch in ms:
+    if ch in {'A'..'Z'}:                # `tr A-Z a-z` preprocess to avoid
+      ms[i] = char(ord(ch) + 32)        # needs MAP_PRIVATE
+      if n == 0: wd = (ms.mem +! i) -! mf.mem
+      n.inc                             # extend
+    elif ord(ch) > ord(' '):            # in-word ch
+      if n == 0: wd = (ms.mem +! i) -! mf.mem
+      n.inc                             # extend
+    elif n > 0:                         # non-word ch & have data
+      yield initWord(wd, n); n = 0      # yield & reset
+  if n > 0: yield initWord(wd, n)       # any final word
+else: # Knuth-McIlroy definition of "words"
+ iterator lowCaseWords(ms: MSlice): Word =
   var wd, n: int
   for i, ch in ms:
     if ch in {'a'..'z'}:                # in-word ch
