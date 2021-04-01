@@ -229,9 +229,9 @@ proc vmaddrSalt*(x: pointer): Hash {.inline.} =
 proc zeroSalt*(x: pointer): Hash {.inline.} = 0
 
 when defined(unstableHash):
-  var getSalt* = vmaddrSalt
-else:
   var getSalt* = secureSalt
+else:
+  var getSalt* = vmaddrSalt
 
 when int.sizeof == int64.sizeof:
   proc hashRoMu1*(x: uint): Hash {.inline.} = hashRoMu1(uint64(x))
