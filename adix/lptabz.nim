@@ -469,7 +469,7 @@ proc init*[K,V,Z;z:static[int]](t: var LPTabz[K,V,Z,z];
   let initialSize = slotsGuess(initialSize, minFree)
   t.data     = newSeq[HCell[K,V,Z,z]](initialSize)
   when Z is K:
-    if z != K(0):
+    if K(z) != K(0):
       for i in 0 ..< initialSize: t.unUse(i, false)
   when Z is K or Z is void:
     t.salt   = getSalt(t.data[0].addr)
@@ -523,7 +523,7 @@ proc setCap*[K,V,Z;z:static[int]](t: var LPTabz[K,V,Z,z]; newSize = -1) =
     swap(t.data, old)
     when Z is K:
       var hc: Hash
-      if z != K(0):
+      if K(z) != K(0):
         for i in 0 ..< t.getCap: t.unUse(i, false)
     for cell in old.mitems:
       if not cell.isUsed: continue
@@ -704,7 +704,7 @@ proc clear*[K,V,Z;z:static[int]](t: var LPTabz[K,V,Z,z]) =
     when Z is void:
       zeroMem t.data[0].addr, t.getCap * t.data[0].sizeof
     else:
-      if z == K(0):
+      if K(z) == K(0):
         zeroMem t.data[0].addr, t.getCap * t.data[0].sizeof
       else:
         for i in 0 ..< t.getCap: t.unUse i
