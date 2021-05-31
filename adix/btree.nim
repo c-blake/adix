@@ -1,5 +1,5 @@
 ## I know of no other as-simple/general FOSS B-Tree (in any prog.langs|books).
-## Theory people recurse; DB code clutters w/sync; Run times are less general.
+## Theory people recurse; DB code clutters w/sync; Other APIs are less general.
 ## Please correct me if I am wrong/cite this if this is your starting point.
 ## Minimal effort is made to explain these algos in comments as it's impractical
 ## to cram a course into this file with no figures.  More details & resources
@@ -658,8 +658,8 @@ template defBTree*(Ob: type, K: type=void, Pos: type=void, ObSize: type=void,
         return
       if q.nO < m - 1: t.err(depth, "UNDER obs " & $q.nO)
       if q.nL > 0:                              # NON-LEAF
-        if   q.nL > 2*m     : t.err(depth, "OVER  lnks " & $q.nL)
-        if   q.nL < m       : t.err(depth, "UNDER lnks " & $q.nL)
+        if   q.nL > 2*m   : t.err(depth, "OVER  lnks " & $q.nL)
+        if   q.nL < m     : t.err(depth, "UNDER lnks " & $q.nL)
         if   q.nL < q.nO+1: t.err(depth, $q.nL & " L < " & $q.nO & "+1 o")
         elif q.nL > q.nO+1: t.err(depth, $q.nL & " L > " & $q.nO & "+1 o")
       else:                                       # LEAF => DEPTH == HEIGHT
