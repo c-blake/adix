@@ -1,6 +1,6 @@
 template cfor*(init, test, update, body: untyped) =
   ## C-like for loop template.  May need () around arguments at call site.
-  ## Usage is like: ``cfor((var i = I), i < 16, i = i * 2): body``
+  ## Usage is like: `cfor (var i = 0), i < 16, i += 2: body`
   block:                     # var didOne = false #XXX continue in body broken
     init                     # while true:
     while test:              #   if not test: break
