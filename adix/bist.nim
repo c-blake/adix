@@ -39,19 +39,19 @@ when defined(Fenwick): # More standard Fenwick rather than Soultaker Convention
   if i == 0:
     t[0] = T(int(t[0]) + int(d))
   else:
-    cfor((var i = i), i < t.len, i += i and -i):  #Go down update tree
+    cfor (var i = i), i < t.len, i += i and -i:   #Go down update tree
       t[i] = T(int(t[i]) + int(d))                #Likely T unsigned, d signed
 
  proc pmf*[T](t: bist[T], i: int): T {.inline.} =
   result = t[i]
   if i > 0:
     var i = i - 1
-    cfor((var parent = (i + 1) and i), parent != i, i &= i - 1):
+    cfor (var parent = (i + 1) and i), parent != i, i &= i - 1:
       result -= t[i]
 
  proc cdf*[T](t: bist[T], i: int): T {.inline.} =
   result += t[0]
-  cfor((var i = i), i > 0, i &= i - 1):           #Go up interrogation tree
+  cfor (var i = i), i > 0, i &= i - 1:            #Go up interrogation tree
     result += t[i]
 
  proc fromCnts*[T](t: var bist[T]) =
@@ -63,15 +63,15 @@ when defined(Fenwick): # More standard Fenwick rather than Soultaker Convention
       t[j] += t[i]
 
  proc toCnts*[T](t: var bist[T]) =
-  cfor((var i = t.len), i != 0, i >>= 1):     #Long strides give ~n inner loops.
-    cfor((var j = 2*i), j < t.len, j += 2*i):     #*Might* be slower than just
+  cfor (var i = t.len), i != 0, i >>= 1:      #Long strides give ~n inner loops.
+    cfor (var j = 2*i), j < t.len, j += 2*i:      #*Might* be slower than just
       t[j] -= t[j - i]                            #..looping & calling `pmf`.
 
  proc invCDF*[T](t: bist[T], s: T; s0: var T): int {.inline.} = # ILP?
   if s <= t[0]:                             #Fenwick1995 amended to support t[0]
     s0 = 0; return 0                        #`base` renamed to `result`
   var c = s - t[0]                          #Subtract root value from s
-  cfor((var half = t.len.ceilPow2 shr 1), half != 0, half >>= 1):
+  cfor (var half = t.len.ceilPow2 shr 1), half != 0, half >>= 1:
     let mid = result + half                 #Probe midpoint of range
     if mid < t.data.len and t[mid] < c:     #If mid-point below
       c -= t[mid]                           #  Subtract base s
@@ -82,18 +82,18 @@ else: # Soultaker Convention.  I found it easier to make `invCDF` work w/nonPow2
  proc inc*[T](t: var bist[T]; i, d: SomeInteger) {.inline.} =
   ## Adjust for count update; Eg. inc(T,i,-1) decs count@i; Tm ~ 1/2..3/4 lg n
   t.tot += int(d)                                 #Likely T unsigned, d signed
-  cfor((var i = i), i < t.len, i |= i + 1):       #Go down update tree
+  cfor (var i = i), i < t.len, i |= i + 1:        #Go down update tree
     t[i] = T(int(t[i]) + d)                       #Likely T unsigned, d signed
 
  proc cdf*[T](t: bist[T], i: int): T {.inline.} =
   ## Inclusive sum(pmf[0..i]), (rank,EDF,prefix sum,scan,..); Tm~1 bits in ``i``
-  cfor((var i = i + 1), i > 0, i &= i - 1):       #Go up interrogation tree
+  cfor (var i = i + 1), i > 0, i &= i - 1:        #Go up interrogation tree
     result += t[i - 1]
 
  proc pmf*[T](t: bist[T], i: int): T {.inline.} =
   ## Probability Mass Function @i;  Avg Tm ~ 2 probes; Max Tm ~ lg n
   result = t[i]
-  cfor((var mask = 1), (i and mask) == mask, mask <<= 1):
+  cfor (var mask = 1), (i and mask) == mask, mask <<= 1:
     result -= t[i - mask]           #while LSB==1: subtract & mv up tree
 
  proc fromCnts*[T](t: var bist[T]) =
@@ -108,15 +108,15 @@ else: # Soultaker Convention.  I found it easier to make `invCDF` work w/nonPow2
  proc toCnts*[T](t: var bist[T]) =
   ## In-place bulk convert T[] from BIST to counts; Max time ~1*n
   ## *Unlike the others, this routine only works for power of 2-sized arrays*.
-  cfor((var i = t.len), i != 0, i >>= 1):     #Long strides give ~n inner loops.
-    cfor((var j = 2*i - 1), j < t.len, j += 2*i): #*Might* be slower than just
+  cfor (var i = t.len), i != 0, i >>= 1:      #Long strides give ~n inner loops.
+    cfor (var j = 2*i - 1), j < t.len, j += 2*i:  #*Might* be slower than just
       t[j] -= t[j - i]                            #..looping & calling `pmf`.
 
  proc invCDF*[T](t: bist[T], s: T; s0: var T): int {.inline.} = # ILP?
   ## Find ``i0,s0`` when ``sum(i0..i?)==s1; s0+pmf(i0)==s1`` for ``0<s<=tot``
   ## in ``lgCeil(n)`` array probes.  (sum jumps from ``s0@i0-1`` to ``s1@i0``).
   var c = s - 1                         #NOTE: s==0 is invalid input
-  cfor((var half = t.len.ceilPow2 shr 1), half != 0, half >>= 1):
+  cfor (var half = t.len.ceilPow2 shr 1), half != 0, half >>= 1:
     var mid = result + half - 1
     if mid < t.data.len and t[mid] <= c:
       c -= t[mid]
@@ -211,7 +211,7 @@ when isMainModule:
     if b.max != maxR: echo "wrong max: ", b.max, " not ", maxR; result |= 8
     let dq = 1.0 / 2048.0                             #Test quantile continuity
     var q0 = -1.0; var qP0 = 0.0                      #Take dq as param?
-    cfor((var q = 0.0), q <= 1.0, q += dq):
+    cfor (var q = 0.0), q <= 1.0, q += dq:
       let qP = b.quantile(q)
       if parzen : echo "P: ", q, " ", qP
       if q0 > -1 and abs(qP - qP0) > thresh:
