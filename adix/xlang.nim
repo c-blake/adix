@@ -1,11 +1,14 @@
 template cfor*(init, test, update, body: untyped) =
   ## C-like for loop template.  May need () around arguments at call site.
   ## Usage is like: `cfor (var i = 0), i < 16, i += 2: body`
-  block:                     # var didOne = false #XXX continue in body broken
-    init                     # while true:
-    while test:              #   if not test: break
-      body                   #   elif didOne: update
-      update                 #   else: didOne = true
+  block:
+    init                    #NOTE: Simpler `init; while test: body; update`
+    var updated = false     #      is a leaky abstraction; User must know to
+    while true:             #      not use `update`-skipping `continue`.
+      if updated: update    # Skip first update to be "top test; bottom update"
+      else: updated = true
+      if test: body
+      else: break
 
 proc `&=`*[T, U](a: var T, b: U) {.inline.} =
   ## Updating bit-wise `and`
