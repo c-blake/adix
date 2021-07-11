@@ -58,7 +58,7 @@ export Hash, `!$`, hash
 
 proc hashRoMu1*(x: SomeOrdinal|Hash): Hash {.inline.} =
   ## 1-hop of Romul-DuoJr using x as seed
-  Hash(rotateLeftBits(uint64(x) * 15241094284759029579'u64, 27))
+  cast[Hash](rotateLeftBits(uint64(x) * 15241094284759029579'u64, 27))
 
 proc hashRoMu2*(x: SomeOrdinal|Hash): Hash {.inline.} =
   ## Just the cross terms of 128-bit whole product
@@ -66,7 +66,7 @@ proc hashRoMu2*(x: SomeOrdinal|Hash): Hash {.inline.} =
   # from roMuDuoJr;  Could probably be tuned to get near avalanche.
   let lo = uint64(x) and 0xFFFFFFFF'u64
   let hi = uint64(x) shr 32
-  Hash(rotateLeftBits(0xD3833E80'u64 * lo  +  hi * 0x4F4C574B'u64, 27))
+  cast[Hash](rotateLeftBits(0xD3833E80'u64 * lo  +  hi * 0x4F4C574B'u64, 27))
 
 proc hiXorLoFallback32(a, b: uint64): uint64 {.inline, used.} =
   let # Fall back in 32-bit arithmetic
@@ -125,7 +125,7 @@ proc hiXorLo(a, b: uint64): uint64 {.inline.} =
 proc hashWangYi1*[T: Ordinal|enum](x: T): Hash {.inline.} =
   ## Wang Yi's hash_v1 for 8B int.  https://github.com/rurban/smhasher has more
   ## details.  This passed all scrambling tests in Spring 2019 and is simple.
-  ## NOTE: It's ok to define ``proc(x: int16): Hash = hashWangYi1(Hash(x))``.
+  ## NOTE: It's ok to define ``proc(x:int16): Hash=hashWangYi1(cast[Hash](x))``.
   const P0  = 0xa0761d6478bd642f'u64
   const P1  = 0xe7037ed1a0b428db'u64
   const P58 = 0xeb44accab455d165'u64 xor 8'u64
@@ -157,7 +157,7 @@ proc hashWY0*[T: Ordinal|enum](x: T): Hash {.inline.} =
   const P0 = 0xa0761d6478bd642f'u64
   const P1 = 0xe7037ed1a0b428db'u64
   let x = uint64(x)
-  Hash(hiXorLo(P0, x xor P1))
+  cast[Hash](hiXorLo(P0, x xor P1))
 
 proc hashMoreMur*[T: Ordinal|enum](x: T): Hash {.inline.} =
   ## This is from https://github.com/tommyettinger
@@ -167,7 +167,7 @@ proc hashMoreMur*[T: Ordinal|enum](x: T): Hash {.inline.} =
   x = x xor (x shr 33)
   x = x * 0x1C69B3F74AC4AE35'u64
   x = x xor (x shr 27)
-  result = Hash(x)
+  result = cast[Hash](x)
 
 proc hashNASAM*[T: Ordinal|enum](x: T): Hash {.inline.} =
   # Pelle Evensen's NASAM the xor of an odd number of rotations of the same term
@@ -179,9 +179,9 @@ proc hashNASAM*[T: Ordinal|enum](x: T): Hash {.inline.} =
   x = x xor (x shr 23) xor (x shr 51)
   x = x * 0x9E6D62D06F6A9A9B'u64
   x = x xor (x shr 23) xor (x shr 51)
-  result = Hash(x)
+  result = cast[Hash](x)
 
-proc hashIdentity*[T: Ordinal|enum](x: T): Hash {.inline.} = Hash(ord(x))
+proc hashIdentity*[T: Ordinal|enum](x: T): Hash {.inline.} = cast[Hash](ord(x))
 
 proc hashSplitMix*[T: Ordinal|enum](x: T): Hash {.inline.} =
   ## This is one hop of a PRNG.  For more information on the PRNG part see
@@ -189,7 +189,7 @@ proc hashSplitMix*[T: Ordinal|enum](x: T): Hash {.inline.} =
   var z = uint64(x) + 0x9e3779b97f4a7c15'u64
   z = (z xor (z shr 30)) * 0xbf58476d1ce4e5b9'u64
   z = (z xor (z shr 27)) * 0x94d049bb133111eb'u64
-  result = Hash(z xor (z shr 31))
+  result = cast[Hash](z xor (z shr 31))
 
 proc hashSplit64*[T: Ordinal|enum](x: T): Hash {.inline.} =
   ## https://nullprogram.com/blog/2018/07/31/
@@ -199,7 +199,7 @@ proc hashSplit64*[T: Ordinal|enum](x: T): Hash {.inline.} =
   x = x xor (x shr 27)
   x *= 0x94d049bb133111eb'u64
   x = x xor (x shr 31)
-  result = Hash(x)
+  result = cast[Hash](x)
 
 proc hashDegski*[T: Ordinal|enum](x: T): Hash {.inline.} =
   ## https://gist.github.com/degski/6e2069d6035ae04d5d6f64981c995ec2
@@ -209,13 +209,13 @@ proc hashDegski*[T: Ordinal|enum](x: T): Hash {.inline.} =
   x = x xor (x shr 32)
   x *= 0xd6e8feb86659fd93'u64
   x = x xor (x shr 32)
-  result = Hash(x)
+  result = cast[Hash](x)
 
 proc hashRevFib*(x: int32|uint32): Hash {.inline.} =
-  Hash(reverseBits(uint32(x) * 0xd3833e81'u64))
+  cast[Hash](reverseBits(uint32(x) * 0xd3833e81'u64))
 
 proc hashRevFib*(x: int64|uint64): Hash {.inline.} =
-  Hash(reverseBits(uint64(x) * 15241094284759029579'u64))
+  cast[Hash](reverseBits(uint64(x) * 15241094284759029579'u64))
 
 proc secureSalt*(x: pointer): Hash {.inline.} =
   proc getrandom(buf: pointer, len: uint64, flags: cuint): csize {. importc:
@@ -224,7 +224,7 @@ proc secureSalt*(x: pointer): Hash {.inline.} =
 
 proc vmaddrSalt*(x: pointer): Hash {.inline.} =
   const roMuDuoJr = 15241094284759029579'u64  # selected to pair w/27 bit roll
-  Hash(rotateLeftBits((cast[uint64](x) shr 3) * roMuDuoJr, 27))
+  cast[Hash](rotateLeftBits((cast[uint64](x) shr 3) * roMuDuoJr, 27))
 
 proc zeroSalt*(x: pointer): Hash {.inline.} = 0
 
@@ -240,7 +240,7 @@ else:
   proc hashRoMu1*(x: int|uint): Hash {.inline.} = hashRoMu1(uint32(x))
   proc hashRevFib*(x: int|uint): Hash {.inline.} = hashRevFib(uint32(x))
 
-proc hash*(hsh, salt: Hash): Hash {.inline.} = hashWangYi1(hsh xor Hash(salt))
+proc hash*(hsh, salt: Hash): Hash {.inline.} = hashWangYi1(hsh xor cast[Hash](salt))
 
 when defined(hashDebug):
   template dbg*(x) = x
