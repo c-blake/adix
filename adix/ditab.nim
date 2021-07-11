@@ -196,7 +196,7 @@ iterator mpairs*[K,V: not void](t: DITab[K,V]): (K, var V) =
   for e in t.data: yield e
 
 iterator hcodes*[K,V](t: DITab[K,V]): (int, Hash) =
-  for i, key in t.data: yield (i, Hash(key))
+  for i, key in t.data: yield (i, cast[Hash](key))
 
 #iterator allValues*[K,V](t: DITab[K,V]; key: K): V = # no-dups
 #iterator allValues*[K,V](t: DITab[K,V]; vals: var seq[V]): K = # no-dups

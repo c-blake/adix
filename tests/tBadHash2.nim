@@ -1,7 +1,7 @@
 import metab
 
 #import althash
-#proc hash(h, salt: Hash): Hash = hashRoMu1(h) xor Hash(salt)
+#proc hash(h, salt: Hash): Hash = hashRoMu1(h) xor cast[Hash](salt)
 
 var one = initSet[int]()
 for i in 0 ..< (1 shl 23):

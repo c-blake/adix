@@ -58,7 +58,7 @@ proc depth(i, hc, mask: Hash): Hash {.inline.} =
   let i = uint(i)
   let hc = uint(hc)
   let mask = uint(mask)
-  Hash((i - hc) and mask)                 # Search depth of entry w/hcode @ix`i`
+  cast[Hash]((i - hc) and mask)           # Search depth of entry w/hcode @ix`i`
 
 iterator probeSeq(hc, mask: Hash): int =
   var i: Hash = hc and mask               # Start w/home address
@@ -73,7 +73,7 @@ proc rawGet(s: BLTab; hc: Hash, d: var Hash): int {.inline.} =
     t = i
     if not s.isUsed(i):
       break
-    if d > depth(i, Hash(s.data[uint(i)]), s.data.high):
+    if d > depth(i, cast[Hash](s.data[uint(i)]), s.data.high):
       break
     if s.data[i] == uint(hc):
       return i
@@ -166,14 +166,14 @@ iterator items*(s: BLTab): Hash =
   let L = s.len
   for i in 0 ..< s.data.len:
     assert(s.len == L, "cannot change a set while iterating over it")
-    if s.isUsed(i): yield Hash(s.data[i])
+    if s.isUsed(i): yield cast[Hash](s.data[i])
 
 iterator pairs*(s: BLTab): tuple[a: int, b: Hash] =
   let L = s.len
   var j =  0
   for i in 0 ..< s.data.len:
     assert(s.len == L, "cannot change a set while iterating over it")
-    if s.isUsed(i): yield (j, Hash(s.data[i]))
+    if s.isUsed(i): yield (j, cast[Hash](s.data[i]))
     j.inc
 
 proc depths*(s: BLTab): seq[int] =

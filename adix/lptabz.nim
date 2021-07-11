@@ -263,7 +263,7 @@ proc depth(i, hc, mask: Hash): Hash {.inline.} =
   let i = uint(i)
   let hc = uint(hc)
   let mask = uint(mask)
-  Hash((i - hc) and mask)                 # Search depth of entry w/hcode @ix`i`
+  cast[Hash]((i - hc) and mask)           # Search depth of entry w/hcode @ix`i`
 
 iterator probeSeq(hc, mask: Hash): int =  # WTF generic over K caused codegenbug
   var i: Hash = hc and mask               # Start w/home address
