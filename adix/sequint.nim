@@ -1,16 +1,32 @@
-## This module provides a memory optimized ``seq[uint]`` for a user-given range
-## of numbers (by default its own length).  E.g., if the range is 0..63, it uses
-## just 6 bits per number (plus rounding error).  In the best cases this allows
-## packing numbers up to ~2x (e.g., 16/9) more densely.  The public API uses
-## only the widest type, usually a 64-bit unsigned integer.  To store ``n``
-## indices from ``0..n-1`` takes ``n*ceil(lg(n))`` bits.  E.g., circa 2020 L3
-## CPU caches have become large enough to support  24*2**24/8 = 48 MiB.
+## This module provides a memory optimized `seq[uint]` for a user-given range of
+## numbers (by default its own initial length).  E.g., if the range is 0..7, it
+## uses just 3 bits per number (plus rounding error).  Another pithy way to
+## describe it is "the array version of bit fields".
 ##
-## Using the wide type for backing store and limiting the design to hold only
-## numbers up to said wide type ensures <= 2 consecutive backing items are
-## needed to get any given number.  We also assume the almost universal pattern
-## that the number of bits in that widest type is a power of 2 like 16, 32, 64.
-## {NOTE: ISO/IEC JTC1 SC22 WG14 n2472 makes sizes of exact-bit ints next po2.}
+## In the best case, this allows packing numbers 8x (e.g., 8/1) more densely
+## than a "next biggest CPU int rounded" approach (like 8,16,32,64).  The public
+## API uses only the widest type, usually a 64-bit unsigned integer.
+##
+## To store `n` indices from `0..n-1` takes `n*ceil(lg(n))` bits.  E.g., circa
+## 2020 L3 CPU caches have become large enough to support any permutation of
+## 0..2^24-1 since (24*2**24/8 = 48 MiB).
+##
+## Using the widest type for backing store and limiting the design to hold only
+## numbers up to said wide type ensures <= 2 consecutive backing items are ever
+## needed to access a given number.
+##
+## Dynamically growing a `seq` like this is possible and not even that hard, but
+## future work.  PRs welcome.
+
+# We also assume the almost universal pattern that the number of bits in that
+# widest type is a power of 2 like 16, 32, 64.  {NOTE: ISO/IEC JTC1 SC22 WG14
+# n2472 makes sizes of exact-bit ints next po2 anyway.}
+#
+# NOTE: The core of this module is just `[]` & `[]=` which can *very likely* be
+# optimized in non-CPU-portable ways.  PRs for such are not only welcome, but
+# actively solicited.  This is a space optimization that almost everyone knows
+# about yet almost no one uses.  This is since an impl is just not handy or may
+# be slow.  A stdlib, especially with per CPU speed forks, could really help.
 
 import bitop
 const iBit = 8 * sizeof(int)
@@ -18,7 +34,7 @@ const iShf = lgPow2(iBit)
 const iMsk = (1 shl iShf) - 1
 
 type
-  SeqUint* = object   ## Space-optimized ``seq[uint]``
+  SeqUint* = object   ## A space-optimized `seq[uint]`
     data: seq[uint]   # Backing store, probably 64-bit ints
     len: int          # number of elements occupied
     bits: int8        # size of elements in bits
@@ -41,7 +57,7 @@ proc high*(s: SeqUint): int {.inline.} = int(s.len) - 1
 proc clear*(s: var SeqUint) {.inline.} =
   zeroMem s.data[0].addr, s.data.len * s.data[0].sizeof
 
-#TODO Could potentially optimize 8,16,32-bit cases with CPU supported types
+#TODO Could easily optimize exact 8|16|32-bit cases with CPU supported types.
 proc init*(s: var SeqUint, initialSize=0, numBound=0) {.inline.} =
   let bits = if   numBound    > 0: lg(numBound)
              elif initialSize > 0: lg(initialSize)
@@ -58,7 +74,7 @@ proc initSeqUint*(initialSize=0, numBound=0): SeqUint {.inline.} =
 # Consider storing 3 bit numbers packed into 8 bit words big-endian-wise like:
 #   indices for trad. R2Left ops:  76543210             76543210  76543210
 # The layout can be either A) m=1 [....210.] OR B) m=7 [0.......][......21].
-# Goes to bit-algebra `(w shr m) msk and` OR `(w1 and 3) shl 2 or (w0 shr m)`
+# Goes to bit-algebra `(w shr m) and msk` OR `(w1 and 3) shl 2 or (w0 shr m)`
 # where `m == bitix % 8` is the modulus of low order bit index relative to wdsz.
 proc `[]`*(s: SeqUint, i: int|uint): uint {.inline.} =
   if int(i) >= s.len:

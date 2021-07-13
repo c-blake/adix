@@ -1,10 +1,12 @@
+These notes are about lptabz/LPTabz.
+
 Unlike most hash table libraries, we do not use load factor to *guess* when
 growth *might* be necessary to preserve performance (conditioned upon good hash
 functions relative to the key set).  Instead, we measure probe sequence depth
 during insert and grow only if it is too deep (or some small `minFree` limit is
 hit).  "Too long" is `> numer/denom*lg(size)` since the worst per table case on
 random data scales that way.  This approach is both more robust to weakly
-scrambling hashes and more memory conservative for "better than random" hashes.
+scrambling hashes and more space conservative for "better than random" hashes.
 It also fixes this problem:
   https://accidentallyquadratic.tumblr.com/post/153545455987/rust-hash-iteration-reinsertion
 
@@ -23,14 +25,14 @@ table size.  We usually emit a warning when activating this feature, though that
 can be disabled.
 
 This resize protocol makes performance much more deterministic, but also makes
-memory utilization non-deterministic.  Utilization can be both much better than
+space utilization non-deterministic.  Utilization can be both much better than
 typical load-based resize with a near perfect hash as well as a little worse
 with a too weak hash.  This seems "how it should be".  Safer performance also
 seems worth more than deterministic size, and you cannot have both at once with
 an abstract key and user-settable hash.  I'm a bit surprised this resize
 protocol isn't more popular.
 
-If you want to monitor memory utilization you can do `.len/.getCap`.  The tables
+If you want to monitor space utilization you can do `.len/.getCap`.  The tables
 here also all provide a query function `depths` to inspect distribution of probe
 depth.  `depths` is about as expensive to compute as looking each item up once.
 It can be a bit faster on some key types.  More general performance forensics,

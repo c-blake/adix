@@ -10,16 +10,13 @@
 
 2) Make a `diset` using `sequint`, e.g. `dcset`; Should be easy.
 
-3) Make `o?set` using sequint, maybe called `c?set` if separate types or maybe
-   just a run-time or compile-time option on `o?set`.  Should be easy.
-
-4) Add `reindex` proc for o\*set/o\*tab.  Should be easy..just clear idx and
+3) Add `reindex` proc for o\*set/o\*tab.  Should be easy..just clear idx and
    loop over `data[]` inserting.  Maybe add after `sort` (to be more drop-in
    for Nim stdlib's ordered table workings).
 
-5) add `ref` variants, maybe via a `defref.nim`
+4) add `ref` variants, maybe via a `defref.nim`
 
-7) Possible lpset/ilset/olset micro-optimizations most relevant for L1/L2 cases:
+5) Possible lpset/ilset/olset micro-optimizations most relevant for L1/L2 cases:
 
   a) `moveMem` type element shifting should be faster than current pushUp/etc.,
      especially for larger element sizes.
@@ -63,19 +60,10 @@
      figured this out in the end, but going w/a short-hop linked variant:
        https://probablydance.com/2018/05/28/a-new-fast-hash-table-in-response-to-googles-new-fast-hash-table/
 
-8) Do external chaining impl for mutating while iterating.  Look at internal
-   chain of probablydance to assess insert/delete-while-iterating abilities.
-
-9) Think about adding Cuckoo hashing.  The strong-hash/double fetch trade off is
-   unlikely to ever be competitive (in SW) with RHoodLP on large tables with the
-   most slowness, but it may appease some people.  DGA seems pretty convinced
-   concurrent tables are best satisfied by Cuckoo.  So, it may also be a good
-   basis to replace stdlib sharedtables.  There are lock-free LP tables as well.
-   So, trust, but verify on this one.
-
-A) It'd be nice if we provided the option to use writable mmaps for all these
+7) It'd be nice if we provided the option to use writable mmaps for all these
    tables instead of just `seq` backing store.  This could maybe be as simple as
    passing an allocator proc to the various constructor functions and doing our
    own pointer arithmetic.  Not too hard, really.
 
-B) Port my C B-tree to Nim and include that here.
+8) Do external chaining impl for mutating while iterating.  Look at internal
+   chain of probablydance to assess insert/delete-while-iterating abilities.
