@@ -117,7 +117,7 @@ proc load*[K,V,Z;z:static[int]](t: var LPTabz[K,V,Z,z], path: string) =
     t.pow2    = uint8(lg(t.getCap))
     t.numer   = uint8(lpNumer)
     t.denom   = uint8(lpDenom)
-    t.minFree = uint8(lpMinFree)
+    t.minFree = max(1, lpMinFree).uint8
   else:
     assert "only implemented for one-level LPTabz"
 
@@ -149,7 +149,7 @@ proc mmap*[K,V,Z;z:static[int]](t: var LPTabz[K,V,Z,z], path: string) =
     t.pow2    = uint8(lg(t.getCap))
     t.numer   = uint8(lpNumer)
     t.denom   = uint8(lpDenom)
-    t.minFree = uint8(lpMinFree)
+    t.minFree = max(1, lpMinFree).uint8
   else:
     assert "only implemented for one-level LPTabz"
 
@@ -461,7 +461,7 @@ template popRet(t, i, key, present, missing: untyped) =
     present
 
 proc slotsGuess(count: int, minFree: int): int {.inline.} =
-  ceilPow2(count + minFree) # Might have a great hash
+  ceilPow2(count + max(1, minFree)) # Might have a great hash
 
 proc init*[K,V,Z;z:static[int]](t: var LPTabz[K,V,Z,z];
     initialSize=lpInitialSize, numer=lpNumer, denom=lpDenom, minFree=lpMinFree,
@@ -497,7 +497,7 @@ proc setPolicy*[K,V,Z;z:static[int]](t: var LPTabz[K,V,Z,z]; numer=lpNumer,
   ## Must call ``setCap`` after changing certain params here (e.g. ``rehash``).
   t.numer    = numer
   t.denom    = denom
-  t.minFree  = minFree
+  t.minFree  = max(1, minFree).uint8
   t.growPow2 = growPow2
   t.rehash   = rehash
   t.robin    = robinhood
@@ -511,10 +511,9 @@ proc setCap*[K,V,Z;z:static[int]](t: var LPTabz[K,V,Z,z]; newSize = -1) =
   if newSize < 0:
     newSz = t.getCap shl t.growPow2
     t.pow2 += t.growPow2
-  else:
-    newSz = max(newSize, slotsGuess(t.len, t.minFree.int))
+  else: # `max()` below blocks shrinking capacity below what is contained.
+    newSz = slotsGuess(max(newSize, t.len), t.minFree.int)
     t.pow2 = uint8(newSz.lg)
-    newSz = 1 shl t.pow2
   if newSz == t.getCap and newSize == -1:
     return
   dbg echo("RESIZE@ ", t.len, "/", t.getCap, " ", t.len.float/t.getCap.float)
