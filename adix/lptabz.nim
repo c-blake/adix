@@ -514,6 +514,7 @@ proc setCap*[K,V,Z;z:static[int]](t: var LPTabz[K,V,Z,z]; newSize = -1) =
   else:
     newSz = max(newSize, slotsGuess(t.len, t.minFree.int))
     t.pow2 = uint8(newSz.lg)
+    newSz = 1 shl t.pow2
   if newSz == t.getCap and newSize == -1:
     return
   dbg echo("RESIZE@ ", t.len, "/", t.getCap, " ", t.len.float/t.getCap.float)
