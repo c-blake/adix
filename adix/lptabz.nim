@@ -427,7 +427,7 @@ proc rawDel[K,V,Z;z:static[int]](t: var LPTabz[K,V,Z,z]; i: Hash) {.inline.} =
   when not (Z is K or Z is void):
     discard t.data.pop
 
-template getPut(t, i, k, key, present, missing: untyped) =
+template getPut(t, i, key, present, missing: untyped) =
   mixin rawPut1, rawPut2, tooFull
   if t.getCap == 0: t.init
   var hc, d, newSize: Hash
@@ -447,6 +447,7 @@ template getPut(t, i, k, key, present, missing: untyped) =
     when compiles(t.idx):
       t.idx[k] = ixHc(t.data.len + 1, hc, z)
       t.data.setLen t.data.len + 1
+    let i = k # Create an alias so missing & present bodies can both use `i`
     missing
   else:
     present
@@ -550,37 +551,49 @@ proc contains*[K,V,Z;z:static[int]](t: LPTabz[K,V,Z,z]; key: K):
 
 proc containsOrIncl*[K,Z;z:static[int]](t: var LPTabz[K,void,Z,z];
                                         key: K): bool {.inline.} =
-  t.getPut(i, k, key) do: result = true
-  do: result = false; t.cell(k)[].key = key
+  t.getPut(i, key) do: result = true
+  do: result = false; t.cell(i).key = key
 
 proc setOrIncl*[K,Z;z:static[int]](t: var LPTabz[K,void,Z,z];
                                    key: K): bool {.inline.} =
-  t.getPut(i, k, key) do: t.cell(i)[].key = key; result = true
-  do: t.cell(k)[].key = key; result = false
+  t.getPut(i, key) do: t.cell(i).key = key; result = true
+  do: t.cell(i).key = key; result = false
 
 proc mgetOrPut*[K,V,Z;z:static[int]](t: var LPTabz[K,V,Z,z]; key: K;
                                      val: V): var V {.inline.} =
-  t.getPut(i, k, key) do: result = t.cell(i)[].val
-  do: (let c = t.cell(k); c[].key = key; c[].val = val; result = c[].val)
+  t.getPut(i, key) do: result = t.cell(i).val
+  do: (let c = t.cell(i); c.key = key; c.val = val; result = c.val)
 
 proc mgetOrPut*[K,V,Z;z:static[int]](t: var LPTabz[K,V,Z,z]; key: K; val: V;
                                      had: var bool): var V {.inline.} =
-  t.getPut(i, k, key) do:
-    had=true ; result = t.cell(i)[].val
+  t.getPut(i, key) do:
+    had=true ; result = t.cell(i).val
   do:
-    had=false; (let c = t.cell(k)); c[].key = key; c[].val = val
-    result = c[].val
+    had=false; (let c = t.cell(i)); c.key = key; c.val = val
+    result = c.val
 
 template editOrInit*[K,V,Z;z:static[int]](t: var LPTabz[K,V,Z,z]; key: K;
                                           v, found, missing: untyped) =
   mixin cell, getPut
-  getPut(t, i, k, key) do:
-    var v {.inject.} = t.cell(i)[].val.addr
+  getPut(t, i, key) do:
+    var v {.inject.} = t.cell(i).val.addr
     found
   do:
-    let c = t.cell(k)
-    c[].key = key
-    var v {.inject.} = c[].val.addr
+    let c = t.cell(i)
+    c.key = key
+    var v {.inject.} = c.val.addr
+    missing
+
+template edOrInIt*[K,V,Z;z:static[int]](t: var LPTabz[K,V,Z,z]; ky: K;
+                                        found, missing: untyped) =
+  ## Provide variable `it` in both bodies corresponding to key `ky` that
+  ## represents the value found|allocated in the table.
+  mixin cell, getPut
+  template it: var V {.inject.} = t.cell(i).val
+  getPut(t, i, ky):
+    found
+  do:
+    t.cell(i).key = ky
     missing
 
 template doAdd(postAdd: untyped) {.dirty.} =
@@ -601,7 +614,7 @@ template doAdd(postAdd: untyped) {.dirty.} =
   when compiles(t.idx):
     t.idx[i] = ixHc(t.data.len + 1, hc, z)
     t.data.setLen t.data.len + 1
-  t.cell(k)[].key = key
+  t.cell(k).key = key
   postAdd
 
 proc add*[K,Z;z:static[int]](t: var LPTabz[K,void,Z,z]; key: K) {.inline.} =
@@ -609,7 +622,7 @@ proc add*[K,Z;z:static[int]](t: var LPTabz[K,void,Z,z]; key: K) {.inline.} =
 
 proc add*[K,V,Z;z:static[int]](t: var LPTabz[K,V,Z,z]; key: K,
                                val: V) {.inline.} =
-  doAdd: t.cell(k)[].val = val
+  doAdd: t.cell(k).val = val
 
 proc missingOrExcl*[K,V,Z;z:static[int]](t: var LPTabz[K,V,Z,z]; key: K): bool =
   t.popRet(i, key) do: t.rawDel i
@@ -617,13 +630,13 @@ proc missingOrExcl*[K,V,Z;z:static[int]](t: var LPTabz[K,V,Z,z]; key: K): bool =
 
 proc take*[K,Z;z:static[int]](t: var LPTabz[K,void,Z,z];
                               key: var K): bool {.inline.} =
-  t.popRet(i, key) do: key = move(t.cell(i)[].key); t.rawDel i; result = true
+  t.popRet(i, key) do: key = move(t.cell(i).key); t.rawDel i; result = true
   do: discard
 
 proc take*[K,V: not void,Z;z:static[int]](t: var LPTabz[K,V,Z,z]; key: K;
                                           val: var V): bool {.inline.} =
   t.popRet(i, key) do:
-    val = move(t.cell(i)[].val)
+    val = move(t.cell(i).val)
     t.rawDel i
     result = true
   do: discard
@@ -785,7 +798,7 @@ iterator allValues*[K,V,Z;z:static[int]](t: LPTabz[K,V,Z,z]; key: K): V =
   for i in probeSeq(t.hashHc(hc0), t.high):
     assert(t.len == L, "cannot change a tab while iterating over it")
     if not t.isUsed(i): break
-    if t.equal(i, key, hc0): yield t.cell(i)[].val
+    if t.equal(i, key, hc0): yield t.cell(i).val
 
 iterator allValues*[K,V,Z;z:static[int]](t: LPTabz[K,V,Z,z];
                                          vals: var seq[V]): K =
@@ -994,8 +1007,8 @@ proc `[]`*[K,V,Z;z:static[int]](t: var LPTabz[K,V,Z,z],
 
 proc `[]=`*[K,V,Z;z:static[int]](t: var LPTabz[K,V,Z,z],
                                  key: K, val: V) {.inline.} =
-  t.getPut(i,k,key) do: t.cell(i)[].val = val #Replace 1st FOUND elt in multimap|put
-  do: (let c = t.cell(k); c[].key = key; c[].val = val)
+  t.getPut(i,key) do: t.cell(i).val = val #Replace 1st FOUND elt in multimap|put
+  do: (let c = t.cell(i); c.key = key; c.val = val)
 
 proc `{}`*[K,V,Z;z:static[int]](t: LPTabz[K,V,Z,z],
                                 key: K): V {.inline.} = t[key]
@@ -1015,7 +1028,7 @@ proc getOrDefault*[K,V,Z;z:static[int]](t: LPTabz[K,V,Z,z], key: K,
                                         default=default(V)): V {.inline.} =
   mixin rawGet
   let i = t.rawGet(key)
-  result = if i >= 0: t.cell(i)[].val else: default
+  result = if i >= 0: t.cell(i).val else: default
 
 proc del*[K,V,Z;z:static[int]](t: var LPTabz[K,V,Z,z], key: K) {.inline.} =
   if t.missingOrExcl(key): key.raiseNotFound
