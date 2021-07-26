@@ -572,16 +572,16 @@ proc mgetOrPut*[K,V,Z;z:static[int]](t: var LPTabz[K,V,Z,z]; key: K; val: V;
     result = c[].val
 
 template editOrInit*[K,V,Z;z:static[int]](t: var LPTabz[K,V,Z,z]; key: K;
-                                          v, body1, body2: untyped) =
+                                          v, found, missing: untyped) =
   mixin cell, getPut
   getPut(t, i, k, key) do:
     var v {.inject.} = t.cell(i)[].val.addr
-    body1
+    found
   do:
     let c = t.cell(k)
     c[].key = key
     var v {.inject.} = c[].val.addr
-    body2
+    missing
 
 template doAdd(body: untyped) {.dirty.} =
   if t.getCap == 0: t.init
@@ -971,13 +971,13 @@ template withValue*[K,V,Z;z:static[int]](t: var LPTabz[K,V,Z,z], key: K;
     body
 
 template withValue*[K,V,Z;z:static[int]](t: var LPTabz[K,V,Z,z], key: K; value,
-                                         body1, body2: untyped) =
+                                         found, missing: untyped) =
   mixin rawGet
   let i = t.rawGet(key)
   if i >= 0:
     var value {.inject.} = t.cell(i).val.addr
-    body1
-  else: body2
+    found
+  else: missing
 
 proc `[]`*[K,V,Z;z:static[int]](t: LPTabz[K,V,Z,z], key: K): V {.inline.} =
   mixin rawGet
