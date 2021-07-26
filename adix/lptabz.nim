@@ -586,7 +586,7 @@ template editOrInit*[K,V,Z;z:static[int]](t: var LPTabz[K,V,Z,z]; key: K;
 
 template edOrInIt*[K,V,Z;z:static[int]](t: var LPTabz[K,V,Z,z]; ky: K;
                                         found, missing: untyped) =
-  ## Provide variable `it` in both bodies corresponding to key `ky` that
+  ## Provide value variable `it` corresponding to key `ky` in both bodies that
   ## represents the value found|allocated in the table.
   mixin cell, getPut
   template it: var V {.inject.} = t.cell(i).val
