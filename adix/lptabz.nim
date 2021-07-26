@@ -583,7 +583,7 @@ template editOrInit*[K,V,Z;z:static[int]](t: var LPTabz[K,V,Z,z]; key: K;
     var v {.inject.} = c[].val.addr
     missing
 
-template doAdd(body: untyped) {.dirty.} =
+template doAdd(postAdd: untyped) {.dirty.} =
   if t.getCap == 0: t.init
   var hc, d, newSize: Hash
   var i = t.rawGetDeep(key, hc, d)
@@ -602,7 +602,7 @@ template doAdd(body: untyped) {.dirty.} =
     t.idx[i] = ixHc(t.data.len + 1, hc, z)
     t.data.setLen t.data.len + 1
   t.cell(k)[].key = key
-  body
+  postAdd
 
 proc add*[K,Z;z:static[int]](t: var LPTabz[K,void,Z,z]; key: K) {.inline.} =
   doAdd: discard
@@ -963,12 +963,12 @@ proc pop*[K,V: not void,Z;z:static[int]](t: var LPTabz[K,V,Z,z]; key: K;
   t.take key, val
 
 template withValue*[K,V,Z;z:static[int]](t: var LPTabz[K,V,Z,z], key: K;
-                                         value, body: untyped) =
+                                         value, found: untyped) =
   mixin rawGet
   let i = t.rawGet(key)
   if i >= 0:
     var value {.inject.} = t.cell(i).val.addr
-    body
+    found
 
 template withValue*[K,V,Z;z:static[int]](t: var LPTabz[K,V,Z,z], key: K; value,
                                          found, missing: untyped) =
