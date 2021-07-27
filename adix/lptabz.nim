@@ -1060,6 +1060,7 @@ proc indexBy*[A, K,V,Z;z:static[int]](collection: A,
 # 3 defs to maybe obsolete `CountTable` or let it be a type alias.
 proc inc*[K,V,Z;z:static[int]](c: var LPTabz[K,V,Z,z], key: K,
                                amount: V=1) {.inline.} =
+  ## Increment a `key` counter in table `t` by amount.
   c.editOrInit(key, val):
     val[] += amount
     if val[] == 0: c.del key
@@ -1067,10 +1068,12 @@ proc inc*[K,V,Z;z:static[int]](c: var LPTabz[K,V,Z,z], key: K,
     val[] = amount
 
 proc merge*[K,V,Z;z:static[int]](c: var LPTabz[K,V,Z,z], b: LPTabz[K,V,Z,z]) =
+  ## Merge values from CountTable/histogram `b` into histogram `c`.
   for key, val in b: c.inc(key, val)
 
 iterator topByVal*[K,V,Z;z:static[int]](c: LPTabz[K,V,Z,z], n=10,
                                         min=V.low): (K, V) =
+  ## Iterate from smallest to largest over biggest `n` items by value in `c`.
   var q = initHeapQueue[(V, K)]()
   for key, val in c:
     if val >= min:
