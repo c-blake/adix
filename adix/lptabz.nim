@@ -1058,16 +1058,15 @@ proc indexBy*[A, K,V,Z;z:static[int]](collection: A,
   for item in collection: result[index(item)] = item
 
 # 3 defs to maybe obsolete `CountTable` or let it be a type alias.
-proc inc*[K,V: SomeInteger,Z;z:static[int]](t: var LPTabz[K,V,Z,z], key: K,
-                                            amount: SomeInteger=1) {.inline.} =
-  t.editOrInit(key, val):
+proc inc*[K,V,Z;z:static[int]](c: var LPTabz[K,V,Z,z], key: K,
+                               amount: V=1) {.inline.} =
+  c.editOrInit(key, val):
     val[] += amount
     if val[] == 0: c.del key
   do:
     val[] = amount
 
-proc merge*[K,V: SomeInteger,Z;z:static[int]](c: var LPTabz[K,V,Z,z],
-                                              b: LPTabz[K,V,Z,z]) =
+proc merge*[K,V,Z;z:static[int]](c: var LPTabz[K,V,Z,z], b: LPTabz[K,V,Z,z]) =
   for key, val in b: c.inc(key, val)
 
 iterator topByVal*[K,V,Z;z:static[int]](c: LPTabz[K,V,Z,z], n=10,
