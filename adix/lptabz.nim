@@ -584,17 +584,27 @@ template editOrInit*[K,V,Z;z:static[int]](t: var LPTabz[K,V,Z,z]; key: K;
     var v {.inject.} = c.val.addr
     missing
 
-template edOrInIt*[K,V,Z;z:static[int]](t: var LPTabz[K,V,Z,z]; ky: K;
-                                        edit, init: untyped) =
-  ## Provide value variable `it` corresponding to key `ky` in both bodies that
+template withIt*[K,V,Z;z:static[int]](t: var LPTabz[K,V,Z,z]; k: K; edit, init)=
+  ## Provide value variable `it` corresponding to key `k` in both bodies that
   ## represents the value found|allocated in the table.
   mixin cell, getPut
   template it: var V {.inject.} = t.cell(i).val
-  getPut(t, i, ky):
+  getPut(t, i, k):
     edit
   do:
-    t.cell(i).key = ky
+    t.cell(i).key = k
     init
+
+template getItOrFail*[K,V,Z;z:static[int]](t: LPTabz[K,V,Z,z]; k: K;
+                                           found, missing) =
+  ## Provide value `it` corresponding to key `k` in `found` or do `missing`.
+  mixin cell, getPut
+  template it: var V {.inject.} = t.cell(i).val
+  getPut(t, i, k):
+    found
+  do:
+    t.cell(i).key = k
+    missing
 
 template doAdd(postAdd: untyped) {.dirty.} =
   if t.getCap == 0: t.init
