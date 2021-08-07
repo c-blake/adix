@@ -427,7 +427,7 @@ proc rawDel[K,V,Z;z:static[int]](t: var LPTabz[K,V,Z,z]; i: Hash) {.inline.} =
   when not (Z is K or Z is void):
     discard t.data.pop
 
-template getPut(t, i, key, present, missing: untyped) =
+template getPut(t, i, key, present, missing: untyped): untyped =
   mixin rawPut1, rawPut2, tooFull
   if t.getCap == 0: t.init
   var hc, d, newSize: Hash
@@ -452,7 +452,7 @@ template getPut(t, i, key, present, missing: untyped) =
   else:
     present
 
-template popRet(t, i, key, present, missing: untyped) =
+template popRet(t, i, key, present, missing: untyped): untyped =
   var i: int
   if t.getCap == 0 or (i = t.rawGet(key); i) < 0:
     missing
@@ -573,7 +573,7 @@ proc mgetOrPut*[K,V,Z;z:static[int]](t: var LPTabz[K,V,Z,z]; key: K; val: V;
     result = c.val
 
 template editOrInit*[K,V,Z;z:static[int]](t: var LPTabz[K,V,Z,z]; key: K;
-                                          v, found, missing: untyped) =
+                                          v, found, missing: untyped): untyped =
   mixin cell, getPut
   getPut(t, i, key) do:
     var v {.inject.} = t.cell(i).val.addr
@@ -987,7 +987,7 @@ proc pop*[K,V: not void,Z;z:static[int]](t: var LPTabz[K,V,Z,z]; key: K;
   t.take key, val
 
 template withValue*[K,V,Z;z:static[int]](t: var LPTabz[K,V,Z,z], key: K;
-                                         value, found: untyped) =
+                                         value, found: untyped): untyped =
   mixin rawGet
   let i = t.rawGet(key)
   if i >= 0:
@@ -995,7 +995,7 @@ template withValue*[K,V,Z;z:static[int]](t: var LPTabz[K,V,Z,z], key: K;
     found
 
 template withValue*[K,V,Z;z:static[int]](t: var LPTabz[K,V,Z,z], key: K; value,
-                                         found, missing: untyped) =
+                                         found, missing: untyped): untyped =
   mixin rawGet
   let i = t.rawGet(key)
   if i >= 0:
