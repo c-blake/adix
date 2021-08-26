@@ -55,6 +55,7 @@
 
 import std/hashes, bitop    # For the Hash type and system `hash()`es
 export Hash, `!$`, hash
+type csize = uint
 
 proc hashRoMu1*(x: SomeOrdinal|Hash): Hash {.inline.} =
   ## 1-hop of Romul-DuoJr using x as seed
