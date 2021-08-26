@@ -1098,6 +1098,12 @@ iterator topByVal*[K,V,Z;z:static[int]](c: LPTabz[K,V,Z,z], n=10,
     y[1] = r[0]
     yield y               # yield in ascending order
 
+iterator mostCommon*[K](xs: openArray[K], n=10): (K, int) =
+  ## Iterate over (`n` most common values in `xs`, their counts) tuples.
+  var cnt: LPTabz[K,int,void,0]
+  for x in xs: cnt.inc x
+  for tup in cnt.topByVal(n): yield tup
+
 # Specializations;  Q: add ILSet/OLSet/etc. for back compat..?
 proc initLPSetz*[K,Z;z:static[int]](initialSize=lpInitialSize, numer=lpNumer,
         denom=lpDenom, minFree=lpMinFree, growPow2=lpGrowPow2, rehash=lpRehash,
