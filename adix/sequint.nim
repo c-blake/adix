@@ -78,7 +78,7 @@ proc initSeqUint*(initialSize=0, numBound=0): SeqUint {.inline.} =
 # where `m == bitix % 8` is the modulus of low order bit index relative to wdsz.
 proc `[]`*(s: SeqUint, i: int|uint): uint {.inline.} =
   if int(i) >= s.len:
-    raise newException(IndexError, formatErrorIndexBound(int(i), s.len))
+    raise newException(IndexDefect, formatErrorIndexBound(int(i), s.len))
   let sbits  = uint(s.bits)
   let bitix  = uint(i) * sbits
   let wdix   = bitix shr iShf
@@ -102,7 +102,7 @@ proc `[]`*(s: SeqUint, i: int|uint): uint {.inline.} =
 proc `[]=`*(s: var SeqUint, i: int|uint, x: int|uint) {.inline.} =
   let x = uint(x) and ((1'u shl s.bits) - 1)
   if int(i) >= s.len:
-    raise newException(IndexError, formatErrorIndexBound(i, s.len))
+    raise newException(IndexDefect, formatErrorIndexBound(i, s.len))
   let sbits  = uint(s.bits)
   let bitix  = uint(i) * sbits
   let wdix   = bitix shr iShf

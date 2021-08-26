@@ -653,7 +653,7 @@ proc take*[K,V: not void,Z;z:static[int]](t: var LPTabz[K,V,Z,z]; key: K;
   do: discard
 
 proc pop*[K,Z;z:static[int]](t: var LPTabz[K,void,Z,z]): K {.inline.} =
-  if t.len == 0: raise newException(IndexError, formatErrorIndexBound(0,0))
+  if t.len == 0: raise newException(KeyError, "collection is empty")
   when Z is K or Z is void:
     for i in 0 ..< t.getCap:
       if t.isUsed(i):             # Slows down as a set empties (as does regular
@@ -666,7 +666,7 @@ proc pop*[K,Z;z:static[int]](t: var LPTabz[K,void,Z,z]): K {.inline.} =
 
 proc pop*[K,V: not void,Z;z:static[int]](t: var LPTabz[K,V,Z,z]):
     (K, V) {.inline.} =
-  if t.len == 0: raise newException(IndexError, formatErrorIndexBound(0,0))
+  if t.len == 0: raise newException(KeyError, "collection is empty")
   when Z is K or Z is void:
     for i in 0 ..< t.getCap:      # See performance note for unkeyed set pop
       if t.isUsed(i):
