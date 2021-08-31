@@ -9,7 +9,7 @@
 
 from math         import sqrt, sum, `^`
 from strutils     import formatFloat, ffDefault
-from cligen/strUt import fmtUncertain
+from cligen/strUt import fmtUncertainMerged
 type
   MovingStat*[F: SomeFloat] = object  ## An accumulator for statistical data.
     n*, n4Inv: int                    ## amount of pushed data
@@ -125,11 +125,11 @@ proc `$`*[F](s: MovingStat[F]): string =
   ## A string representation of a `MovingStat[F]`.
   let skew = s.skewness.float
   let kurt = s.kurtosis.float
-  "( " & fmtUncertain(s.mean.float, s.stderror.float) &
+  fmtUncertainMerged(s.mean.float, s.stderror.float) &
   " [ " & $(s.min) & " .. " & $(s.max) & " ]" &
   " sd: " & formatFloat(s.standardDeviation.float, ffDefault, 4) &
   " sk: " & formatFloat(skew, ffDefault, 4) &
-  " ek: " & formatFloat(kurt, ffDefault, 3) & " )"
+  " ek: " & formatFloat(kurt, ffDefault, 3)
 
 func mean*[T: SomeNumber](xs: openArray[T]): float = xs.sum.float/xs.len.float
   ## Arithmetic mean/average; Used `math.sum` can overflow for narrow types.
@@ -308,4 +308,4 @@ when isMainModule:
   for i, x in xs:
     if i >= 3: wM.pop xs[i-3]
     wM.push x # only print for full 3windows
-    if i >= 2: echo "  ", i, " ", fmtUncertain(wM.mean, wM.stderror, eHigh=7)
+    if i >= 2: echo "  ",i," ",fmtUncertainMerged(wM.mean, wM.stderror, eHigh=7)
