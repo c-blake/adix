@@ -209,7 +209,8 @@ func standardDeviationS*[F](s: var MovingStat[F]): float = s.varianceS.sqrt
 func standardDeviationS*[T: SomeNumber](xs: openArray[T], accum=32): float =
   xs.varianceS.sqrt
 
-func basicStats*[F: SomeFloat](xs: openArray[F]): BasicStats[F] =
+func basicStats*[F: SomeFloat](xs: openArray[F]): BasicStats[F] {.
+       codegenDecl: "__attribute__((optimize(\"fast-math\"))) $# $#$#" .} =
   ## The summary stats you usually want in one pass (in native FP arith).
   result.n = xs.len     # --passC:-ffast-math can autovectorize the whole loop
   if result.n > 0:      #..into vminp[sd]/vmaxp[sd]/vsubp[sd]/vaddp[sd] insns
@@ -219,8 +220,8 @@ func basicStats*[F: SomeFloat](xs: openArray[F]): BasicStats[F] =
     let dx = if result.n > 0: xs[0] else: F(0)
     var av, vr: F
     for x in xs:
-      result.min = min(result.min, x)
-      result.max = max(result.max, x)
+      result.min = min(result.min, x) # min/max get autovect in equiv C but do
+      result.max = max(result.max, x) #..not in Nim with -fno-finite-math-only.
       let x = x - dx
       av = av + x
       vr = vr + x*x
