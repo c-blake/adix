@@ -19,6 +19,8 @@ type
     n*: int                           ## sample size
     min*, max*, mean*, sdev*: F       ## the usual suspects.
 
+const avc = "__attribute__((optimize(\"fast-math\"))) $# $#$#" # autovec cgdecl
+
 func nInv*[F](s: var MovingStat[F]): F {.inline.} =
   ## A reciprocal caching `1.0/s.n`.
   if s.n4Inv != s.n:
@@ -34,7 +36,7 @@ func clear*[F](s: var MovingStat[F]) {.inline.} =
   ## Reset `s` to same as `var s: MovingStat[F]`.
   zeroMem s.addr, s.sizeof
 
-func push*[F](s: var MovingStat[F], x: SomeNumber) {.inline.} =
+func push*[F](s: var MovingStat[F], x: SomeNumber) {.inline, codegenDecl:avc.} =
   ## Pushes a value `x` into running sums.
   let x0 = F(x)
   if s.n == 0: s.min = x0; s.max = x0; s.dx = x0
@@ -47,7 +49,7 @@ func push*[F](s: var MovingStat[F], x: SomeNumber) {.inline.} =
   s.s4 = s.s4 + x2*x2
   inc s.n
 
-func pop*[F](s: var MovingStat[F], x: SomeNumber) {.inline.} =
+func pop*[F](s: var MovingStat[F], x: SomeNumber) {.inline, codegenDecl:avc.} =
   ## Pops (aka removes the influence) of a value `x` from running sums.
   let x  = F(x) - s.dx
   let x2 = x*x
@@ -131,10 +133,11 @@ proc `$`*[F](s: MovingStat[F]): string =
   " sk: " & formatFloat(skew, ffDefault, 4) &
   " ek: " & formatFloat(kurt, ffDefault, 3)
 
-func mean*[T: SomeNumber](xs: openArray[T]): float = xs.sum.float/xs.len.float
+func mean*[T: SomeNumber](xs: openArray[T]): float {.codegenDecl:avc.} =
+  xs.sum.float/xs.len.float
   ## Arithmetic mean/average; Used `math.sum` can overflow for narrow types.
 
-func variance*[T: SomeNumber](xs: openArray[T], accum=32): float =
+func variance*[T:SomeNumber](xs:openArray[T],accum=32):float{.codegenDecl:avc.}=
   ## variance (population). `accum` != 32 => 64-bit accumulation.
   template impl(F) =
     var m, v: F
@@ -155,7 +158,7 @@ func stderror*[T: SomeNumber](xs: openArray[T], accum=32): float =
   ## standard error (std dev of the mean). `accum` != 32 => 64-bit accumulation.
   sqrt(xs.variance(accum)/xs.len.float)
 
-func skewness*[T: SomeNumber](xs: openArray[T], accum=32): float =
+func skewness*[T:SomeNumber](xs:openArray[T],accum=32):float{.codegenDecl:avc.}=
   ## skewness (population). `accum` != 32 => 64-bit accumulation.
   template impl(F) =
     var s1, s2, s3: F
@@ -171,7 +174,7 @@ func skewness*[T: SomeNumber](xs: openArray[T], accum=32): float =
     result = (s3 - 3*s1*s2 + 2*s1*s1*s1)*scl*scl*scl
   if accum == 32: impl(float32) else: impl(float64)
 
-func kurtosis*[T: SomeNumber](xs: openArray[T], accum=32): float =
+func kurtosis*[T:SomeNumber](xs:openArray[T],accum=32):float{.codegenDecl:avc.}=
   ## excess kurtosis (population). `accum` != 32 => 64-bit accumulation.
   template impl(F) =
     var s1, s2, s3, s4: F
@@ -209,8 +212,7 @@ func standardDeviationS*[F](s: var MovingStat[F]): float = s.varianceS.sqrt
 func standardDeviationS*[T: SomeNumber](xs: openArray[T], accum=32): float =
   xs.varianceS.sqrt
 
-func basicStats*[F: SomeFloat](xs: openArray[F]): BasicStats[F] {.
-       codegenDecl: "__attribute__((optimize(\"fast-math\"))) $# $#$#" .} =
+func basicStats*[F:SomeFloat](xs:openArray[F]):BasicStats[F]{.codegenDecl:avc.}=
   ## The summary stats you usually want in one pass (in native FP arith).
   result.n = xs.len     # --passC:-ffast-math can autovectorize the whole loop
   if result.n > 0:      #..into vminp[sd]/vmaxp[sd]/vsubp[sd]/vaddp[sd] insns
