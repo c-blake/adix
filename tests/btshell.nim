@@ -109,7 +109,7 @@ proc btshell(verbose=false, quiet=false, check=false, errstd=false): int =
       found = if cin.sided: t.seekKeys(path, s, k) else: t.seekKey(path, k)
       path.print
     of 'i':                                         # insert ob @path
-      if path.len > 0: path.add(bool(k), ob, found)
+      if path.len > 0: path.add(ob, bool(k), found)
       else: f.write "cannot insert @empty path\n"
       maybeCk
     of 'd': (if path.len > 0: path.del; maybeCk)    # Delete Ob @current path
@@ -131,12 +131,12 @@ proc btshell(verbose=false, quiet=false, check=false, errstd=false): int =
       else:                             # +0 k v prepend k,v; +1 k v append k,v
         if cin.sided:                   # Unconditional add
           found = t.seekKeys(path, s, k)
-          path.add(s, ob, found)
+          path.add(ob, s, found)
         else:                           # Add if missing
           found = t.seekKey(path, k)
           if found: f.write k, " already present\n"
           else:
-            path.add(s, ob, found)
+            path.add(ob, s, found)
             if check:                   # Maybe dbl ck path post-add
               var path2: Path; discard t.seekKey(path2, k)
               if path2 != path: f.write "post add path mismatch\n"
@@ -154,7 +154,7 @@ proc btshell(verbose=false, quiet=false, check=false, errstd=false): int =
         found = if cin.sided: t.seekKeys(path, s, k) else: t.seekKey(path, k)
         if found: path.del; maybeCk
         elif not quiet: f.write &"{k} not found\n"
-    of 'A': badd(path, s, ob, t, v)     # A1 k S bulk adds k,0 w/spare S
+    of 'A': badd(path, ob, s, t, v)     # A1 k S bulk adds k,0 w/spare S
     of 'D': baddDone(t, s, k); maybeCk  # Finalize after bulk adds
     of 'X': discard
     of 'z': f.write "node size: ", Node.sizeof, " bytes\n"

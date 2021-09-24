@@ -120,7 +120,7 @@ template btPool*(Ob, Pos: type; nodeSize: int; Ix, Ln: type) =
       inTr[t] = true                                    # Mark self..
       for i in 0.Ix ..< t[].nL: mark(t[].ln[i], inTr)   #..& kids
 
-    proc refCk(t: Ln): bool =
+    proc refCk(t: Ln): bool {.used.} =
       var inTree = newSeq[bool](pool.len) # Mark&sweep style mem check
       t.mark inTree
       var isFree = newSeq[bool](pool.len)
@@ -134,10 +134,11 @@ template btPool*(Ob, Pos: type; nodeSize: int; Ix, Ln: type) =
         if not inTree[p] and not isFree[p]:
           stderr.write "node " & $p & " not in tree or free\n"; return true
   else:
-    proc refCk(t: Ln): bool = false
+    proc refCk(t: Ln): bool {.used.} = false
 
-template btLinearNode*(Ob, K, Pos: type, m: int, Ix, Ln: type) =
+template btLinearNode*(Ob, K, Pos: type; M: untyped; Ix, Ln: type) =
   ## In-Node ops
+  const m = Ix(M)
   proc oPut(t: Ln, i: Ix, ob: Ob) =
     if i < t[].nO:
       moveMem t[].ob[i + 1].addr, t[].ob[i].addr, int(t[].nO - i)*Ob.sizeof
@@ -266,7 +267,7 @@ template defBTree*(Ob: type, K: type=void, Pos: type=void, ObSize: type=void,
       yield (path[^1].p, path[^1].p[].ob[path[^1].i], path.len - 1)
       path.seekAdj true
   
-  iterator items(t: Ln): Ob =                               # object iter
+  iterator items*(t: Ln): Ob =                              # object iter
     var path: Path
     t.seekMost(path, false)             # start at 0-edge; advance to 1-adjacent
     while path.len > 0:
@@ -274,7 +275,7 @@ template defBTree*(Ob: type, K: type=void, Pos: type=void, ObSize: type=void,
       path.seekAdj true
   
   when K isnot void:
-    proc seekKey(t: Ln, path: var Path, searchKey: K): bool =
+    proc seekKey(t: Ln, path: var Path, searchKey: K): bool {.used.} =
       if t == Ln0: return false         # Empty tree
       path.setLen 0
       var p = t
@@ -290,7 +291,7 @@ template defBTree*(Ob: type, K: type=void, Pos: type=void, ObSize: type=void,
     # Well-defined sub-orders help when dup keys can occur.  seekKeys sets path
     # to side==false|true-most key.  E.g., (seekKeys(1)+add, seekKeys(0)+del)
     # yields FIFO while (seekKeys(0)+add, seekKeys(0)+del) yields LIFO.
-    proc seekKeys(t: Ln, path: var Path, side: bool, searchKey: K): bool =
+    proc seekKeys(t: Ln, path: var Path, side: bool, searchKey: K):bool{.used.}=
       if t == Ln0: return false         # Empty tree
       path.setLen 0
       var p = t
@@ -312,7 +313,7 @@ template defBTree*(Ob: type, K: type=void, Pos: type=void, ObSize: type=void,
         p = p[].ln[i]                   # Descend
   
   when Pos isnot void:
-    proc seekNth(t: Ln, path: var Path, n: int): int =
+    proc seekNth(t: Ln, path: var Path, n: int): int {.used.} =
       # Returns rank of path byproduct when ObSize isnot void.  Else, just 0|-1
       if t == Ln0: return 0                 # Null tree
       var n = if n < 0: t[].wt + n else: n  # Py-like negative n
@@ -329,10 +330,10 @@ template defBTree*(Ob: type, K: type=void, Pos: type=void, ObSize: type=void,
           when ObSize isnot void:
             var i = 0
             while true:
-              when defined(btBug):          # WTF: 1st branch works elsewhere
-                n -= t[].ob[i].size         #   ..in this VERY SAME proc, and
-              else:                         #   ..also on e.g., nim-0.20.2
-                n -= t[].ob[i..i][0].size   # Work around crazy bug
+              when defined(btBug):            # WTF: 1st branch works elsewhere
+                n -= int(t[].ob[i].size)      #   ..in this VERY SAME proc, and
+              else:                           #   ..also on e.g., nim-0.20.2
+                n -= int(t[].ob[i..i][0].size)# Work around crazy bug
               if n < 0: break
               i.inc
             path.add (t, i.Ix)
@@ -349,10 +350,10 @@ template defBTree*(Ob: type, K: type=void, Pos: type=void, ObSize: type=void,
           if n <= 0:                        # Got the item we wanted
             path.add (t, i)
             when ObSize isnot void:
-              result += t[].ob[i].size - 1
+              result += int(t[].ob[i].size) - 1
             return
           when ObSize isnot void:
-            n -= t[].ob[i].size
+            n -= int(t[].ob[i].size)
             if n < 0:                       # Reverse i-th key in node
               path.add (t, i)
               return result - (n + 1)
@@ -375,8 +376,8 @@ template defBTree*(Ob: type, K: type=void, Pos: type=void, ObSize: type=void,
             for j in e.i + 1 ..< e.p[].nL:
               result -= e.p[].ln[j][].wt
           for k in countdown(e.p[].nO - 1, e.i):
-            result -= e.p[].ob[k].size
-        result += path[^1].p[].ob[path[^1].i].size      # Add back end of path
+            result -= int(e.p[].ob[k].size)
+        result += int(path[^1].p[].ob[path[^1].i].size) # Add back end of path
       else:
         for e in path:
           if not e.p.isLeaf:                            # Subtract >= kids
@@ -411,7 +412,7 @@ template defBTree*(Ob: type, K: type=void, Pos: type=void, ObSize: type=void,
       sib[].wt  = w                     # Set sib
       kid[].wt -= w + Pos(sz)           # Adjust kid
   
-  proc add(path: var Path, side: bool, ob: Ob, keyPresent=false) =
+  proc add(path: var Path, ob: Ob, side=true, keyPresent=false) =
     if keyPresent: path.seekPush(side)
     var d = path.len - 1                # [d, path.len) brackets nodes to split
     while d > 0 and path[d].p.isFull:
@@ -421,7 +422,7 @@ template defBTree*(Ob: type, K: type=void, Pos: type=void, ObSize: type=void,
       let t   = path[0].p
       copy kid, t                       # Node copy here enables FIXED ROOT ADDR
       when ObSize isnot void:
-        let sz = t[].ob[m - 1].size
+        let sz = int(t[].ob[m - 1].size)
       else:
         let sz = 1
       t[].nO    = 0                     # Empty Root Node, pointing to new kid
@@ -444,7 +445,7 @@ template defBTree*(Ob: type, K: type=void, Pos: type=void, ObSize: type=void,
         path[1].i -= m
     while d < path.len - 1:
       when ObSize isnot void:
-        let sz = path[d].p[].ln[path[d].i][].ob[m - 1].size
+        let sz = int(path[d].p[].ln[path[d].i][].ob[m - 1].size)
       else:
         let sz = 1
       split(path[d].p, path[d].i)
@@ -458,7 +459,7 @@ template defBTree*(Ob: type, K: type=void, Pos: type=void, ObSize: type=void,
       for k in 0 ..< path.len: path[k].p[].wt += 1
     oPut(path[^1].p, path[^1].i, ob)
   
-  proc del(path: var Path) =
+  proc del(path: var Path) {.used.} =
     let r = path[0].p                   # Root of tree
     var t = r
     if not path[^1].p.isLeaf:           # Internal: Lift BIGGER neighbor
@@ -550,12 +551,12 @@ template defBTree*(Ob: type, K: type=void, Pos: type=void, ObSize: type=void,
         lPut(path[^1].p, path[^1].i + 1, nwN)
         path.add (nwN, 0.Ix)
         p = p[].ln[0]
-    elif path[^1].p[].nO != Ix(2*m - 1 - spare):
+    elif path[^1].p[].nO != Ix(2*m - 1) - Ix(spare):
       path[^1].i.inc
     else:
       let t = path[0].p
       var last: Ln
-      while path.len > 0 and path[^1].p[].nO == Ix(2*m - 1 - spare):
+      while path.len > 0 and path[^1].p[].nO == Ix(2*m - 1) - Ix(spare):
         let eop = path.pop
         last = eop.p
       if path.len == 0:                 # Root split
@@ -621,12 +622,12 @@ template defBTree*(Ob: type, K: type=void, Pos: type=void, ObSize: type=void,
   
   # Complement `badd0` not yet written satisfactorily.  User can always iterate
   # backwards over inputs via countdown/etc. (at some expense, obviously).
-  proc badd(path: var Path, s: bool, ob: Ob, t: Ln = 0, spare=0) =
+  proc badd(path: var Path, ob: Ob, s=true, t: Ln = 0, spare=0) {.used.} =
     if s: badd1(path, ob, t, spare)
-  proc baddDone(t: Ln, s: bool, spare=0) =
+  proc baddDone(t: Ln, s=true, spare=0) {.used.} =
     if s: badd1Done(t, spare)
 
-  proc check(t: Ln): int =                        # CHECK TREE INVARIANTS
+  proc check(t: Ln): int {.used.} =               # CHECK TREE INVARIANTS
     var height = -1 
     var nErr = 0
 
@@ -645,7 +646,7 @@ template defBTree*(Ob: type, K: type=void, Pos: type=void, ObSize: type=void,
       when Pos isnot void:
         var w = 0                                 # CHECK WEIGHT MAINTENANCE
         when ObSize isnot void:
-          for i in 0.Ix ..< q.nO: w += q.ob[i].size
+          for i in 0.Ix ..< q.nO: w += int(q.ob[i].size)
         else:
           w = int(q.nO)
         for i in 0.Ix ..< q.nL: w += q.ln[i][].wt
@@ -671,7 +672,7 @@ template defBTree*(Ob: type, K: type=void, Pos: type=void, ObSize: type=void,
       seekMost(t, path, false)
       while true:
         when ObSize isnot void:
-          k += path[^1].p[].ob[path[^1].i].size
+          k += int(path[^1].p[].ob[path[^1].i].size)
         else:
           k.inc
         let r = path.rank()
@@ -704,8 +705,8 @@ template defBTree*(Ob: type, K: type=void, Pos: type=void, ObSize: type=void,
           path.seekAdj(true)
     return nErr
   
-  proc stats(t: Ln; nNode, nOb: var int, depth=0): int = # Get height/alloc data
-    if t == Ln0: nNode = 0; nOb = 0; return 0
+  proc stats(t: Ln; nNode, nOb: var int, depth=0): int {.used.} =
+    if t == Ln0: nNode = 0; nOb = 0; return 0 # Get height/alloc data
     var path: Path
     t.seekMost(path, false)
     while path.len > 0:
