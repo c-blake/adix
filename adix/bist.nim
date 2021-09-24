@@ -14,43 +14,44 @@
 ## really need figures as in the original Fenwick paper or another take over at
 ##   https://notes.tweakblogs.net/blog/9835/fenwick-trees-demystified.html.
 ##
-## The ``bist[T]`` type in this module is generic over the type of counters used
-## for partial sums|counts.  For few total items, you can use a ``bist[uint8]``
-## while for many you may need to use bist[uint32].  This can be space-optimized
+## The ``Bist[T]`` type in this module is generic over the type of counters used
+## for partial sums|counts.  For few total items, you can use a ``Bist[uint8]``
+## while for many you may need to use Bist[uint32].  This can be space-optimized
 ## up to 2X further with a ``sequint`` specialized to store an array of B-bit
 ## counters.  Also, ranked B-trees start being faster for >28-bit index spaces.
 import xlang, bitop # cfor, `>>=`, `&=`
 
-type bist*[T: SomeInteger] = object ## A razor thin wrapper around seq[T]
+type Bist*[T: SomeInteger] = object ## A razor thin wrapper around seq[T]
   data: seq[T]        # The Fenwick array/BIST; Relevant seq ops pass through
   tot: int            # total counted population, via history of inc(i, d)
 
-proc newBist*[T](maxVal: int): bist[T] {.inline.} =
+proc initBist*[T](maxVal: int): Bist[T] {.inline.} =
   result.data = newSeq[T](maxVal)
-proc len*[T](t: bist[T]): int {.inline.} = t.data.len
-proc count*[T](t: bist[T]): int {.inline.} = t.tot
-proc `[]`*[T](t: bist[T], i: int): T {.inline.} = t.data[i]
-proc `[]`*[T](t: var bist[T], i: int): var T {.inline.} = t.data[i]
-proc `[]=`*[T](t: var bist[T], i: int, x: T) {.inline.} = t.data[i] = x
+proc len*[T](t: Bist[T]): int {.inline.} = t.data.len
+func space*[T](t: Bist[T]): int = t.sizeof + t.data.len*T.sizeof
+proc count*[T](t: Bist[T]): int {.inline.} = t.tot
+proc `[]`*[T](t: Bist[T], i: int): T {.inline.} = t.data[i]
+proc `[]`*[T](t: var Bist[T], i: int): var T {.inline.} = t.data[i]
+proc `[]=`*[T](t: var Bist[T], i: int, x: T) {.inline.} = t.data[i] = x
 
-proc inc*[T](t: var bist[T]; i, d: SomeInteger) {.inline.} =
+proc inc*[T](t: var Bist[T]; i, d: SomeInteger) {.inline.} =
   ## Adjust for count update; Eg. inc(T,i,-1) decs count@i; Tm ~ 1/2..3/4 lg n
   t.tot += int(d)                                 #Likely T unsigned, d signed
   cfor (var i = i), i < t.len, i |= i + 1:        #Go down update tree
     t[i] = T(int(t[i]) + d)                       #Likely T unsigned, d signed
 
-proc cdf*[T](t: bist[T], i: int): T {.inline.} =
+proc cdf*[T](t: Bist[T], i: int): T {.inline.} =
   ## Inclusive sum(pmf[0..i]), (rank,EDF,prefix sum,scan,..); Tm~1 bits in ``i``
   cfor (var i = i + 1), i > 0, i &= i - 1:        #Go up interrogation tree
     result += t[i - 1]
 
-proc pmf*[T](t: bist[T], i: int): T {.inline.} =
+proc pmf*[T](t: Bist[T], i: int): T {.inline.} =
   ## Probability Mass Function @i;  Avg Tm ~ 2 probes; Max Tm ~ lg n
   result = t[i]
   cfor (var mask = 1), (i and mask) == mask, mask <<= 1:
     result -= t[i - mask]           #while LSB==1: subtract & mv up tree
 
-proc fromCnts*[T](t: var bist[T]) =
+proc fromCnts*[T](t: var Bist[T]) =
   ## In-place bulk convert T[] from counts to BIST; Max time ~1*n
   t.tot = 0
   for i in 0 ..< t.len:
@@ -59,14 +60,14 @@ proc fromCnts*[T](t: var bist[T]) =
     if j < t.len:
       t[j] += t[i]
 
-proc toCnts*[T](t: var bist[T]) =
+proc toCnts*[T](t: var Bist[T]) =
   ## In-place bulk convert T[] from BIST to counts; Max time ~1*n
   ## *Unlike the others, this routine only works for power of 2-sized arrays*.
   cfor (var i = t.len), i != 0, i >>= 1:      #Long strides give ~n inner loops.
     cfor (var j = 2*i - 1), j < t.len, j += 2*i:  #*Might* be slower than just
       t[j] -= t[j - i]                            #..looping & calling `pmf`.
 
-proc invCDF*[T](t: bist[T], s: T; s0: var T): int {.inline.} = # ILP?
+proc invCDF*[T](t: Bist[T], s: T; s0: var T): int {.inline.} = # ILP?
   ## Find ``i0,s0`` when ``sum(i0..i?)==s1; s0+pmf(i0)==s1`` for ``0<s<=tot``
   ## in ``lgCeil(n)`` array probes.  (sum jumps from ``s0@i0-1`` to ``s1@i0``).
   var c = s - 1                         #NOTE: s==0 is invalid input
@@ -77,29 +78,29 @@ proc invCDF*[T](t: bist[T], s: T; s0: var T): int {.inline.} = # ILP?
       result = mid + 1
   s0 = s - c - 1
 
-proc invCDF*[T](t: bist[T]; s: T; s0, s1: var T): int {.inline.} =
+proc invCDF*[T](t: Bist[T]; s: T; s0, s1: var T): int {.inline.} =
   ## Find ``i0,s0,s1`` in ``sum(i0..i?)==s1; s0+pmf(i0)==s1`` for ``0<s<=tot``.
   result = t.invCDF(s, s0)
   s1 = s0 + t.pmf(result)
 
-proc min*[T](t: bist[T]): int {.inline.} =
+proc min*[T](t: Bist[T]): int {.inline.} =
   ## Convenience wrapper returning invCDF(t, 1)
   var s0: T
   result = invCDF(t, 1, s0)
 
-proc max*[T](t: bist[T]): int {.inline.} =
+proc max*[T](t: Bist[T]): int {.inline.} =
   ## Convenience wrapper returning invCDF(t, t.count).
   var s0: T
   result = invCDF(t, T(t.tot), s0)
 
-proc quantile*[T](t: bist[T], q: float; iL, iH: var int): float {.inline.} =
+proc quantile*[T](t: Bist[T], q: float; iL, iH: var int): float {.inline.} =
   ## Parzen-interpolated quantile; E.g., q=0.9 => 90th percentile.  ``answer =
   ## result*iL + (1-result)*iH``, but is left to caller to do { in case it is
   ## mapping larger numeric ranges to/from iL,iH }.  Tm ~ 2*lg(addrSpace).
   ## Unlike other (broken!) quantile-interpolation methods, Parzen's connects
   ## midpoints of vertical CDF jumps, not horizontal.  This makes far more sense
   ## with ties, corresponding to age-old "tie mid-ranking" recommendations.
-  assert t.tot > 0, "quantile(bist[T]) requires non-empty bist."
+  assert t.tot > 0, "quantile(Bist[T]) requires non-empty bist."
   var sL0, sL1, sH0, sH1: T                 #You probably want to draw a CDF to
   let ni = t.tot                            #..fully understand this code.
   let n  = ni.float
@@ -120,7 +121,7 @@ proc quantile*[T](t: bist[T], q: float; iL, iH: var int): float {.inline.} =
   let sMidL = (sL0 + sL1).float * 0.5       #Mid-vertJump(nxtLwrBin) gives line
   result = (sMidH - qN) / (sMidH - sMidL)
 
-proc quantile*[T](t: bist[T], q: float): float {.inline.} =
+proc quantile*[T](t: Bist[T], q: float): float {.inline.} =
   ## Parzen-interpolated quantile when no caller index mapping is needed
   var iL, iH: int
   let fL = t.quantile(q, iL, iH)
@@ -136,7 +137,7 @@ when isMainModule:
     var sumR = newSeq[ct](num)
     var minR = int.high
     var maxR = int.low
-    var b    = newBist[ct](num)
+    var b    = initBist[ct](num)
     for a in args:                                    #Load up bist
       if a >= num: echo "tbist: ignoring out of bounds ", a; continue
       cntR[a].inc                                     #Reference cntR
