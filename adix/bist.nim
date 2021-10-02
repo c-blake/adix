@@ -171,8 +171,8 @@ when isMainModule:
       let qP = b.quantile(q)
       if parzen : echo "P: ", q, " ", qP
       if q0 > -1 and abs(qP - qP0) > thresh:
-        result |= 16  #NOTE: Test less objective; Set parzen to assess manually.
-        echo "Pdiscont: ",q0," -> ",q," ",qP0," -> ",qP," |qP0-qP|: ",abs(qP-qP0)
+       result |= 16  #NOTE: Test less objective; Set parzen to assess manually.
+       echo "Pdiscont: ",q0," -> ",q," ",qP0," -> ",qP," |qP0-qP|: ",abs(qP-qP0)
       q0 = q; qP0 = qP                                #save last loop values
     var t = b; t.data = cntR                          #Bulk Histogram -> BIST
     t.fromCnts

@@ -140,7 +140,7 @@ proc mgetOrPut*[K,V](t: var DITab[K,V]; key: K; val: V): var V {.inline.} =
 proc mgetOrPut*[K,V](t: var DITab[K,V]; key: K; val: V;
                      had: var bool): var V {.inline.} =
   t.getPut(i, k, key) do: had = true ; return t.data[i].val
-  do: had = false; t.data[k].key = key; t.data[k].val = val; return t.data[k].val
+  do: had=false; t.data[k].key = key; t.data[k].val = val; return t.data[k].val
 
 template editOrInit*[K,V](t: var DITab[K,V]; key: K; v,body1,body2: untyped) =
   mixin getPut
@@ -163,7 +163,7 @@ proc take*[K](t: var DITab[K,void]; key: var K): bool {.inline.} =
   t.popRet(i, key) do: key = move(t.data[i]); t.rawDel i; return true
   do: return false
 
-proc take*[K,V: not void](t: var DITab[K,V]; key: K; val: var V): bool {.inline.} =
+proc take*[K,V:not void](t: var DITab[K,V]; key: K; val: var V): bool{.inline.}=
   t.popRet(i, key) do:
     val = move(t.data[i].val)
     t.rawDel i
@@ -284,7 +284,8 @@ proc `<`*[K](s, t: DITab[K,void]): bool =
 proc `==`*[K](s, t: DITab[K,void]): bool =
   s.counter == t.counter and s <= t
 
-proc map*[K, A](data: DITab[K,void], op: proc (x: K): A {.closure.}): DITab[A,void] =
+proc map*[K, A](data: DITab[K,void],
+                op: proc (x: K): A {.closure.}): DITab[A,void] =
   result.init data.len
   for item in data: result.incl op(item)
 
@@ -333,7 +334,7 @@ template withValue*[K,V](t: var DITab[K,V], key: K; value, body: untyped) =
     var value {.inject.} = t.data[i].val.addr
     body
 
-template withValue*[K,V](t: var DITab[K,V], key: K; value, body1, body2: untyped) =
+template withValue*[K,V](t: var DITab[K,V], key: K; value,body1,body2: untyped)=
   mixin rawGet
   let i = t.rawGet(key)
   if i >= 0:

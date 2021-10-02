@@ -116,7 +116,8 @@ proc hiXorLo(a, b: uint64): uint64 {.inline.} =
     elif defined(gcc) or defined(llvm_gcc) or defined(clang):
       {.emit: """__uint128_t r = a; r *= b; `result` = (r >> 64) ^ r;""".}
     elif defined(windows) and not defined(tcc):
-      proc umul128(a, b: uint64, c: ptr uint64): uint64 {.importc: "_umul128", header: "intrin.h".}
+      proc umul128(a, b: uint64,
+        c: ptr uint64): uint64 {.importc: "_umul128", header: "intrin.h".}
       var b = b
       let c = umul128(a, b, addr b)
       result = c xor b
@@ -241,7 +242,7 @@ else:
   proc hashRoMu1*(x: int|uint): Hash {.inline.} = hashRoMu1(uint32(x))
   proc hashRevFib*(x: int|uint): Hash {.inline.} = hashRevFib(uint32(x))
 
-proc hash*(hsh, salt: Hash): Hash {.inline.} = hashWangYi1(hsh xor cast[Hash](salt))
+proc hash*(hsh,salt:Hash):Hash {.inline.}= hashWangYi1(hsh xor cast[Hash](salt))
 
 when defined(hashDebug):
   template dbg*(x) = x

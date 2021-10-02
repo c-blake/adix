@@ -5,7 +5,7 @@
 ## Bits for values and the sentinel key default to 0. `BLTab` otherwise tries to
 ## be similar to hash variants of multisets.
 
-import althash, bitop, sequint, strutils#, memfiles, heapqueue
+import althash, sequint
 type
   BLTab* = object  ## RobinHoodLP set of B-bit int keys w/small false pos. rate
     data: SeqUint     # number array
@@ -186,4 +186,5 @@ proc debugDump*(s: BLTab, label="") =
   if label.len > 0: echo label
   echo s.len, " items"
   for i, cell in s.data:
-    echo "i: ", i, " depth: ", if cell != 0: depth(i, int(s.data[i]), s.data.high) else: 0, " ", cell
+    echo "i: ",i," depth: ",if cell != 0: depth(i, int(s.data[i]), s.data.high)
+                            else: 0, " ", cell
