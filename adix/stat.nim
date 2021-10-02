@@ -5,38 +5,53 @@
 ## "shift" idea at en.wikipedia.org/wiki/Algorithms_for_calculating_variance
 ## (both simpler & faster than Welford).  Both `var` and non-var variants are
 ## provided to allow caching 1.0/n (which may be identical-but-expensive in eg.
-## every-window samples).  (Total & moving order stats/quantiles are planned.)
+## every-window samples).
 
 from math         import sqrt, sum, `^`
 from strutils     import formatFloat, ffDefault
 from cligen/strUt import fmtUncertainMerged
+from adix/lghisto import LgHisto, add, pop, quantile, cdf
+
+const avc = "__attribute__((optimize(\"fast-math\"))) $# $#$#" # autovec cgdecl
 type
-  MovingStat*[F: SomeFloat] = object  ## An accumulator for statistical data.
+  Option = enum OrderStats
+  MovingStat*[F:SomeFloat,C:SomeInteger] = object ##Statistical data accumulator
+    options*: set[Option]
     n*, n4Inv: int                    ## amount of pushed data
     nIn, dx, s1, s2, s3, s4: F        # 1/n, shift, sums of k-th pows of inputs
     min*, max*: F
+    lgHisto*: LgHisto[C]
   BasicStats*[F: SomeFloat] = object  ## Result type for parallel-mergable stats
     n*: int                           ## sample size
     min*, max*, mean*, sdev*: F       ## the usual suspects.
 
-const avc = "__attribute__((optimize(\"fast-math\"))) $# $#$#" # autovec cgdecl
+func init*[F: SomeFloat, C: SomeInteger](s: var MovingStat[F,C], a=1e-16,b=1e20,
+            n=8300, options: set[Option]={}) {.inline.} =
+  ## Initialized a `MovingStat[F,C]` with a [-b,b] log-spaced histogram.
+  if OrderStats in options: s.lgHisto.init a, b, n
 
-func nInv*[F](s: var MovingStat[F]): F {.inline.} =
+func initMovingStat*[F: SomeFloat, C: SomeInteger](a=1e-16, b=1e20, n=8300,
+                       options: set[Option]={}): MovingStat[F,C] {.inline.} =
+  ## Return an initialized `MovingStat[F,C]` with a [-b,b] log-spaced histogram.
+  result.init a, b, n, options
+
+func nInv*[F: SomeFloat, C: SomeInteger](s: var MovingStat[F,C]): F {.inline.} =
   ## A reciprocal caching `1.0/s.n`.
   if s.n4Inv != s.n:
     s.n4Inv = s.n
     s.nIn = 1.0/F(s.n)
   s.nIn
 
-func nInv*[F](s: MovingStat[F]): F {.inline.} =
+func nInv*[F: SomeFloat, C: SomeInteger](s: MovingStat[F,C]): F {.inline.} =
   ## A reciprocal caching `1.0/s.n`; cannot update reciprocal.
   if s.n4Inv != s.n: 1.0/F(s.n) else: s.nIn
 
-func clear*[F](s: var MovingStat[F]) {.inline.} =
-  ## Reset `s` to same as `var s: MovingStat[F]`.
+func clear*[F: SomeFloat, C: SomeInteger](s: var MovingStat[F,C]) {.inline.} =
+  ## Reset `s` to same as `var s: MovingStat[F,C]`.
   zeroMem s.addr, s.sizeof
 
-func push*[F](s: var MovingStat[F], x: SomeNumber) {.inline, codegenDecl:avc.} =
+func push*[F: SomeFloat, C: SomeInteger](s: var MovingStat[F,C],
+            x: SomeNumber) {.inline, codegenDecl: avc.} =
   ## Pushes a value `x` into running sums.
   let x0 = F(x)
   if s.n == 0: s.min = x0; s.max = x0; s.dx = x0
@@ -48,8 +63,10 @@ func push*[F](s: var MovingStat[F], x: SomeNumber) {.inline, codegenDecl:avc.} =
   s.s3 = s.s3 + x2*x
   s.s4 = s.s4 + x2*x2
   inc s.n
+  if OrderStats in s.options: s.lgHisto.add x
 
-func pop*[F](s: var MovingStat[F], x: SomeNumber) {.inline, codegenDecl:avc.} =
+func pop*[F: SomeFloat, C: SomeInteger](s: var MovingStat[F,C],
+           x: SomeNumber) {.inline, codegenDecl: avc.} =
   ## Pops (aka removes the influence) of a value `x` from running sums.
   let x  = F(x) - s.dx
   let x2 = x*x
@@ -58,31 +75,52 @@ func pop*[F](s: var MovingStat[F], x: SomeNumber) {.inline, codegenDecl:avc.} =
   s.s3 = s.s3 - x2*x
   s.s4 = s.s4 - x2*x2
   dec s.n
+  if OrderStats in s.options: s.lgHisto.pop x
 
-func sum*[F](s: MovingStat[F]): float {.inline.} = s.s1 + s.n.float*s.dx.float
+func quantile*[F: SomeFloat, C: SomeInteger](s: MovingStat[F,C],
+                q: float): float {.inline.} =
+  ## Estimated moving quantile `q`; E.g. `q=0.5` is the moving median.
+  if OrderStats in s.options: s.lgHisto.quantile(q)
+  else: NaN
+
+func cdf*[F: SomeFloat, C: SomeInteger](s: MovingStat[F,C],
+           x: float): float {.inline.} =
+  ## Estimated moving CDF(x)
+  if OrderStats in s.options: s.lgHisto.cdf(x)
+  else: NaN
+
+func sum*[F: SomeFloat, C: SomeInteger](s: MovingStat[F,C]): float {.inline.} =
   ## Moving sum/total over data window.
+  s.s1 + s.n.float*s.dx.float
 
-func mean*[F](s: MovingStat[F]): float {.inline.} = s.s1*s.nInv + s.dx
+func mean*[F: SomeFloat, C: SomeInteger](s: MovingStat[F,C]): float {.inline.} =
   ## Moving mean/average over data window.
-func mean*[F](s: var MovingStat[F]): float {.inline.} = s.s1*s.nInv + s.dx
+  s.s1*s.nInv + s.dx
+func mean*[F:SomeFloat,C:SomeInteger](s: var MovingStat[F,C]): float {.inline.}=
   ## Moving mean/average over data window.
+  s.s1*s.nInv + s.dx
 
-func variance*[F](s: MovingStat[F]): float {.inline.} =
+func variance*[F:SomeFloat,C:SomeInteger](s: MovingStat[F,C]): float {.inline.}=
   ## Moving variance (population) over data window.
   max(1e-30*s.mean^2, (s.s2 - s.s1*s.s1*s.nInv)*s.nInv) # sqrt=1e-15
-func variance*[F](s: var MovingStat[F]): float {.inline.} =
+func variance*[F: SomeFloat, C: SomeInteger](s: var MovingStat[F,C]):
+                float {.inline.} =
   ## Moving variance (population) over data window.
   max(1e-30*s.mean^2, (s.s2 - s.s1*s.s1*s.nInv)*s.nInv) # sqrt=1e-15
 
-func standardDeviation*[F](s: MovingStat[F]): float {.inline.} = s.variance.sqrt
+func standardDeviation*[F: SomeFloat, C: SomeInteger](s: MovingStat[F,C]):
+                         float {.inline.} = s.variance.sqrt
   ## Moving standard deviation (population) over data window.
-func standardDeviation*[F](s: var MovingStat[F]): float {.inline.} =
+func standardDeviation*[F: SomeFloat, C: SomeInteger](s: var MovingStat[F,C]):
+                         float {.inline.} =
   ## Moving standard deviation (population) over data window.
   s.variance.sqrt
 
-func stderror*[F](s: MovingStat[F]): float {.inline.} = sqrt(s.variance*s.nInv)
+func stderror*[F:SomeFloat,C:SomeInteger](s: MovingStat[F,C]): float {.inline.}=
   ## Moving standard error (standard deviation of the mean) over data window.
-func stderror*[F](s: var MovingStat[F]): float {.inline.} =
+  sqrt(s.variance*s.nInv)
+func stderror*[F: SomeFloat, C: SomeInteger](s: var MovingStat[F,C]):
+                float {.inline.} =
   ## Moving standard error (standard deviation of the mean) over data window.
   sqrt(s.variance*s.nInv)
 
@@ -90,9 +128,11 @@ template skewImpl =
   let s1 = s.s1*s.nInv; let s2 = s.s2*s.nInv; let s3 = s.s3*s.nInv
   let scl = F(1)/s.standardDeviation
   result = (s3 - 3*s1*s2 + 2*s1*s1*s1)*scl*scl*scl
-func skewness*[F](s: MovingStat[F]): float {.inline.} = skewImpl
+func skewness*[F: SomeFloat, C: SomeInteger](s: MovingStat[F,C]):
+                float {.inline.} = skewImpl
   ## Moving skewness (population) over data window.
-func skewness*[F](s: var MovingStat[F]): float {.inline.} = skewImpl
+func skewness*[F: SomeFloat, C: SomeInteger](s: var MovingStat[F,C]):
+                float {.inline.} = skewImpl
   ## Moving skewness (population) over data window.
 
 template kurtImpl =
@@ -102,10 +142,22 @@ template kurtImpl =
   let c2 = scl*scl
   result = (s4 - 4*s1*s3 + 6*(s1*s1)*s2 - 3*(s1*s1)*(s1*s1))*c2*c2
   result -= F(3) # Gaussian-relative excess kurtosis
-func kurtosis*[F](s: MovingStat[F]): float {.inline.} = kurtImpl
+func kurtosis*[F: SomeFloat, C: SomeInteger](s: MovingStat[F,C]):
+                float {.inline.} = kurtImpl
   ## Moving excess-relative to Gaussian kurtosis (population) over data window.
-func kurtosis*[F](s: var MovingStat[F]): float {.inline.} = kurtImpl
+func kurtosis*[F: SomeFloat, C: SomeInteger](s: var MovingStat[F,C]):
+                float {.inline.} = kurtImpl
   ## Moving excess-relative to Gaussian kurtosis (population) over data window.
+
+proc `$`*[F: SomeFloat, C: SomeInteger](s: MovingStat[F,C]): string =
+  ## A string representation of a `MovingStat[F,C]`.
+  let skew = s.skewness.float
+  let kurt = s.kurtosis.float
+  fmtUncertainMerged(s.mean.float, s.stderror.float) &
+  " [ " & $(s.min) & " .. " & $(s.max) & " ]" &
+  " sd: " & formatFloat(s.standardDeviation.float, ffDefault, 4) &
+  " sk: " & formatFloat(skew, ffDefault, 4) &
+  " ek: " & formatFloat(kurt, ffDefault, 3)
 
 func add*[F](a: var BasicStats[F], b: BasicStats[F]) =
   ## Combines two `BasicStat`s.  Useful to combine partial result sets.
@@ -122,16 +174,6 @@ func `+=`*[F](a: var BasicStats[F], b: BasicStats[F]) = a.add b
   ## Operator notation for `add`.
 func `+`*[F](a, b: BasicStats[F]): BasicStats[F] = result = a; result.add b
   ## Operator notation for `add`.
-
-proc `$`*[F](s: MovingStat[F]): string =
-  ## A string representation of a `MovingStat[F]`.
-  let skew = s.skewness.float
-  let kurt = s.kurtosis.float
-  fmtUncertainMerged(s.mean.float, s.stderror.float) &
-  " [ " & $(s.min) & " .. " & $(s.max) & " ]" &
-  " sd: " & formatFloat(s.standardDeviation.float, ffDefault, 4) &
-  " sk: " & formatFloat(skew, ffDefault, 4) &
-  " ek: " & formatFloat(kurt, ffDefault, 3)
 
 func mean*[T: SomeNumber](xs: openArray[T]): float {.codegenDecl:avc.} =
   xs.sum.float/xs.len.float
@@ -202,13 +244,17 @@ template vAdj(v,n,D)=(if n > 1: (D(n) / D(n - 1))*v else: 0.0)
 template sAdj(s,n,D)=(if n > 2: sqrt((n.D*D(n-1)))/D(n-2)*s else: 0.0)
 template kAdj(k,n,D)=(if n > 3: D(n-1)/D((n-2)*(n-3))*(D(n+1)*k + 6) else: 0.0)
 template inst(mom, adj) =
-  func `mom S`*[F](s: MovingStat[F]): float = adj(s.mom, s.n, float)
-  func `mom S`*[F](s: var MovingStat[F]): float = adj(s.mom, s.n, float)
+  func `mom S`*[F: SomeFloat, C: SomeInteger](s: MovingStat[F,C]): float =
+    adj(s.mom, s.n, float)
+  func `mom S`*[F: SomeFloat, C: SomeInteger](s: var MovingStat[F,C]): float =
+    adj(s.mom, s.n, float)
   func `mom S`*[T: SomeNumber](xs: openArray[T], accum=32): float =
     adj(xs.mom(accum), xs.len, float)
 inst(variance, vAdj); inst(skewness, sAdj); inst(kurtosis, kAdj)
-func standardDeviationS*[F](s: MovingStat[F]): float = s.varianceS.sqrt
-func standardDeviationS*[F](s: var MovingStat[F]): float = s.varianceS.sqrt
+func standardDeviationS*[F:SomeFloat,C:SomeInteger](s: MovingStat[F,C]): float =
+  s.varianceS.sqrt
+func standardDeviationS*[F:SomeFloat,C:SomeInteger](s: var MovingStat[F,C]):
+                          float = s.varianceS.sqrt
 func standardDeviationS*[T: SomeNumber](xs: openArray[T], accum=32): float =
   xs.varianceS.sqrt
 
@@ -248,8 +294,8 @@ when isMainModule:
     import sys; (m,v,sd,sk,kt) = moments(sys.argv[1:]); print("avg: ", m)
     print("var: ", v); print("sd: ", sd); print("sk: ", sk); print("kt: ", kt)]#
   import std/stats
-  var w1: MovingStat[float32]
-  var w2: MovingStat[float64]
+  var w1: MovingStat[float32, uint32]
+  var w2: MovingStat[float64, uint32]
   var rs, rA, rB: RunningStat # Below: std/stats runnableExamples +10_000_000
   let xs = [10000001'f32, 10000002.0, 10000001.0, 10000004.0,
             10000001.0  , 10000004.0, 10000001.0, 10000002.0]
@@ -307,7 +353,7 @@ when isMainModule:
   echo "  vrnc:  ", selfError(bA.sdev^2, exactVar)
   echo "  sdev:  ", selfError(bA.sdev  , exactSdev)
   echo "MOVING(3):"
-  var wM: MovingStat[float64]
+  var wM: MovingStat[float64, uint32]
   for i, x in xs:
     if i >= 3: wM.pop xs[i-3]
     wM.push x # only print for full 3windows
