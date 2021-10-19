@@ -10,9 +10,10 @@
 ## to the double-width product in a Pascal's Bionomial Triangle sort of pattern.
 ## Middle bits have the most key related entropy (there is even a PRNG method
 ## called "middle square" based on this pattern).  More specifically, consider
-## the product of a pair of 2 digit decimal numbers: (a1*10+a0)*(b1*10+b0) =
-## a1*b1*100 + (a1*b0+b0*a1)*10 + a0*b0.  This shows the "triangle" kind of
-## pattern that makes the mixing strongest in the middle.
+## the product of a pair of 2 digit decimal numbers:
+## ``(a1*10+a0)*(b1*10+b0) = a1*b1*100 + (a1*b0+b0*a1)*10 + a0*b0``. This
+## shows the "triangle" kind of pattern that makes the mixing strongest in
+## the middle.
 ##
 ## The full product is easily accessed for half CPU register width and narrower
 ## numbers.  For the widest integer type, C/backend arithmetic rules only give
@@ -45,13 +46,14 @@
 ## is Pelle Evensen's bijective (64-bits -> 64-bits) ``hashNASAM``.  It's 2-3x
 ## slower than WangYi1 on some CPU architectures, but has no known statistical
 ## flaws.
-##
-## (Incidentally, most "fast in GB/s" hashes are far too slow for just one int.
-## Even assessing them that way for lookup tables is misleading.  You want time
-## =~ a + b*nBytes (at least) where a & b maybe come from a linear regression.
-## Just 1/b tells you little, especially for integer keys where ``a`` dominates,
-## although short string hashes can be similarly misleading.  Anyway, at least
-## two summary numbers are desired, not one.  Whole curves are even better.)
+
+## (Incidentally, most "fast in GB/s" hashes are far too slow for just
+## one int. Even assessing them that way for lookup tables is misleading.
+## You want time =~ ``a + b*nBytes`` (at least) where a & b maybe come
+## from a linear regression. Just 1/b tells you little, especially for
+## integer keys where ``a`` dominates, although short string hashes can be
+## similarly misleading. Anyway, at least two summary numbers are desired,
+## not one. Whole curves are even better.)
 
 import std/hashes, bitop    # For the Hash type and system `hash()`es
 export Hash, `!$`, hash
