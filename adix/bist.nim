@@ -10,7 +10,7 @@
 ## The basic idea of a standard binary heap with ``kids(k)@[2k],[2k+1]`` for
 ## dynamic distributions goes back to Wong&Easton 1980 (or earlier?).  Fenwick's
 ## clever index encoding/overlaid trees trick allows using 1/4 to 1/2 that space
-## (only max index + 1 array elements vs 2*lgCeil(n)).  Meaningful explanations
+## (only max index + 1 array elements vs ``2*lgCeil(n)``).  Meaningful explanations
 ## really need figures as in the original Fenwick paper or another take over at
 ##   https://notes.tweakblogs.net/blog/9835/fenwick-trees-demystified.html.
 ##
@@ -52,7 +52,7 @@ proc pmf*[T](t: Bist[T], i: int): T {.inline.} =
     result -= t[i - mask]           #while LSB==1: subtract & mv up tree
 
 proc fromCnts*[T](t: var Bist[T]) =
-  ## In-place bulk convert T[] from counts to BIST; Max time ~1*n
+  ## In-place bulk convert T[] from counts to BIST; Max time ``~1*n``
   t.tot = 0
   for i in 0 ..< t.len:
     t.tot += int(t[i])
@@ -96,7 +96,7 @@ proc max*[T](t: Bist[T]): int {.inline.} =
 proc quantile*[T](t: Bist[T], q: float; iL, iH: var int): float {.inline.} =
   ## Parzen-interpolated quantile; E.g., q=0.9 => 90th percentile.  ``answer =
   ## result*iL + (1-result)*iH``, but is left to caller to do { in case it is
-  ## mapping larger numeric ranges to/from iL,iH }.  Tm ~ 2*lg(addrSpace).
+  ## mapping larger numeric ranges to/from iL,iH }.  Tm ~ ``2*lg(addrSpace)``.
   ## Unlike other (broken!) quantile-interpolation methods, Parzen's connects
   ## midpoints of vertical CDF jumps, not horizontal.  This makes far more sense
   ## with ties, corresponding to age-old "tie mid-ranking" recommendations.

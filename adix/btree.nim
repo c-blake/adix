@@ -28,7 +28,7 @@
 ## - ``allocProcs`` (btPool|btRef|btFile): allocation style for outer Nodes
 ## - ``nodeProcs`` (btLinearNode|btNestedNode): in-Node organization style
 ## Notable implementation choices:
-## ==============================
+## ======================================================
 ## There is no "Tree" type distinct from the "SubTree/Node" type.  Once made a
 ## root node never moves.  That root address is the only handle needed.  "nil"
 ## ptrs (in whatever allocation arena is used) are just empty trees.  Because
@@ -49,9 +49,9 @@
 ## for for concurrent access as the focus is just a good single-threaded tree.
 ##
 ## Limitations/future work:
-## =======================
+## ======================================================
 ## One limitation is that leaf&internal nodes have the same size&representation,
-## wasting ~4..8*m bytes per leaf.  This is <33% waste for ``Ob`` >=8..16 bytes.
+## wasting ``~4..8*m`` bytes per leaf.  This is <33% waste for ``Ob`` >=8..16 bytes.
 ## (Post aging, occupancy is ~69% anyway.)  This trade off is presently accepted
 ## to avoid twin complexities of either two node allocation pools with dynamic
 ## conversion or different-``m`` orders for leaf & internal nodes.  Going all
@@ -67,7 +67,7 @@
 ## simple HashSet&Table calls in terms of this more complex core, and a big one:
 ## doing a ``btNestedNode`` option with Path[].i -> subpath elsewhere.  Last
 ## needed for good average case edit scaling {log_2(m) * log_m(N) = log_2(N)}.
-## Even DRAM has ideal node size ~ 70ns*40GB/s=2800B/(2+4)=~466 ob.  ``moveMem``
+## Even DRAM has ideal node size ~ ``70ns*40GB/s=2800B/(2+4)=~466`` ob.  ``moveMem``
 ## can have impressive constant factors, though.
 
 proc orderFit*(target, wtSz, ixSz, obSz, lnSz: int): int =

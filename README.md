@@ -13,3 +13,6 @@ hasn't really percolated into commonly available runtime libraries.  (Depth
 based growth trigger is probably the simplest example of a profile-guided
 optimization for data structures.  A.Dain Samples 1993 PhD thesis has some
 more.)
+
+## Documentation
+[An index of modules and their generated documentation is available on GitHub.](https://c-blake.github.io/adix/adix.html)
