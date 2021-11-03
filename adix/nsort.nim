@@ -465,7 +465,7 @@ template nsortBy*(x, field: untyped, b0=0): untyped =
   ## number of bits for the first pass histogram.  0 means use a good default.
   ##
   ## You can only nsort by one numeric field at a time, but sorts are stable.
-  ## Do `x.nsortByIt foo; x.nsortByIt bar` to do a multi-level sort.
+  ## Do `x.nsortBy foo; x.nsortBy bar` to do a multi-level sort.
   ##
   ## .. code-block:: nim
   ##   import nsort
