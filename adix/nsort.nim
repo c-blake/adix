@@ -24,12 +24,11 @@
 ##
 ## THIRD, histogram details are optimized.  For moderate `n`, prefix summing
 ## histograms into cumulative distribution functions (really output bin offsets)
-## is the dominant cost.  So, this impl uses vector instruction-based parallel
-## prefix sum.  This optimization is more effective as more counters are packed
-## into vector registers.  So, this implementation uses the smallest [1248]Byte
-## counter necessary for `n` items & also takes care to align the two power of
-## two-sized counter buffers to optimize vector unit use.  Finally, a time cost
-## estimate formula and Newton's method is used to decide optimal pass sizes.
+## is a dominant cost.  So, this impl does SIMD parallel prefix sum.  This optim
+## is more effective as more counters fit into vector registers.  So, this impl
+## uses the smallest [1248]Byte counter needed for `n` items & takes care to
+## align the 2 power of 2-sized counter buffers to maximize vector use.  Last, a
+## time cost estimate formula & Newton's method is used to decide pass sizes.
 ##
 ## FOURTH, bits that vary across keys are measured (mask or= (x[i-1] xor x[i]))
 ## in the first read-pass.  Key-wise constant bits are zero in said mask.  Since
