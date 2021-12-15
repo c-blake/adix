@@ -1041,8 +1041,8 @@ proc getOrDefault*[K,V,Z;z:static[int]](t: LPTabz[K,V,Z,z], key: K,
   let i = t.rawGet(key)
   result = if i >= 0: t.cell(i).val else: default
 
-proc del*[K,V,Z;z:static[int]](t: var LPTabz[K,V,Z,z], key: K) {.inline.} =
-  if t.missingOrExcl(key): key.raiseNotFound
+proc del*[K,V,Z;z:static[int]](t: var LPTabz[K,V,Z,z], key: K, doRaise=false) {.inline.} =
+  if t.missingOrExcl(key) and doRaise: key.raiseNotFound
 
 proc del*[K,V,Z;z:static[int]](t: var LPTabz[K,V,Z,z], key: K,
                                had: var bool) {.inline.} =
