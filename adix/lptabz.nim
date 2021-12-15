@@ -1041,12 +1041,10 @@ proc getOrDefault*[K,V,Z;z:static[int]](t: LPTabz[K,V,Z,z], key: K,
   let i = t.rawGet(key)
   result = if i >= 0: t.cell(i).val else: default
 
-proc del*[K,V,Z;z:static[int]](t: var LPTabz[K,V,Z,z], key: K, doRaise=false) {.inline.} =
-  if t.missingOrExcl(key) and doRaise: key.raiseNotFound
-
-proc del*[K,V,Z;z:static[int]](t: var LPTabz[K,V,Z,z], key: K,
-                               had: var bool) {.inline.} =
-  had = not t.missingOrExcl(key)
+proc del*[K,V,Z;z:static[int]](t: var LPTabz[K,V,Z,z], key: K) {.inline.} =
+  ## delete one key `key` from `t`; If you want to know if it was present then
+  ## use `missingOrExcl`, `take`, or `pop` instead.
+  discard t.missingOrExcl(key)
 
 proc `==`*[K,V: not void,Z;z:static[int]](x, y: LPTabz[K,V,Z,z]): bool =
   if x.len == 0: return y.len == 0        # 2 nil => true

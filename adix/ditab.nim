@@ -371,11 +371,10 @@ proc getOrDefault*[K,V](t: DITab[K,V], key: K, default=default(V)): V{.inline.}=
   let i = t.rawGet(key)
   result = if i >= 0: t.data[i].val else: default
 
-proc del*[K,V](t: var DITab[K,V], key: K, doRaise=false) {.inline.} =
-  if t.missingOrExcl(key) and doRaise: key.raiseNotFound
-
-proc del*[K,V](t: var DITab[K,V], key: K, had: var bool) {.inline.} =
-  had = not t.missingOrExcl(key)
+proc del*[K,V](t: var DITab[K,V], key: K) {.inline.} =
+  ## delete one key `key` from `t`; If you want to know if it was present then
+  ## use `missingOrExcl`, `take`, or `pop` instead.
+  discard t.missingOrExcl(key)
 
 proc `==`*[K,V](x, y: DITab[K,V]): bool =
   if isNil(x): return isNil(y)            # 2 nil => true
