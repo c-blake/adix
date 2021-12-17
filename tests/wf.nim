@@ -20,7 +20,7 @@ proc initWord(off, len: int): Word =
   if len > wm:
     var s = newStringOfCap(len)
     copyMem s[0].addr, mf.mem +! off, len
-    raise newException(RangeError, "\"" & s & "\" too long")
+    raise newException(RangeDefect, "\"" & s & "\" too long")
   Word((off.uint32 shl wb) or len.uint32)
 
 proc len(w: Word): uint32 = uint32(w) and wm
@@ -31,8 +31,6 @@ proc hash(w: Word): Hash {.inline.} = hashData(w.mem, w.len.int)
 
 proc `==`(a, b: Word): bool {.inline.} =
   a.len == b.len and cmemcmp(a.mem, b.mem, a.len) == 0
-
-proc `==`(a: int, b: Word): bool {.inline.} = a == b.int # for z != K(0)
 
 proc `<`(a, b: Word): bool {.inline.} = # for heapqueue
   let c = cmemcmp(a.mem, b.mem, min(a.len, b.len))
@@ -81,7 +79,7 @@ proc count(p: int, path: string) =
   mf = mfLoc
   if mf != nil:
     if mf.len > 1 shl (32 - wb):
-      raise newException(RangeError, "\"" & path & "\" too large")
+      raise newException(RangeDefect, "\"" & path & "\" too large")
     if p > 1:                           # add mf.len > 65536|something?
       for i in 0 ..< parts.len:         # spawn workers
         createThread thrs[i], work, (parts[i].addr, hs[i].addr)
