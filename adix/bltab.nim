@@ -68,7 +68,7 @@ iterator probeSeq(hc, mask: Hash): int =
 
 proc rawGet(s: BLTab; hc: Hash, d: var Hash): int {.inline.} =
   assert(s.data.len > 0, "Uninitialized BLTab")  # Ensure in *caller* not here
-  var t {.noInit.}: int                          # Where to insert if missing
+  var t {.noinit.}: int                          # Where to insert if missing
   for i in probeSeq(hc, s.data.high):
     t = i
     if not s.isUsed(i):

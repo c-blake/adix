@@ -275,7 +275,7 @@ proc rawGet[K,V,Z;z:static[int]](t: LPTabz[K,V,Z,z]; key: K;
                                  hc, d: var Hash): int {.inline.} =
   assert(t.getCap > 0, "Uninitialized LPTabz")  # Ensure in *caller* not here
   hc = hash0[K,Z](key)
-  var j {.noInit.}: int                         # Where to insert if missing
+  var j {.noinit.}: int                         # Where to insert if missing
   for i in probeSeq(t.hashHc(hc), t.high):
     j = i
     if not t.isUsed(i):                   # Need >=1 FREE slot to terminate

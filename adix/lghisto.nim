@@ -81,7 +81,7 @@ func fromIx*[F,C](s: LgHisto[C], i: int, offset: F=0.5): F =
 
 func add*[F,C](s: var LgHisto[C], x: F, w=1.C) =
   ## Increment bin for value `x` by weight `w`
-  if not isnan(x): s.bist.inc(s.toIx(x), +int(w))
+  if not isNaN(x): s.bist.inc(s.toIx(x), +int(w))
 
 func pop*[F,C](s: var LgHisto[C], x: F, w=1.C) =
   ## Alias for `add` with a negative argument

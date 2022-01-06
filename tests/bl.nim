@@ -3,7 +3,7 @@ import althash, bltab, os, strutils
 let nTab = parseInt(paramStr(1))
 let mask = parseInt(paramStr(2))
 
-var s = initBLtab(nTab, mask)
+var s = initBLTab(nTab, mask)
 for i in 3 .. paramCount():
   let j = parseInt(paramStr(i))
   if j > 0:
