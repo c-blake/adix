@@ -357,4 +357,4 @@ when isMainModule:
   for i, x in xs:
     if i >= 3: wM.pop xs[i-3]
     wM.push x # only print for full 3windows
-    if i >= 2: echo "  ",i," ",fmtUncertainMerged(wM.mean, wM.stderror, eHigh=7)
+    if i >= 2: echo "  ",i," ",fmtUncertainMerged(wM.mean,wM.stderror,e0= -2..7)
