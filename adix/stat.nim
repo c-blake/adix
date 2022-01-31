@@ -64,7 +64,7 @@ func push*[F: SomeFloat, C: SomeInteger](s: var MovingStat[F,C],
   s.s3 = s.s3 + x2*x
   s.s4 = s.s4 + x2*x2
   inc s.n
-  if OrderStats in s.options: s.lgHisto.add x
+  if OrderStats in s.options: s.lgHisto.add x0
 
 func pop*[F: SomeFloat, C: SomeInteger](s: var MovingStat[F,C],
            x: SomeNumber) {.inline, codegenDecl: avc.} =
