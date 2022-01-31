@@ -121,7 +121,7 @@ func cdf*[F,C](s: var LgHisto[C], x: F): C =
 when isMainModule:
   when defined(test):# Helpful to run against: -12 -8 -4 -1 0 1 4 8 12
     proc lghist(a=0.125, b=10.0, n=8, qs = @[0.50], nums: seq[float]) =
-      var lh = initLgHisto[uint8](a, b, n)
+      var lh = initLgHisto[uint16](a, b, n)
       for x in nums: lh.add x
       echo "lh: ", lh
       for q in qs: echo "q", q, " ", lh.quantile(q)
