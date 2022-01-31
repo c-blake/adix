@@ -98,11 +98,14 @@ proc `$`*[C](s: LgHisto[C], nonZero=true): string =
   result.add "n: "   & $s.n   & "\ta: "   & $s.a   & "\tb: "    & $s.b    & "\n"
   result.add "aLn: " & $s.aLn & "\th: "   & $s.h   & "\thInv: " & $s.hInv & "\n"
   result.add "und: " & $s.und & "\tovr: " & $s.ovr & "\tbins,cnts:\n"
+  var tot = 0; var n = 0
   for (a, b, c) in s.bins:
+    tot += int(c)
     if nonZero:
-      if c != 0: result.add "  [ " & $a & " , " & $b & " ]: " & $c & "\n"
+      if c != 0: result.add "  [ " & $a & " , " & $b & " ]: " & $c & "\n"; inc n
     else       : result.add "  [ " & $a & " , " & $b & " ]: " & $c & "\n"
-  result.setLen result.len - 1
+  result[^1] = '\n'
+  result.add "totalCount: " & $tot & " inNon0bins: " & $n
 
 func quantile*[F,C](s: LgHisto[C], q: F): F =
   ## Basic quantile; XXX Can log-spacing savvy interpolation be more accurate?
