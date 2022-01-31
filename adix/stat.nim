@@ -10,11 +10,11 @@
 from math         import sqrt, sum, `^`
 from strutils     import formatFloat, ffDefault
 from cligen/strUt import fmtUncertainMerged
-from adix/lghisto import LgHisto, add, pop, quantile, cdf
+from adix/lghisto import LgHisto, add, pop, quantile, cdf, init
 
 const avc = "__attribute__((optimize(\"fast-math\"))) $# $#$#" # autovec cgdecl
 type
-  Option = enum OrderStats
+  Option* = enum OrderStats
   MovingStat*[F:SomeFloat,C:SomeInteger] = object ##Statistical data accumulator
     options*: set[Option]
     n*, n4Inv: int                    ## amount of pushed data
@@ -28,6 +28,7 @@ type
 func init*[F: SomeFloat, C: SomeInteger](s: var MovingStat[F,C], a=1e-16,b=1e20,
             n=8300, options: set[Option]={}) {.inline.} =
   ## Initialized a `MovingStat[F,C]` with a [-b,b] log-spaced histogram.
+  s.options = options
   if OrderStats in options: s.lgHisto.init a, b, n
 
 func initMovingStat*[F: SomeFloat, C: SomeInteger](a=1e-16, b=1e20, n=8300,
