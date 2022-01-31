@@ -84,7 +84,7 @@ func add*[F,C](s: var LgHisto[C], x: F, w=1.C) =
   if not isNaN(x): s.bist.inc(s.toIx(x), +int(w))
 
 func pop*[F,C](s: var LgHisto[C], x: F, w=1.C) =
-  ## Alias for `add` with a negative argument
+  ## Alias for `add` with a negative weight argument
   if not isnan(x): s.bist.inc(s.toIx(x), -int(w))
 
 iterator bins*[C](s: LgHisto[C]): (float, float, C) =
