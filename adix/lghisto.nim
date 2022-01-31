@@ -119,12 +119,13 @@ func cdf*[F,C](s: var LgHisto[C], x: F): C =
   if x.isnan: NaN else: s.bist.cdf(s.toIx(x))
 
 when isMainModule:
-  when defined(test):
-    import os, strutils # Helpful to run against: -12 -8 -4 -1 0 1 4 8 12
-    var s = initLgHisto[uint8](a=0.125, b=10.0, n=8)
-    for i in 1 .. paramCount(): s.add parseFloat(paramStr(i))
-    for q in [0.01, 0.05, 0.25, 0.50, 0.75, 0.95, 0.99]: echo s.quantile(q)
-    echo "s: ", s
+  when defined(test):# Helpful to run against: -12 -8 -4 -1 0 1 4 8 12
+    proc lghist(a=0.125, b=10.0, n=8, qs = @[0.50], nums: seq[float]) =
+      var lh = initLgHisto[uint8](a, b, n)
+      for x in nums: lh.add x
+      echo "lh: ", lh
+      for q in qs: echo "q", q, " ", lh.quantile(q)
+    import cligen; dispatch lghist
   else:
     import random, times; randomize()
     var data: seq[float32]
