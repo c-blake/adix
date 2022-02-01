@@ -60,8 +60,9 @@ const nTinySort = 20            #Typically 16-32 works well here XXX optimize
 const hMaxBits = 15             #2*counter-size*2**hMaxBits =~ L2 here
 const dGiantSort = 15 shl 30    #~50% of uncontended DIMM storage works well
 
-when defined(gcc) and false:    #XXX or defined(clang) etc.
-  {.passc: "-march=native".}
+when defined(amd64) and (defined(gcc) or defined(clang)) and#XXX Run-Time CPU
+     not defined(portablensort):
+  {.passc: "-march=native".}                                # ..feature test.
   proc pext(val,msk:uint32):uint32 {.importc:"_pext_u32", header:"x86intrin.h".}
   proc pext(val,msk:uint64):uint64 {.importc:"_pext_u64", header:"x86intrin.h".}
 else:
