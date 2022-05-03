@@ -85,7 +85,7 @@ func add*[F,C](s: var LgHisto[C], x: F, w=1.C) =
 
 func pop*[F,C](s: var LgHisto[C], x: F, w=1.C) =
   ## Alias for `add` with a negative weight argument
-  if not isnan(x): s.bist.inc(s.toIx(x), -int(w))
+  if not isNaN(x): s.bist.inc(s.toIx(x), -int(w))
 
 iterator bins*[C](s: LgHisto[C]): (float, float, C) =
   ## Yield `(lo, hi, count)` for each bin covered
@@ -116,7 +116,7 @@ func quantile*[F,C](s: LgHisto[C], q: F): F =
 
 func cdf*[F,C](s: var LgHisto[C], x: F): C =
   ## Raw count; Leave to caller to multiply by 1/s.bist.count; XXX Interpolate?
-  if x.isnan: NaN else: s.bist.cdf(s.toIx(x))
+  if x.isNaN: NaN else: s.bist.cdf(s.toIx(x))
 
 when isMainModule:
   when defined(test):# Helpful to run against: -12 -8 -4 -1 0 1 4 8 12
