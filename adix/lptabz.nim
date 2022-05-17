@@ -1,35 +1,36 @@
 ## This module provides an (in|un)ordered multiset/multitable representation via
 ## Linear Probing with aging friendly Backshift Delete(Knuth TAOCPv3) & optional
 ## Robin Hood reorg (Celis,1986).  Linear probing collision clusters yields "no
-## tuning needed" locality of reference - 1 DRAM hit per access for large tables
+## tuning needed" locality of reference: 1 DRAM hit per access for large tables
 ## of small items.  RH sorts collision clusters by search depth which adds nice
 ## properties: faster miss search (eg. for inserts, usually compensating for
 ## data motion) and min depth variance (no unlucky keys).  The latter enables
-## ~100% table space utilization (we need one empty slot to stop some loops).
+## ~100% table space utilization (we need one empty slot to halt some loops).
 ##
-## Misuse/attack is always possible.  We provide several mitigations triggered,
-## like table growth, by overlong scans (but on underfull tables): A) automatic
-## rehash of user `hash` output with a strong hash, B) overlong scan warnings
-## (disabled in ``danger`` mode), and C) automatic Robin Hood re-org activation.
-## Defaults are to always rehash and use RobinHood re-org since this is safest,
-## but all parameters here can be tuned per program and per instance.  This
-## module uses `althash.getSalt` to allow override of the per-instance per-
-## table hash salt, allowing it to be as easy/hard to predict as desired.
+## Misuse/attack is always possible.  Note that inserting *many* duplicates
+## causes overlong scans as hash collisions can and is thus "misuse".  If this
+## is likely then use V=seq[T] instead.  We provide a few mitigations triggered,
+## like table growth, by overlong scans on underfull tables: A) automatic rehash
+## of user `hash` output with a strong integer hash, B) overlong scan warnings
+## (disabled in `danger` mode), C) automatic Robin Hood re-org activation, and
+## D) use `althash.getSalt` to allow hard to predict per-table hash salt.
+## Program-wide-tunable defaults are to rehash, warn, re-org & salt with vmAddr
+## since this is the safest portable mode, but most can also be set init time.
 ##
-## Multiset personality ensues when the ``V`` value type generic parameter is
-## ``void``.  Otherwise the style of interface is multitable.  Every attempt is
+## Multiset personality ensues when the `V` value type generic parameter is
+## `void`.  Otherwise the style of interface is multitable.  Every attempt is
 ## made for either personality to be drop-in compatible with Nim's standard
 ## library sets & tables, but extra features are provided here.
 ##
-## Space-time optimization of a sentinel key (a value of ``K`` disallowed for
-## ordinary keys) is supported through the final two generic parameters, ``Z``,
-## and ``z``.  If ``Z`` is `void`, hash codes are saved and ``z`` is ignored.
-## If ``Z==K``, ``z`` is the sentinel key value.
+## Space-time optimization of a sentinel key (a value of `K` disallowed for
+## ordinary keys) is supported through the final two generic parameters, `Z`,
+## and `z`.  If `Z` is `void`, hash codes are saved and `z` is ignored.  If
+## `Z==K`, `z` is the sentinel key value.
 ##
-## If ``Z`` is neither ``K`` nor ``void`` then compact, insertion-ordered mode
-## is used and ``z`` means how many bits of hcode are saved beside an index into
-## a dense ``seq[(K,V)]``.  6..8 bits avoids most "double cache misses" for miss
-## lookups/inserts. ``z=0`` works if space matters more than time.
+## If `Z` is neither `K` nor `void` then compact, insertion-ordered mode is used
+## and `z` means how many bits of hcode are saved beside an index into a dense
+## `seq[(K,V)]`.  6..8 bits avoids most "double cache misses" for miss
+## lookups/inserts. `z=0` works if space matters more than time.
 
 import althash, memutil, bitop, heapqueue, sequint, strutils, memfiles
 export Hash, sequint
@@ -495,7 +496,7 @@ proc initLPTabz*[K,V,Z;z:static[int]](initialSize=lpInitialSize, numer=lpNumer,
 proc setPolicy*[K,V,Z;z:static[int]](t: var LPTabz[K,V,Z,z]; numer=lpNumer,
     denom=lpDenom, minFree=lpMinFree, growPow2=lpGrowPow2, rehash=lpRehash,
     robinhood=lpRobinHood) {.inline.} =
-  ## Must call ``setCap`` after changing certain params here (e.g. ``rehash``).
+  ## Must call `setCap` after changing certain params here (e.g. `rehash`).
   t.numer    = numer
   t.denom    = denom
   t.minFree  = max(1, minFree).uint8
