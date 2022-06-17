@@ -9,7 +9,9 @@
 
 from math         import sqrt, sum, `^`
 from strutils     import formatFloat, ffDefault
-from cligen/strUt import fmtUncertainMerged
+when defined(useCligen): from cligen/strUt import fmtUncertainMerged
+else:
+  proc fmtUncertainMerged(m, e: float): string = $m & " +- " & $e
 from adix/lghisto import LgHisto, add, pop, quantile, cdf, init
 
 const avc = "__attribute__((optimize(\"fast-math\"))) $# $#$#" # autovec cgdecl
