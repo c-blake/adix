@@ -84,7 +84,7 @@ when defined(amd64) and not defined(usePortable): #usePortable nice for timing
     let n16 = i + ((n - i) and not 15'u64)        #Round dn to mult of 16
     var off = mm_set1(c[i - 1])                   #Initial off=last c[]
     var v0, v1, v2, v3: m128i                     #SSE vectors
-    let msk = 0xFF.cint
+    const msk = 0xFF.cint
     template do4(v, b: untyped) {.dirty.} =
       v = mm_load(cast[ptr m128i](c[b + i].addr))
       v = mm_add_epi32(v, mm_slli_si128(v, 4))    #0+1     1+2   2+3 3
