@@ -1,6 +1,6 @@
 ## This module provides an (in|un)ordered multiset/multitable representation via
 ## Linear Probing with aging friendly Backshift Delete(Knuth TAOCPv3) & optional
-## Robin Hood reorg (Celis,1986).  Linear probing collision clusters yields "no
+## Robin Hood re-org (Celis,1986).  Linear probing collision clusters yields "no
 ## tuning needed" locality of reference: 1 DRAM hit per access for large tables
 ## of small items.  RH sorts collision clusters by search depth which adds nice
 ## properties: faster miss search (eg. for inserts, usually compensating for
@@ -17,8 +17,8 @@
 ## Program-wide-tunable defaults are to rehash, warn, re-org & salt with vmAddr
 ## since this is the safest portable mode, but most can also be set init time.
 ##
-## Multiset personality ensues when the `V` value type generic parameter is
-## `void`.  Otherwise the style of interface is multitable.  Every attempt is
+## MultiSET personality ensues when the `V` value type generic parameter is
+## `void`.  Otherwise the style of interface is multiTABLE.  Every attempt is
 ## made for either personality to be drop-in compatible with Nim's standard
 ## library sets & tables, but extra features are provided here.
 ##
