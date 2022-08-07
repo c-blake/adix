@@ -114,7 +114,7 @@ proc `$`*[C](s: LgHisto[C], nonZero=true): string =
       if c != 0: result.add "  [ " & $a & " , " & $b & " ]: " & $c & "\n"; inc n
     else       : result.add "  [ " & $a & " , " & $b & " ]: " & $c & "\n"
   result[^1] = '\n'
-  result.add "totalCount: " & $tot & " inNon0bins: " & $n
+  result.add "totalCount: " & $tot & " nonZeroBins: " & $n
 
 func quantile*[F,C](s: LgHisto[C], q: F): F =
   ## Basic quantile; XXX Can log-spacing savvy interpolation be more accurate?
