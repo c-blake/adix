@@ -25,8 +25,8 @@ type Bist*[T: SomeInteger] = object ## A razor thin wrapper around seq[T]
   data: seq[T]        # The Fenwick array/BIST; Relevant seq ops pass through
   tot: int            # total counted population, via history of inc(i, d)
 
-proc initBist*[T](maxVal: int): Bist[T] {.inline.} =
-  result.data = newSeq[T](maxVal)
+proc initBist*[T](len: int): Bist[T] {.inline.} =
+  result.data = newSeq[T](len)
 proc len*[T](t: Bist[T]): int {.inline.} = t.data.len
 func space*[T](t: Bist[T]): int = t.sizeof + t.data.len*T.sizeof
 proc count*[T](t: Bist[T]): int {.inline.} = t.tot
