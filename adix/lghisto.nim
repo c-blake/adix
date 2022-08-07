@@ -72,19 +72,21 @@ func toIx*[F,C](s: LgHisto[C], x: F): int =
   else: result = s.n
 
 func fromIx*[F,C](s: LgHisto[C], i: int, offset: F=0.5): F =
-  ## Geometric mean of left & right edge is ~2X faster than arithmetic mean
-  if   i < s.n: -exp(s.aLn + s.h*(F(s.n - i) + offset))
+  ## Geometric mean of left&right edge log-shifted `offset` fraction into bin
+  if   i < s.n: -exp(s.aLn + s.h*(F(s.n - i - 1) + F(1) - offset))
   elif i > s.n: +exp(s.aLn + s.h*(F(i - s.n - 1) + offset))
-  else: 0.0
+  else: 0.0 # The bin containing x=zero cannot really be offset in the same way
 
 func binAB*[F,C](s: LgHisto[C], x: F): (float, float) =
-  ## Range in data space of the bin containing `x`
+  ## Range in data space of the bin containing `x`; Costs 2 `fromIx`s.
   let i = s.toIx(x)
-  if   i == 0    : result[0] = -Inf; result[1] = -s.b
-  elif i == 2*s.n: result[0] = s.b ; result[1] = +Inf
-  elif x <  -s.a: result[0] = s.fromIx(i, 0.0); result[1] = s.fromIx(i, -1.0)
-  elif x >= +s.a: result[0] = s.fromIx(i, 0.0); result[1] = s.fromIx(i, +1.0)
-  else: result[0] = -s.a; result[1] = +s.a
+  if   i == 0      : result[0] = -Inf            ; result[1] = -s.b
+  elif i == 1      : result[0] = -s.b            ; result[1] = s.fromIx(i, 1.0)
+  elif i == 2*s.n-1: result[0] = s.fromIx(i, 0.0); result[1] = +s.b
+  elif i == 2*s.n  : result[0] = +s.b            ; result[1] = +Inf
+  elif x <  -s.a   : result[0] = s.fromIx(i, 0.0); result[1] = s.fromIx(i, 1.0)
+  elif x >= +s.a   : result[0] = s.fromIx(i, 0.0); result[1] = s.fromIx(i, 1.0)
+  else             : result[0] = -s.a            ; result[1] = +s.a
 
 func add*[F,C](s: var LgHisto[C], x: F, w=1.C) =
   ## Increment bin for value `x` by weight `w`
@@ -96,11 +98,13 @@ func pop*[F,C](s: var LgHisto[C], x: F, w=1.C) =
 
 iterator bins*[C](s: LgHisto[C]): (float, float, C) =
   ## Yield `(lo, hi, count)` for each bin covered
-  yield (-Inf, s.fromIx(0,-1.0), s.bist.pmf 0)
-  for i in  1    ..<  s.n: yield (s.fromIx(i,0.0),s.fromIx(i,-1.0),s.bist.pmf i)
-  yield (-s.a, s.a, s.bist.pmf s.n)
-  for i in s.n+1 ..< 2*s.n: yield (s.fromIx(i,0.0),s.fromIx(i,+1.0),s.bist.pmf i)
-  yield (s.fromIx(2*s.n,0.0), +Inf, s.bist.pmf 2*s.n)
+  yield (-Inf, -s.b, s.bist.pmf 0)
+  yield (-s.b, s.fromIx(1,1.0), s.bist.pmf 1)
+  for i in  2   ..<  s.n: yield (s.fromIx(i,0.0),s.fromIx(i,1.0),s.bist.pmf i)
+  yield (-s.a, s.a, s.bist.pmf s.n) # middle bin breaks geometric mean formula
+  for i in s.n+1..<2*s.n-1: yield (s.fromIx(i,0.0),s.fromIx(i,1.0),s.bist.pmf i)
+  yield (s.fromIx(2*s.n-1,0.0), +s.b, s.bist.pmf 1)
+  yield (+s.b, +Inf, s.bist.pmf 2*s.n)
 
 proc `$`*[C](s: LgHisto[C], nonZero=true): string =
   ## Formatting operator; Warning: output can be large, esp. if nonZero=false
@@ -111,8 +115,8 @@ proc `$`*[C](s: LgHisto[C], nonZero=true): string =
   for (a, b, c) in s.bins:
     tot += int(c)
     if nonZero:
-      if c != 0: result.add "  [ " & $a & " , " & $b & " ]: " & $c & "\n"; inc n
-    else       : result.add "  [ " & $a & " , " & $b & " ]: " & $c & "\n"
+      if c != 0: result.add "  [ " & $a & " , " & $b & " ): " & $c & "\n"; inc n
+    else       : result.add "  [ " & $a & " , " & $b & " ): " & $c & "\n"
   result[^1] = '\n'
   result.add "totalCount: " & $tot & " nonZeroBins: " & $n
 
@@ -129,12 +133,13 @@ func cdf*[F,C](s: LgHisto[C], x: F): C =
 
 when isMainModule:
   when defined(test): # Helpful to run against: \ -12 \ -8 \ -4 \ -1 0 1 4 8 12
-    proc lghist(a=0.125, b=10.0, n=8, qs = @[0.50], nums: seq[float]) =
+    proc lghist(a=0.125, b=10.0, n=8, qs = @[0.25, 0.5, 0.75], xs: seq[float]) =
       var lh = initLgHisto[uint16](a, b, n)
-      for x in nums: lh.add x
+      for x in xs: lh.add x
       echo `$`(lh, nonZero=false)
       for (a, b, c) in lh.bins:
-        echo "a: ",a," b: ",b," c: ",c," ab(mid(a,b)): ",lh.binAB((a+b)/2)
+        if (a,b) != lh.binAB((a+b)/2) or a >= b:
+          echo "a: ",a," b: ",b," c: ",c," ab(mid(a,b)): ",lh.binAB((a+b)/2)
       for q in qs: echo "q",q,": ",lh.quantile(q)
     import cligen; dispatch lghist
   else:
