@@ -32,45 +32,45 @@
 import adix/bist, math
 type
   LgHisto*[C] = object  ## Log-spaced histogram Bist[C] backing
-    und, ovr: int       # Out of bounds under & over; For all *ever* `add`ed.
     n: int              # number of bins
     a, b: float         # histogram covers [-b, -a], (-a, a) in zero, [a, b]
     aLn, h, hInv: float # index scale conversion pre-computes
     bist: Bist[C]       # actual smart array of counters
 
-func underflows*[C](s: LgHisto[C]): int = s.und
-func overflows*[C](s: LgHisto[C]): int  = s.ovr
+func underflows*[C](s: LgHisto[C]): int = s.bist.pmf 0
+func overflows*[C](s: LgHisto[C]): int  = s.bist.pmf 2*s.n
 func low*[C](s: LgHisto[C]): float      = s.a
 func high*[C](s: LgHisto[C]): float     = s.b
 func nBin*[C](s: LgHisto[C]): int       = s.n
 func bist*[C](s: LgHisto[C]): Bist[C]   = s.bist
 
-func init*[C](s:var LgHisto[C], a=1e-16, b=1e20, n=8300) =
-  ## Initialized a log-spaced histogram.
-  if b <= a: raise newException(ValueError,"inverted: [" & $a & "," & $b & "]")
-  if a <= 0.0 or b <= 0.0: raise newException(ValueError,"a,b must both be > 0")
+func init*[C](s: var LgHisto[C], a=1e-16, b=1e20, n=8300) =
+  ## Init histogram w/2n+1 log-spaced bins: [-∞..-b; -b..-a; 0; a..<b; b..∞]
+  if b <= a: raise newException(ValueError, "inverted: [" & $a & "," & $b & "]")
+  if a <= 0.0 or b <= 0.0: raise newException(ValueError, "a,b must both be >0")
+  if n < 2: raise newException(ValueError, "n must >= 2")
   s.n    = n
   s.a    = a
   s.b    = b
   s.aLn  = ln(a)
-  s.h    = (ln(b) - ln(a))/n.float
+  s.h    = (ln(b) - ln(a))/float(n - 1)
   s.hInv = 1.0/s.h
   s.bist = initBist[C](2*n + 1)
 
-func initLgHisto*[C](a=1e-16, b=1e20, n=8300): LgHisto[C] = result.init a,b,n
-  ## Return an initialized log-spaced histogram.
+func initLgHisto*[C](a=1e-16, b=1e20, n=8300): LgHisto[C] = result.init a, b, n
+  ## Initted histogram w/2n+1 log-spaced bins: [-∞..-b; -b..-a; 0; a..<b; b..∞]
 
 func space*[C](s: LgHisto[C]): int = s.sizeof + s.bist.space
   ## Estimate space taken up by data structure in bytes
 
-func toIx*[F,C](s: var LgHisto[C], x: F): int =
-  ## Find bin index for value `x`
+func toIx*[F,C](s: LgHisto[C], x: F): int =
+  ## Find bin index for value `x`; underflows get [0] & overflows [2*n].
   if   x <= -s.a:
     if x >= -s.b: result = s.n - 1 - int( (ln(-x) - s.aLn)*s.hInv)
-    else        : s.und.inc; result = 0
+    else        : result = 0
   elif x >= +s.a:
     if x <= +s.b: result = s.n + 1 + int( (ln(+x) - s.aLn)*s.hInv)
-    else        : s.ovr.inc; result = 2*s.n
+    else        : result = 2*s.n
   else: result = s.n
 
 func fromIx*[F,C](s: LgHisto[C], i: int, offset: F=0.5): F =
@@ -78,6 +78,15 @@ func fromIx*[F,C](s: LgHisto[C], i: int, offset: F=0.5): F =
   if   i < s.n: -exp(s.aLn + s.h*(F(s.n - i) + offset))
   elif i > s.n: +exp(s.aLn + s.h*(F(i - s.n - 1) + offset))
   else: 0.0
+
+func binAB*[F,C](s: LgHisto[C], x: F): (float, float) =
+  ## Range in data space of the bin containing `x`
+  let i = s.toIx(x)
+  if   i == 0    : result[0] = -Inf; result[1] = -s.b
+  elif i == 2*s.n: result[0] = s.b ; result[1] = +Inf
+  elif x <  -s.a: result[0] = s.fromIx(i, 0.0); result[1] = s.fromIx(i, -1.0)
+  elif x >= +s.a: result[0] = s.fromIx(i, 0.0); result[1] = s.fromIx(i, +1.0)
+  else: result[0] = -s.a; result[1] = +s.a
 
 func add*[F,C](s: var LgHisto[C], x: F, w=1.C) =
   ## Increment bin for value `x` by weight `w`
@@ -89,15 +98,17 @@ func pop*[F,C](s: var LgHisto[C], x: F, w=1.C) =
 
 iterator bins*[C](s: LgHisto[C]): (float, float, C) =
   ## Yield `(lo, hi, count)` for each bin covered
-  for i in  0  ..<   s.n : yield (s.fromIx(i,0.0),s.fromIx(i,-1.0),s.bist.pmf i)
+  yield (-Inf, s.fromIx(0,-1.0), s.bist.pmf 0)
+  for i in  1    ..<  s.n: yield (s.fromIx(i,0.0),s.fromIx(i,-1.0),s.bist.pmf i)
   yield (-s.a, s.a, s.bist.pmf s.n)
-  for i in s.n+1 .. 2*s.n: yield (s.fromIx(i,0.0),s.fromIx(i,+1.0),s.bist.pmf i)
+  for i in s.n+1 ..< 2*s.n: yield (s.fromIx(i,0.0),s.fromIx(i,+1.0),s.bist.pmf i)
+  yield (s.fromIx(2*s.n,0.0), +Inf, s.bist.pmf 2*s.n)
 
 proc `$`*[C](s: LgHisto[C], nonZero=true): string =
   ## Formatting operator; Warning: output can be large, esp. if nonZero=false
-  result.add "n: "   & $s.n   & "\ta: "   & $s.a   & "\tb: "    & $s.b    & "\n"
-  result.add "aLn: " & $s.aLn & "\th: "   & $s.h   & "\thInv: " & $s.hInv & "\n"
-  result.add "und: " & $s.und & "\tovr: " & $s.ovr & "\tbins,cnts:\n"
+  result.add "n: "   & $s.n   & "\ta: " & $s.a & "\tb: "    & $s.b    & "\n"
+  result.add "aLn: " & $s.aLn & "\th: " & $s.h & "\thInv: " & $s.hInv & "\n"
+  result.add "bins,cnts:\n"
   var tot = 0; var n = 0
   for (a, b, c) in s.bins:
     tot += int(c)
@@ -114,17 +125,19 @@ func quantile*[F,C](s: LgHisto[C], q: F): F =
   let fL = s.bist.quantile(q, iL, iH)
   fL*s.fromIx(iL) + (1 - fL)*s.fromIx(iH)
 
-func cdf*[F,C](s: var LgHisto[C], x: F): C =
+func cdf*[F,C](s: LgHisto[C], x: F): C =
   ## Raw count; Leave to caller to multiply by 1/s.bist.count; XXX Interpolate?
   if x.isNaN: NaN else: s.bist.cdf(s.toIx(x))
 
 when isMainModule:
-  when defined(test):# Helpful to run against: -12 -8 -4 -1 0 1 4 8 12
+  when defined(test): # Helpful to run against: \ -12 \ -8 \ -4 \ -1 0 1 4 8 12
     proc lghist(a=0.125, b=10.0, n=8, qs = @[0.50], nums: seq[float]) =
       var lh = initLgHisto[uint16](a, b, n)
       for x in nums: lh.add x
-      echo "lh: ", lh
-      for q in qs: echo "q", q, " ", lh.quantile(q)
+      echo `$`(lh, nonZero=false)
+      for (a, b, c) in lh.bins:
+        echo "a: ",a," b: ",b," c: ",c," ab(mid(a,b)): ",lh.binAB((a+b)/2)
+      for q in qs: echo "q",q,": ",lh.quantile(q)
     import cligen; dispatch lghist
   else:
     import random, times; randomize()
