@@ -1,33 +1,31 @@
-## `LgHisto` is a simple application of BISTs to log-spaced histo bins that can
-## yield fast, tunable accuracy Parzen-interpolated quantiles with ~5X lower
-## time cost & ~10X higher space cost than typical t-Digests.  Similar "ease of
-## use" features (not costing a lot for high dynamic ranges) obtain.
+## `LgHisto` is a simple application of BISTs to log-spaced histograms that can
+## yield efficient, dynamic quantiles.  log-spacing supports high dynamic range
+## without inordinate cost while Fenwick/BIST supports dynamic membership with
+## operation-balanced perf.
 ##
-## Worst case time of *quantile queries* is ~2..4x one `add` and MUCH more than
-## 5X better than t-Digest making actual speed-up sensitive to operation mixes.
-## { This may change, but present t-Digest impls, even tree ones, do a linear
-## scan for quantile/CDFs.  None even offer "batch" APIs to do N quantiles in
-## one such scan - an easy extension with O(nQtl) speed-up.  "Histo B-trees"
-## should allow better scaling for such. }
-## 
-## Quantile accuracy is absolute {not relative to `q*(1-q)`} & easily estimated
-## as +-1/2 bin width which is about 10^(lg(b/a)/n/2).  So, if you need 3 places
-## or your data is clustered very tightly within some given order of magnitude
-## then you can probably just use 1e5 bins and still be very L1 cache resident
-## on the "hot" part of your data depending upon competition.  Cache is the main
-## cost Re: speed.  Since many bins are 0 in many settings, run-length encoding
-## is likely enough for net/disk transfers of low entropy distros.
-##
-## BISTs also differ from t-Digests in other important ways. First, BISTs are
-## well suited for `pop` or moving data window operations with *strict* finite
-## memory, for e.g. translation of full streams to moving quantiles as in a
-## Bollinger Band style "smooth".  Second, floating point weights for EWMA-like
-## decaying memory are not possible since FP arithmetic kind of breaks BISTs.
+## Quantile error is absolute {not relative to `q*(1-q)` like a t-Digest} &
+## easily bounded as <~ 1/2 bin width {about 10^(lg(b/a)/n/2)}.  So, if you need
+## 3 places or your data is clustered within a few orders of magnitude then you
+## can likely just use 1e4 bins and your counters will remain very L1 cache
+## resident, depending upon resource competition.  Cache is the main cost Re:
+## speed.  Re: space, since 99% of bins are 0 in many cases, net/disk transfer
+## cost can be improved via simple run-length encoding.
 ##
 ## The way Fenwick BISTs work, the generic parameter `C` must be a wide enough
 ## integer type to hold both elemental bin counts and grand totals.  uint32 is
 ## likely enough for many applications, though some might sneak by with uint16
 ## and a few might need uint64.  This scales bin size/space cost.
+##
+## t-Digests are a well marketed competitor using ~10X less space BUT with >>5X
+## slower quantiles of similar accuracy.  Actual cost is sensitive to operation
+## mixes. { This may change, but present t-Digest impls, even with trees, linear
+## scan for quantile/CDFs.  None even offer "batch" APIs to do N quantiles in
+## one such scan.  "Histo B-trees" should allow better scaling for such. }  A
+## BIST basis differs from t-Digests in other important ways.  First, BISTs are
+## well suited for `pop` or moving data window operations with *strict* finite
+## memory, for e.g. translation of full streams to moving quantiles as in a
+## Bollinger Band style smooths.  Second, floating point weights for EWMA-like
+## decaying memory are not possible since FP arithmetic kind of breaks BISTs.
 
 import adix/bist, math
 type
