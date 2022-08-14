@@ -568,4 +568,4 @@ when isMainModule:
     of rU8: doIt(0'u64,0'u64, xfRev   ,low,range,check,minN,avgN,std,b0,data,ns)
     of rS8: doIt(0'i64,0'u64, xfSgnRev,low,range,check,minN,avgN,std,b0,data,ns)
     of rF8: doIt(0'f64,0'u64, xfFltRev,low,range,check,minN,avgN,std,b0,data,ns)
-  dispatch(tstTm, cmdName="nsort", positional="ns", implicitDefault = @["data"])
+  dispatch tstTm, positional="ns", implicitDefault = @["data"]

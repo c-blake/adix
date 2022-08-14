@@ -45,4 +45,4 @@ proc qry(dict="words", stats=false, query: seq[string]) =
         echo "FinalTable: ", ana.len, "/", ana.getCap
     mf.close
 
-when isMainModule: dispatch(qry, cmdName="anaPrime")
+when isMainModule: dispatch qry
