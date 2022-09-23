@@ -1,11 +1,15 @@
-## Summary stats built in running/online fashion (as std/stats) BUT (sometimes)
-## 50X faster & 1 million X more accurate and over a (potentially) MOVING data
-## window (via `pop`).  Speed up comes from SIMD auto-vectorization in whole
-## `openArray[]` calls (in --passC:-ffast-math|-Ofast backend modes) aided by
-## "shift" idea at en.wikipedia.org/wiki/Algorithms_for_calculating_variance
-## (both simpler & faster than Welford).  Both `var` and non-var variants are
-## provided to allow caching 1.0/n (which may be identical-but-expensive in eg.
-## every-window samples).
+## Summary stats built in running/online fashion (as std/stats) BUT over (maybe)
+## MOVING data windows (via `pop`) and (sometimes) 50X faster & a million X more
+## accurate.  Speed up comes from SIMD auto-vectorization in whole `openArray[]`
+## calls (in --passC:-ffast-math|-Ofast backend modes) aided by "shift" idea at
+## en.wikipedia.org/wiki/Algorithms_for_calculating_variance (both simpler &
+## faster than Welford).  Both `var` & non-var overloads are provided to allow
+## caching 1.0/n which may be identical-but-expensive (eg. reporting at each
+## cycle of a 1 pop per push (so fixed `n`) window over data).
+##
+## Note: this all costs more in both time & space than exponentially weighted
+## equivalents but has precise rather than infinite memory which can be nice.
+## I.e., it can perfectly "forget" a large spike when it leaves a window.
 
 from math         import sqrt, sum, `^`
 from strutils     import formatFloat, ffDefault
