@@ -71,6 +71,10 @@ proc init*(s: var SeqUint, initialSize=0, numBound=0) {.inline.} =
 proc initSeqUint*(initialSize=0, numBound=0): SeqUint {.inline.} =
   result.init(initialSize, numBound)
 
+template BadIndex: untyped =
+  when declared(IndexDefect): IndexDefect
+  else: IndexError
+
 # Consider storing 3 bit numbers packed into 8 bit words big-endian-wise like:
 #   indices for trad. R2Left ops:  76543210             76543210  76543210
 # The layout can be either A) m=1 [....210.] OR B) m=7 [0.......][......21].
@@ -78,7 +82,7 @@ proc initSeqUint*(initialSize=0, numBound=0): SeqUint {.inline.} =
 # where `m == bitix % 8` is the modulus of low order bit index relative to wdsz.
 proc `[]`*(s: SeqUint, i: int|uint): uint {.inline.} =
   if int(i) >= s.len:
-    raise newException(IndexDefect, formatErrorIndexBound(int(i), s.len))
+    raise newException(BadIndex, formatErrorIndexBound(int(i), s.len))
   let sbits  = uint(s.bits)
   let bitix  = uint(i) * sbits
   let wdix   = bitix shr iShf
@@ -102,7 +106,7 @@ proc `[]`*(s: SeqUint, i: int|uint): uint {.inline.} =
 proc `[]=`*(s: var SeqUint, i: int|uint, x: int|uint) {.inline.} =
   let x = uint(x) and ((1'u shl s.bits) - 1)
   if int(i) >= s.len:
-    raise newException(IndexDefect, formatErrorIndexBound(i, s.len))
+    raise newException(BadIndex, formatErrorIndexBound(i, s.len))
   let sbits  = uint(s.bits)
   let bitix  = uint(i) * sbits
   let wdix   = bitix shr iShf
