@@ -34,6 +34,7 @@
 
 import althash, memutil, bitop, heapqueue, sequint, strutils, memfiles
 export Hash, sequint
+when not declared(assert): import std/assertions
 type                  ## `K` is Key type; `V` is Value type (can be `void`)
   HCell[K,V,Z;z:static[int]] = object
     when Z is void:   ## void sentinel type => no sentinel; else `z` is sentinel

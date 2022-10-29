@@ -20,6 +20,7 @@
 ## up to 2X further with a ``sequint`` specialized to store an array of B-bit
 ## counters.  Also, ranked B-trees start being faster for >28-bit index spaces.
 import xlang, bitop # cfor, `>>=`, `&=`
+when not declared(assert): import std/assertions
 
 type Bist*[T: SomeInteger] = object ## A razor thin wrapper around seq[T]
   data: seq[T]        # The Fenwick array/BIST; Relevant seq ops pass through
