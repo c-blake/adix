@@ -15,7 +15,7 @@ from math         import sqrt, sum, `^`
 from strutils     import formatFloat, ffDefault
 when defined(useCligen): from cligen/strUt import fmtUncertainMerged
 else:
-  when not compiles($1.0): import std/formatfloat
+  when not declared(addFloat): import std/formatfloat
   proc fmtUncertainMerged(m, e: float): string = $m & " +- " & $e
 from adix/lghisto import LgHisto, add, pop, quantile, cdf, init
 

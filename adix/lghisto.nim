@@ -27,8 +27,8 @@
 ## Bollinger Band style smooths.  Second, floating point weights for EWMA-like
 ## decaying memory are not possible since FP arithmetic kind of breaks BISTs.
 
+when not declared(addFloat): import std/formatfloat
 import adix/bist, math
-when not compiles($1.0): import std/formatfloat
 type
   LgHisto*[C] = object  ## Log-spaced histogram Bist[C] backing
     n: int              # number of bins
