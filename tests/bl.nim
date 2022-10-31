@@ -1,3 +1,4 @@
+when not declared(addFloat): import std/formatfloat
 import althash, bltab, os, strutils
 
 let nTab = parseInt(paramStr(1))

@@ -1,3 +1,4 @@
+when not declared(addFloat): import std/formatfloat
 import metab, althash, times
 
 const shift = 49'u

@@ -1,3 +1,4 @@
+when not declared(addFloat): import std/[formatfloat, objectdollar]
 import metab, althash, times#, math
 #                                 0  1  2  3  4  5    6    7  8   9
 #tombstone methods get depths ~ @[2, 1, 1, 1, 1, 32, 174, 40, 2, 1]

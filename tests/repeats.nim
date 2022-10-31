@@ -1,3 +1,4 @@
+when not declared(stdin): import std/syncio
 import tables, cligen
 
 proc repeats(thresh=2) =

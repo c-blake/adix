@@ -34,7 +34,12 @@
 
 import althash, memutil, bitop, heapqueue, sequint, strutils, memfiles
 export Hash, sequint
-when not declared(assert): import std/assertions
+when not declared(assert): import std/[assertions, objectdollar]
+when declared(File):
+  template stdOpen(x: varargs[untyped]): untyped = system.open(x)
+else:
+  import std/syncio; export syncio
+  template stdOpen(x: varargs[untyped]): untyped = syncio.open(x)
 type                  ## `K` is Key type; `V` is Value type (can be `void`)
   HCell[K,V,Z;z:static[int]] = object
     when Z is void:   ## void sentinel type => no sentinel; else `z` is sentinel
@@ -86,7 +91,7 @@ proc save*[K,V,Z;z:static[int]](t: LPTabz[K,V,Z,z], pathStub: string) =
                                      (if t.rehash: "R" else: "")
     if t.rehash:
       ext.add "-0x" & t.salt.toHex
-    let f = system.open(pathStub & ext, fmWrite)
+    let f = stdOpen(pathStub & ext, fmWrite)
     let n = t.data.len
     let wr1 {.used.} = f.writeBuffer(n.unsafeAddr, n.sizeof)
     let wr2 {.used.} = f.writeBuffer(n.unsafeAddr, n.sizeof)
@@ -106,7 +111,7 @@ proc load*[K,V,Z;z:static[int]](t: var LPTabz[K,V,Z,z], path: string) =
     t.robin  = 'R' in comps[1]
     t.rehash = 'r' in comps[1]
     if t.rehash and comps.len > 2: t.salt = parseInt(comps[2])
-    let f  = system.open(path)
+    let f  = stdOpen(path)
     let sz = f.getFileSize - 2*sizeof(int)
     t.data = newSeq[HCell[K,V,Z,z]](sz div sizeof(HCell[K,V,Z,z]))
     var junk: int

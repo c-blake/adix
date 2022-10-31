@@ -1,3 +1,4 @@
+when not declared(addFloat): import std/formatfloat
 import os, strutils, metab, random
 
 randomize()

@@ -1,5 +1,6 @@
 # Just writes 8 byte binary hashes of 0..<n to stdout for input to PractRand.
 import althash, bitops, times, cligen, cligen/osUt, strutils
+when not declared(stdout): import std/[syncio, formatfloat]
 
 type HashFun =
   enum Identity, RoMu, WangYi, MoreMur, NASAM, SplitMix, Split64, Degski

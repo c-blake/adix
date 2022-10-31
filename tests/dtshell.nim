@@ -1,3 +1,4 @@
+when not declared(stdin): import std/syncio
 import metab, os, strutils
 
 proc main() =

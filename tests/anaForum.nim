@@ -2,6 +2,7 @@
 # here for reference but is 17x slower than anaPrime due
 # to: sortedSig, Tab[*,seq[string]], hasKey, no presize...
 
+when not declared(open): import std/syncio
 import strutils, algorithm, os, tables, unidecode
 
 proc signature(word: string): string =

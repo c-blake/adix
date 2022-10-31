@@ -54,6 +54,7 @@
 ## also needs inverse transforms on the final pass & current xforms are already
 ## cheap compared to L2 or worse bandwidth costs.  So, 5-20% boost, I'd guess.)
 
+when not declared(stdout): import std/syncio
 import bitops, math, algorithm, cumsum,
        cligen/prefetch  #NOTE: must compile with -d:cpuPrefetch to do anything
 const nTinySort = 20            #Typically 16-32 works well here XXX optimize

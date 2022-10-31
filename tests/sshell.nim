@@ -1,3 +1,4 @@
+when not declared(stdin): import std/[syncio, objectdollar]
 import metab, strutils, os, times
 
 proc now(): int64 {.inline.} = cast[int64](epochTime() * 1e9)

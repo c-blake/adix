@@ -22,6 +22,7 @@
 ## keys are not allowed for this one.
 
 import althash, sequint, heapqueue
+when not declared(assert): import std/assertions
 type
   DITab*[K,V] = object  ## Alphabet size determines `K`; `V` may be `void`
     when V is void:

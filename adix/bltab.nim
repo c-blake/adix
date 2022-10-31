@@ -6,6 +6,7 @@
 ## be similar to hash variants of multisets.
 
 import althash, sequint
+when not declared(stderr): import std/assertions
 type
   BLTab* = object  ## RobinHoodLP set of B-bit int keys w/small false pos. rate
     data: SeqUint     # number array
@@ -33,10 +34,6 @@ when defined(hashStats):   # Power user inspectable/zeroable stats.  These are
   var blTooSparse* = 0   ## Counts skips of depth-triggered resize from sparsity
 else:
   template ifStats(x) = discard
-when defined(blWarn) or not defined(danger):
-  var blWarn*    = stderr  ## Set to wherever you want warnings to go
-  var blMaxWarn* = 10      ## Most warnings per program invocation
-  var blWarnCnt  = 0       # Running counter of warnings issued
 
 proc len*(s: BLTab): int {.inline.} = s.count
 proc getCap*(s: BLTab): int {.inline.} = s.data.len

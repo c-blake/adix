@@ -1,3 +1,4 @@
+when not declared(addFloat): import std/formatfloat
 import random, stats, adix/[metab, althash, bitop], cligen
 
 proc statsVratio(N=7000, MaxNum=(1 shl 32), numer=1, denom=1,

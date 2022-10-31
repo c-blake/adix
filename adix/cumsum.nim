@@ -113,6 +113,7 @@ proc cumsum*[T](c: ptr T, n: uint) {.inline.} =
 
 when isMainModule:
   import random, times, stats, cligen
+  when not declared(stderr): import std/[syncio, formatfloat]
 
   proc gen[T](x: var openArray[T]; low, range: int) =
     for i in 0 ..< x.len: x[i] = low.T + rand(range.float).T

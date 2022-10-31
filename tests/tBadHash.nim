@@ -1,3 +1,4 @@
+when not declared(addFloat): import std/formatfloat
 import metab, althash, times
 
 let iniSz = 4

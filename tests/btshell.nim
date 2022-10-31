@@ -1,3 +1,4 @@
+when not declared(stdout): import std/[syncio, objectdollar, formatfloat]
 import ppss, btree, strutils, strformat, os, times
 
 var   verb   = false                    # global verbosity flag

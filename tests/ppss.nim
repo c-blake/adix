@@ -1,4 +1,5 @@
 import strutils
+when not declared(stdin): import std/syncio
 
 type                                    # Instantiate a tree type/suite
   Command* = object

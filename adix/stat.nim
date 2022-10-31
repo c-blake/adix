@@ -11,12 +11,13 @@
 ## equivalents but has precise rather than infinite memory which can be nice.
 ## I.e., it can perfectly "forget" a large spike when it leaves a window.
 
+when not declared(addFloat): import std/objectdollar
 from math         import sqrt, sum, `^`
 from strutils     import formatFloat, ffDefault
 when defined(useCligen): from cligen/strUt import fmtUncertainMerged
 else:
   when not declared(addFloat): import std/formatfloat
-  proc fmtUncertainMerged(m, e: float): string = $m & " +- " & $e
+  proc fmtUncertainMerged(m, e: float, e0=1..2): string = $m & " +- " & $e
 from adix/lghisto import LgHisto, add, pop, quantile, cdf, init
 
 const avc = "__attribute__((optimize(\"fast-math\"))) $# $#$#" # autovec cgdecl
@@ -302,6 +303,7 @@ when isMainModule:
     import sys; (m,v,sd,sk,kt) = moments(sys.argv[1:]); print("avg: ", m)
     print("var: ", v); print("sd: ", sd); print("sk: ", sk); print("kt: ", kt)]#
   import std/stats
+  when not declared(addFloat): import std/formatfloat
   var w1: MovingStat[float32, uint32]
   var w2: MovingStat[float64, uint32]
   var rs, rA, rB: RunningStat # Below: std/stats runnableExamples +10_000_000
