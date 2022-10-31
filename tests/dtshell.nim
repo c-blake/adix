@@ -1,4 +1,4 @@
-when not declared(stdin): import std/syncio
+when not declared(stdin): import std/[syncio, objectdollar]
 import metab, os, strutils
 
 proc main() =
@@ -25,9 +25,8 @@ proc main() =
       of 'a':
         t.add(k, v)
       of 'd':
-        t.del k, had
-        if had: nD1.inc
-        else  : nD0.inc
+        if t.missingOrExcl(k): nD0.inc
+        else                 : nD1.inc
       of 'T': echo t
       of 'D': echo t.depths
       of 'P': t.debugDump

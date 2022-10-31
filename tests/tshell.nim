@@ -1,5 +1,5 @@
+when not declared(stdin): import std/[syncio, objectdollar, formatfloat]
 import metab, strutils, os, times
-when not declared(stdin): import std/syncio
 
 proc now(): int64 {.inline.} = cast[int64](epochTime() * 1e9)
 
@@ -40,8 +40,8 @@ proc main() =
         discard t.mgetOrPut(k, v, had)
         if had: nP1.inc else: nP0.inc
       of 'd':
-        t.del k, had
-        if had: nD1.inc else: nD0.inc
+        if t.missingOrExcl(k): nD0.inc
+        else                 : nD1.inc
       of '-':
         if k == 0: discard t.pop()
         else: (var kk = k; var vv = v; discard t.pop(kk, vv))

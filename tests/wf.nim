@@ -1,3 +1,4 @@
+when not declared(addFloat): import std/formatfloat
 import std/[heapqueue, hashes, osproc, times],
        adix/lptabz, cligen/[mfile, mslice, osUt], cligen
 type
