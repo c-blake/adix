@@ -26,14 +26,14 @@ proc mnsd*(delim="white", table="", hsep="s", pm="+-", exp = -2..4,
           hdrs.add if doStrip: hdr.strip else: hdr
           hdr.setLen 0
         let bs = nums[j].basicStats
-        if bs.sdev > 1e-14*bs.mean:   # Varied
+        if bs.sdev > 1e-14*bs.mean:             # Varied
           cols.add fmtUncertain(bs.mean, bs.sdev/bs.n.float.sqrt,
                                 unity, sci, exp, nd)
-        else: cols.add ctxt           # Constant
-      else:                           # Non-Numeric
+        else: cols.add ctxt                     # Constant
+      else:                                     # Non-Numeric
         if hdr.len > 0: hdr.add hsep
         hdr.add ctxt
-    if hdr.len > 0:                   # Last header may be empty
+    if hdr.len > 0:                             # Last header may be empty
       hdrs.add if doStrip: hdr.strip else: hdr
     stdout.write join(hdrs, table), "\n"
     stdout.write join(cols, table), "\n"
@@ -41,16 +41,16 @@ proc mnsd*(delim="white", table="", hsep="s", pm="+-", exp = -2..4,
     for j, ctxt in labs:
       if nums[j].len > 1:
         let bs = nums[j].basicStats
-        if bs.sdev > 1e-14*bs.mean:     # Varied
+        if bs.sdev > 1e-14*bs.mean:             # Varied
           stdout.write fmtUncertain(bs.mean, bs.sdev/bs.n.float.sqrt,
                                     unity, sci, exp, nd)
-        else: stdout.write ctxt      # Constant
-      else: stdout.write ctxt        # Non-Numeric
+        else: stdout.write ctxt                 # Constant
+      else: stdout.write ctxt                   # Non-Numeric
     stdout.write "\n"
 
 when isMainModule: import cligen; dispatch mnsd, help={
-  "help"       : "print cligen-erated help",  # narrower than
-  "help-syntax": "prepend, plurals..",        #..the defaults
+  "help"       : "print cligen-erated help",    # narrower than
+  "help-syntax": "prepend, plurals..",          #..the defaults
   "delim"      : "inp delims; Repeats=>fold",
   "table"     :"""labels -> header of a
 `table`-separated table""",
