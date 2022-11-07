@@ -11,7 +11,7 @@ proc mnsd*(delim="white", table="", hsep="s", pm="+-", exp = -2..4,
   ## numbers embedded & produces a 1-line summary with the last such intercalary
   ## text and mean+-stderr of each *column* of floats.  If `table!=""`, contexts
   ## are joined via `hsep` into headers for the associated reduced numbers, with
-  ## columns separated by `table` (e.g. \t).
+  ## columns separated by `table` (e.g. ',').
   let (labs, nums) = labFloats(stdin, initSep(delim))
   strUt.pmDfl = pm
   if table.len > 0:
