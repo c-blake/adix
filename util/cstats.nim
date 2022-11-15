@@ -1,5 +1,5 @@
 import std/[math,strutils,algorithm],cligen/strUt, adix/stat,fitl/qtl, labFloats
-when not declared(stdin): import std/syncio
+when not declared(stdin): import std/[syncio, formatfloat]
 
 proc needToSort(stats: seq[string]): bool =
   for ex in stats: (if ex.startsWith("q"): return true)
