@@ -29,6 +29,7 @@ proc len(w: Word): uint32 = uint32(w) and wm
 
 proc mem(w: Word): pointer = mf.mem +! int(w.uint32 shr wb)
 
+# Case insens hash/==|Local stack allocator | may be faster than MAP_PRIVATE.
 proc hash(w: Word): Hash {.inline.} = hashData(w.mem, w.len.int)
 
 proc `==`(a, b: Word): bool {.inline.} =
@@ -78,8 +79,8 @@ proc work(td: ThrDat) {.thread.} =      # Histogram one segment of an mmap
 
 proc count(p: int, path: string) =      # split path into `p` ~equal segments
   var (mfLoc, parts) = p.nSplit(path, flags=MAP_PRIVATE)
-  mf = mfLoc                            # Local stack allocator for strings..
-  if mf != nil:                         #..may be faster than MAP_PRIVATE trick
+  mf = mfLoc
+  if mf != nil:
     if mf.len > 1 shl (32 - wb):
       raise newException(RangeDefect, "\"" & path & "\" too large")
     if p > 1:                           # add mf.len > 65536|something?
