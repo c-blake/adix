@@ -71,15 +71,15 @@ else: # Knuth-McIlroy definition of "words"
       yield initWord(wd, n); n = 0      # yield & reset
   if n > 0: yield initWord(wd, n)       # any final word
 
-proc work(td: ThrDat) {.thread.} =
+proc work(td: ThrDat) {.thread.} =      # Histogram one segment of an mmap
   setAffinity()                         # pin to CPU initially assigned
   for w in td.part[].lowCaseWords:
     td.hp[].mgetOrPut(w, 0).inc
 
-proc count(p: int, path: string) =
+proc count(p: int, path: string) =      # split path into `p` ~equal segments
   var (mfLoc, parts) = p.nSplit(path, flags=MAP_PRIVATE)
-  mf = mfLoc
-  if mf != nil:
+  mf = mfLoc                            # Local stack allocator for strings..
+  if mf != nil:                         #..may be faster than MAP_PRIVATE trick
     if mf.len > 1 shl (32 - wb):
       raise newException(RangeDefect, "\"" & path & "\" too large")
     if p > 1:                           # add mf.len > 65536|something?
