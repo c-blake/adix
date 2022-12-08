@@ -434,40 +434,6 @@ proc rawDel[K,V,Z;z:static[int]](t: var LPTabz[K,V,Z,z]; i: Hash) {.inline.} =
   when not (Z is K or Z is void):
     discard t.data.pop
 
-template getPut(t, i, key, present, missing: untyped): untyped =
-  mixin rawPut1, rawPut2, tooFull
-  if t.getCap == 0: t.init
-  var hc, d, newSize: Hash
-  var i = t.rawGet(key, hc, d)
-  if i < 0:
-    var j = t.rawPut1(-1 - i, d)
-    if t.tooFull(d, newSize):
-      t.setCap newSize
-      d = 0
-      i = t.rawGet(key, hc, d)
-      j = t.rawPut1(-1 - i, d)
-    var k = t.rawPut2(-1 - i, j)        # Maybe allocate a slot
-    when compiles(t.count):
-      t.count.inc
-    when compiles(t.data[k].hcode):
-      t.data[k].hcode = hc
-    when compiles(t.idx):
-      t.idx[k] = ixHc(t.data.len + 1, hc, z)
-      t.data.setLen t.data.len + 1
-    let i = k # Create an alias so missing & present bodies can both use `i`
-    missing
-  else:
-    present
-
-template popRet(t, i, key, present, missing: untyped): untyped =
-  var i: int
-  if t.getCap == 0 or (i = t.rawGet(key); i) < 0:
-    missing
-  else:
-    when compiles(t.count):
-      t.count.dec
-    present
-
 proc slotsGuess(count: int, minFree: int): int {.inline.} =
   ceilPow2(count + max(1, minFree)) # Might have a great hash
 
@@ -493,25 +459,6 @@ proc init*[K,V,Z;z:static[int]](t: var LPTabz[K,V,Z,z];
   t.pow2     = uint8(initialSize.lg)
   t.rehash   = rehash
   t.robin    = robinhood
-
-proc initLPTabz*[K,V,Z;z:static[int]](initialSize=lpInitialSize, numer=lpNumer,
-    denom=lpDenom, minFree=lpMinFree, growPow2=lpGrowPow2, rehash=lpRehash,
-    robinhood=lpRobinHood): LPTabz[K,V,Z,z] {.inline.} =
-  result.init initialSize, numer, denom, minFree, growPow2, rehash, robinhood
-
-proc setPolicy*[K,V,Z;z:static[int]](t: var LPTabz[K,V,Z,z]; numer=lpNumer,
-    denom=lpDenom, minFree=lpMinFree, growPow2=lpGrowPow2, rehash=lpRehash,
-    robinhood=lpRobinHood) {.inline.} =
-  ## Must call `setCap` after changing certain params here (e.g. `rehash`).
-  t.numer    = numer
-  t.denom    = denom
-  t.minFree  = max(1, minFree).uint8
-  t.growPow2 = growPow2
-  t.rehash   = rehash
-  t.robin    = robinhood
-
-proc rightSize*(count: int, numer=0, denom=0, minFree=0): int {.inline,
-  deprecated: "Deprecated since 0.2; identity function".} = count
 
 proc setCap*[K,V,Z;z:static[int]](t: var LPTabz[K,V,Z,z]; newSize = -1) =
   if t.getCap == 0: t.init
@@ -551,6 +498,60 @@ proc setCap*[K,V,Z;z:static[int]](t: var LPTabz[K,V,Z,z]; newSize = -1) =
       let j = t.rawGetDeep(cell.key, hc, d)
       t.idx[t.rawPut2(j, t.rawPut1(j, d))] = ixHc(i + 1, hc, z)
   dbg echo(" NEW SALT: ", t.salt)
+
+template getPut(t, i, key, present, missing: untyped): untyped =
+  mixin rawPut1, rawPut2, tooFull, getCap, init, setCap
+  if t.getCap == 0: t.init
+  var hc, d, newSize: Hash
+  var i = t.rawGet(key, hc, d)
+  if i < 0:
+    var j = t.rawPut1(-1 - i, d)
+    if t.tooFull(d, newSize):
+      t.setCap newSize
+      d = 0
+      i = t.rawGet(key, hc, d)
+      j = t.rawPut1(-1 - i, d)
+    var k = t.rawPut2(-1 - i, j)        # Maybe allocate a slot
+    when compiles(t.count):
+      t.count.inc
+    when compiles(t.data[k].hcode):
+      t.data[k].hcode = hc
+    when compiles(t.idx):
+      t.idx[k] = ixHc(t.data.len + 1, hc, z)
+      t.data.setLen t.data.len + 1
+    let i = k # Create an alias so missing & present bodies can both use `i`
+    missing
+  else:
+    present
+
+template popRet(t, i, key, present, missing: untyped): untyped =
+  mixin getCap
+  var i: int
+  if t.getCap == 0 or (i = t.rawGet(key); i) < 0:
+    missing
+  else:
+    when compiles(t.count):
+      t.count.dec
+    present
+
+proc initLPTabz*[K,V,Z;z:static[int]](initialSize=lpInitialSize, numer=lpNumer,
+    denom=lpDenom, minFree=lpMinFree, growPow2=lpGrowPow2, rehash=lpRehash,
+    robinhood=lpRobinHood): LPTabz[K,V,Z,z] {.inline.} =
+  result.init initialSize, numer, denom, minFree, growPow2, rehash, robinhood
+
+proc setPolicy*[K,V,Z;z:static[int]](t: var LPTabz[K,V,Z,z]; numer=lpNumer,
+    denom=lpDenom, minFree=lpMinFree, growPow2=lpGrowPow2, rehash=lpRehash,
+    robinhood=lpRobinHood) {.inline.} =
+  ## Must call `setCap` after changing certain params here (e.g. `rehash`).
+  t.numer    = numer
+  t.denom    = denom
+  t.minFree  = max(1, minFree).uint8
+  t.growPow2 = growPow2
+  t.rehash   = rehash
+  t.robin    = robinhood
+
+proc rightSize*(count: int, numer=0, denom=0, minFree=0): int {.inline,
+  deprecated: "Deprecated since 0.2; identity function".} = count
 
 proc contains*[K,V,Z;z:static[int]](t: LPTabz[K,V,Z,z]; key: K):
     bool {.inline.} =
@@ -615,6 +616,7 @@ template getItOrFail*[K,V,Z;z:static[int]](t: LPTabz[K,V,Z,z]; k: K;
     missing
 
 template doAdd(postAdd: untyped) {.dirty.} =
+  mixin getCap
   if t.getCap == 0: t.init
   var hc, d, newSize: Hash
   var i = t.rawGetDeep(key, hc, d)
