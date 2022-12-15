@@ -1,5 +1,5 @@
+when not declared(addFloat): import std/[formatfloat, typedthreads]
 when not declared(Thread): import std/threads
-when not declared(addFloat): import std/formatfloat
 import std/[heapqueue, hashes, osproc, times],
        adix/lptabz, cligen/[mfile, mslice, osUt], cligen
 type
@@ -104,7 +104,7 @@ iterator top(h: Histo, n=10, tot: ptr uint32=nil): (Word, Count) =
     y[1] = r[0]
     yield y                             # yield in ASCENDING order
 
-proc wf(path: seq[string], n=10, grand=false, par=1, sz=9_718, time=false) =
+proc wf(path:seq[string], n=10, c=false, grand=false, par=1, sz=9718, tm=false)=
   ## Parallel word frequency tool for one file < 128 MiB and words < 32 chars.
   ## Aggregate multiple via, e.g., `cat \*\*/\*.txt > /dev/shm/inp`.  Similar
   ## to Knuth-McIlroy `tr A-Z a-z|tr -sc a-z \\n|sort|uniq -c|sort -n|tail`,
@@ -117,12 +117,15 @@ proc wf(path: seq[string], n=10, grand=false, par=1, sz=9_718, time=false) =
   p.count path[0]
   for i in 1 ..< p:                     # hs[0] += [1..<p]
     for wd, cnt in hs[i]: hs[0].mgetOrPut(wd, 0) += cnt
-  let n = if n != 0: n else: hs[0].len
-  var tot = 0'u32
-  for wd, cnt in hs[0].top(n, tot.addr):
-    echo cnt, " ", wd                   # print histogram
-  if grand: echo tot, " TOTAL"          # with normalizing constant
-  if time: stderr.write epochTime() - t0, " sec\n"
+  if not c:
+    let n = if n != 0: n else: hs[0].len
+    var tot = 0'u32
+    for wd, cnt in hs[0].top(n, tot.addr):
+      echo cnt, " ", wd                   # print histogram
+    if grand: echo tot, " TOTAL"          # with normalizing constant
+  else:
+    echo hs[0].len," uniqueWords"
+  if tm: stderr.write epochTime() - t0, " sec\n"
 
-dispatch(wf, help={"n": "print top n; 0=>all", "grand": "grand total",
-                   "par": "num threads; 0=>auto", "sz": "init size"})
+dispatch(wf, help={"n": "print top n; 0=>all", "c": "count only", "tm": "time",
+  "grand": "grand total", "par": "num threads; 0=>auto", "sz": "init size"})

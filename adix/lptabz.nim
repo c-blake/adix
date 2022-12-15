@@ -1092,11 +1092,12 @@ proc merge*[K,V,Z;z:static[int]](c: var LPTabz[K,V,Z,z], b: LPTabz[K,V,Z,z]) =
 iterator topByVal*[K,V,Z;z:static[int]](c: LPTabz[K,V,Z,z], n=10,
                                         min=V.low): (K, V) =
   ## Iterate from smallest to largest over biggest `n` items by value in `c`.
+  ## If `n==0` this is effectively heap sort of `c` by value `V`.
   var q = initHeapQueue[(V, K)]()
   for key, val in c:
     if val >= min:
       let e = (val, key)
-      if q.len < n: q.push(e)
+      if n == 0 or q.len < n: q.push(e)
       elif e > q[0]: discard q.replace(e)
   var y: (K, V)
   while q.len > 0:        # q now has top n entries
