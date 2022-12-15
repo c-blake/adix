@@ -5,5 +5,5 @@ description = "An Adaptive Index Library for Nim"
 license     = "MIT/ISC"
 
 # Deps
-requires    "nim >= 0.19.2"
+requires    "nim >= 1.2.0"
 skipDirs    = @[ "tests" ]
