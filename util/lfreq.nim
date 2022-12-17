@@ -1,7 +1,7 @@
 when not declared(stdin): import std/[syncio, formatfloat]
 import adix/lptabz {.all.}, cligen, cligen/[mslice, osUt]
 
-proc lfreq(size=2000, n=0, count=false, grand=false, Norm=false) =
+proc lfreq(size=1000, n=0, count=false, grand=false, Norm=false) =
   ## Histogram `stdin` lines (read w/non-memory mapped IO to be pipe friendly).
   var cnt  = initLPTab[MSlice, int](size) # HCell 16+8+8=32B
   var nTot = 0
