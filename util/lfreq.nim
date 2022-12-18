@@ -30,10 +30,10 @@ proc lfreq(size=1000, n=0, count=false, grand=false, Norm=false) =
 
 when isMainModule: dispatch lfreq, help={
   "size" : "pre-size hash table for size unique entries",
-  "n"    : "only emit most frequent `n` lines (sorted)",
+  "n"    : "only emit most frequent `n` lines (!=0=>sorted)",
   "count": "only emit counts: unique & grand total",
   "grand": "total line count -> stderr (BEFORE main output)",
-  "Norm" : "normalize frequencies by dividing by grand"}
+  "Norm" : "normalize frequencies by dividing by grand tot"}
 
 #NOTE: 16B=Eg hc:30,off:34,len:30,cnt:34 has reasonable limits & if 1/2 very rnd
 # access memory saves you from a mem.hierarchy cliff that can matter by 2..1000X
