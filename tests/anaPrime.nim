@@ -21,7 +21,7 @@ proc sig(word: MSlice): uint64 {.inline.} = # word signature
 
 proc getAna(dict="words", mf: MFile): LPTabz[uint64,Word,uint64,0] =
   try: result.mmap(findPathPattern(dict & '.'))
-  except:
+  except CatchableError:
     result.init(mf.len div 10, numer=3, denom=1)
     for word in mf.mSlices:
       result.add word.sig, initWord(word.mem -! mf.mem, word.len)
