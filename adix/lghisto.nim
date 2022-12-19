@@ -12,7 +12,7 @@
 ## cost can be improved via simple run-length encoding.
 ##
 ## The way Fenwick BISTs work, the generic parameter `C` must be a wide enough
-## integer type to hold both elemental bin counts and grand totals.  uint32 is
+## integer type to hold both elemental bin counts AND grand totals.  uint32 is
 ## likely enough for many applications, though some might sneak by with uint16
 ## and a few might need uint64.  This scales bin size/space cost.
 ##
@@ -23,7 +23,7 @@
 ## one such scan.  "Histo B-trees" should allow better scaling for such. }  A
 ## BIST basis differs from t-Digests in other important ways.  First, BISTs are
 ## well suited for `pop` or moving data window operations with *strict* finite
-## memory, for e.g. translation of full streams to moving quantiles as in a
+## memory, for e.g. translation of full streams to moving quantiles as in
 ## Bollinger Band style smooths.  Second, floating point weights for EWMA-like
 ## decaying memory are not possible since FP arithmetic kind of breaks BISTs.
 
@@ -57,7 +57,7 @@ func init*[C](s: var LgHisto[C], a=1e-16, b=1e20, n=8300) =
   s.bist = initBist[C](2*n + 1)
 
 func initLgHisto*[C](a=1e-16, b=1e20, n=8300): LgHisto[C] = result.init a, b, n
-  ## Initted histogram w/2n+1 log-spaced bins: [-∞..-b; -b..-a; 0; a..<b; b..∞]
+  ## Initted Histo w/2n+1 log-spaced bins:[-inf..<-b; -b..<-a; 0; a..<b; b..inf]
 
 func space*[C](s: LgHisto[C]): int = s.sizeof + s.bist.space
   ## Estimate space taken up by data structure in bytes

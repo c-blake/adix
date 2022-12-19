@@ -10,7 +10,7 @@
 ## The basic idea of a standard binary heap with ``kids(k)@[2k],[2k+1]`` for
 ## dynamic distributions goes back to Wong&Easton 1980 (or earlier?).  Fenwick's
 ## clever index encoding/overlaid trees trick allows using 1/4 to 1/2 that space
-## (only max index + 1 array elements vs ``2*lgCeil(n)``).  Meaningful explanations
+## (only max index+1 array elements vs ``2*lgCeil(n)``). Meaningful explanations
 ## really need figures as in the original Fenwick paper or another take over at
 ##   https://notes.tweakblogs.net/blog/9835/fenwick-trees-demystified.html.
 ##

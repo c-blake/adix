@@ -30,11 +30,12 @@ proc cstats*(delim="white", table="", hsep="strip", pm="+-", exp = -2..4, nd=2,
     elif ex.startsWith("q") and(let q=parseFloat(ex[1..^1]); 0.0<=q and q<=1.0):
       $x.quantile(q)                    # TODO precision/format controls?
     else: # Could pre-parse expressions, but many columns seem unlikely
+      let se = bs.sdev/bs.n.float.sqrt  # en.wikipedia.org/wiki/Standard_error
       case ex 
-      of "mn": fmtUncertain(bs.mean, bs.sdev/bs.n.float.sqrt,"$val0","$valMan$valExp",exp,nd)
+      of "mn": fmtUncertain(bs.mean, se, "$val0", "$valMan$valExp", exp, nd)
       of "sd": $bs.sdev                 # TODO should do only nd digits
-      of "se": fmtUncertain(bs.mean, bs.sdev/bs.n.float.sqrt,"$err0","$errV$valExp",exp,nd)
-      of "ms": fmtUncertain(bs.mean, bs.sdev/bs.n.float.sqrt, unity,sci,exp,nd)
+      of "se": fmtUncertain(bs.mean, se, "$err0", "$errV$valExp", exp, nd)
+      of "ms": fmtUncertain(bs.mean, se,  unity, sci, exp, nd)
       of "sk": $x.skewness              # TODO should do only nd digits
       of "kt": $x.kurtosis              # TODO should do only nd digits
       of "iq": $(x.quantile(0.75) - x.quantile(0.25))
