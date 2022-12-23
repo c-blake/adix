@@ -1,4 +1,5 @@
-import std/[math,strutils,algorithm],cligen/strUt, adix/stat,fitl/qtl, labFloats
+import std/[math, strutils, algorithm, heapqueue], cligen/strUt,
+       adix/stat, fitl/qtl,  labFloats
 when not declared(stdin): import std/[syncio, formatfloat]
 
 proc needToSort(stats: seq[string]): bool =
@@ -6,9 +7,23 @@ proc needToSort(stats: seq[string]): bool =
 
 proc valueSpace(ex: string): bool = ex.startsWith("q") or ex.startsWith("m")
 
+proc most(x: seq[float]; sign, n: int): seq[float] =
+  var q: HeapQueue[float]
+  let s = sign.float
+  for e in x:
+    let e = s * e
+    if q.len < n : q.push e
+    elif e > q[0]: discard q.replace(e)
+  while q.len > 0: result.add s*q.pop
+
+proc filter(x: seq[float]; didSort: bool; min, max: int): seq[float] =
+  if   min > 0: (if didSort: x[0..min-1] else: x.most(-1, min))
+  elif max > 0: (if didSort: x[max..^1]  else: x.most(+1, max))
+  else: x # Unneeded copy, but eh..This is not for "big" data.
+
 proc cstats*(delim="white", table="", hsep="strip", pm="+-", exp = -2..4, nd=2,
              unity="$val0 $pm $err0", sci="($valMan $pm $errV)$valExp",
-             join=",", stats: seq[string]) =
+             join=",", min=0, max=0, stats: seq[string]) =
   ## This consumes any stdin looking like regular intercalary text with embedded
   ## floats & prints a summary with the LAST such text & requested `stats` for
   ## any varying float column. If `table!=""`, context is joined via `hsep` into
@@ -54,8 +69,8 @@ proc cstats*(delim="white", table="", hsep="strip", pm="+-", exp = -2..4, nd=2,
         if hdr.len > 0:
           hdrs.add if doStrip: hdr.strip else: hdr
           hdr.setLen 0
-        let bs = nums[j].basicStats
         if doSort: nums[j].sort
+        let bs = nums[j].filter(doSort, min, max).basicStats
         for i, ex in stats: rows[i].add ex.toStr(con, bs, nums[j])
       else:                             # Non-Numeric
         if hdr.len > 0: hdr.add hsep
@@ -67,8 +82,8 @@ proc cstats*(delim="white", table="", hsep="strip", pm="+-", exp = -2..4, nd=2,
   else:                                 # Single row format for data reduction
     for j, con in labs:
       if nums[j].len > 0:               # Numeric
-        let bs = nums[j].basicStats
         if doSort: nums[j].sort
+        let bs = nums[j].filter(doSort, min, max).basicStats
         for i, ex in stats:
           if i > 0: stdout.write join
           stdout.write ex.toStr(con, bs, nums[j])
@@ -87,4 +102,6 @@ when isMainModule: import cligen; dispatch cstats, help={
   "unity"      : "near unity format",
   "sci"        : "scientific format",
   "nd"         : "n)um sig d)igits of sigma",
-  "exp"        : "pow10 range for 'unity'"}
+  "exp"        : "pow10 range for 'unity'",
+  "min"        : "use `min`-most numbers",
+  "max"        : "use `max`-most numbers"}, short={"max": 'M'}
