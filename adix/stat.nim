@@ -209,12 +209,12 @@ func stderror*[T: SomeNumber](xs: openArray[T], accum=32): float =
   ## standard error (std dev of the mean). `accum` != 32 => 64-bit accumulation.
   sqrt(xs.variance(accum)/xs.len.float)
 
-func skewness*[T:SomeNumber](xs:openArray[T],accum=32):float{.codegenDecl:avc.}=
+func skewness*[T:SomeNumber](xs:openArray[T], accum=32): float =
   ## skewness (population). `accum` != 32 => 64-bit accumulation.
   template impl(F) =
     var s1, s2, s3: F
     let dx = if xs.len > 0: xs[0] else: F(0)
-    let nInv = F(1)/F(xs.len)
+    let nInv = if xs.len > 0: F(1)/F(xs.len) else: F(1)
     for x in xs:
       let x = F(x) - dx
       s1 = s1 + x
@@ -225,12 +225,12 @@ func skewness*[T:SomeNumber](xs:openArray[T],accum=32):float{.codegenDecl:avc.}=
     result = (s3 - 3*s1*s2 + 2*s1*s1*s1)*scl*scl*scl
   if accum == 32: impl(float32) else: impl(float64)
 
-func kurtosis*[T:SomeNumber](xs:openArray[T],accum=32):float{.codegenDecl:avc.}=
+func kurtosis*[T:SomeNumber](xs:openArray[T], accum=32): float =
   ## excess kurtosis (population). `accum` != 32 => 64-bit accumulation.
   template impl(F) =
     var s1, s2, s3, s4: F
     let dx = if xs.len > 0: xs[0] else: F(0)
-    let nInv = F(1)/F(xs.len)
+    let nInv = if xs.len > 0: F(1)/F(xs.len) else: F(1)
     for x in xs:
       let x = F(x) - dx
       s1 = s1 + x
