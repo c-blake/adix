@@ -203,6 +203,28 @@ func variance*[T:SomeNumber](xs:openArray[T],accum=32):float{.codegenDecl:AVC.}=
     result = F(v.float/xs.len.float - m.float*m.float)
   if accum == 32: impl(float32) else: impl(float64)
 
+func basicStats*[F:SomeFloat](xs:openArray[F]):BasicStats[F]{.codegenDecl:AVC.}=
+  ## Some summary stats in 1-pass using vector-CPU instructions, if possible.
+  result.n = xs.len     # --passC:-ffast-math can autovectorize the whole loop
+  if result.n > 0:      #..into vminp[sd]/vmaxp[sd]/vsubp[sd]/vaddp[sd] insns
+    result.min = xs[0]  #..which for sse/avx/avx2/avx512 can really zoom.
+    result.max = xs[0]         
+    let nInv = F(1)/F(result.n)
+    let dx = if result.n > 0: xs[0] else: F(0)
+    var av, vr: F
+    for x in xs:
+      result.min = min(result.min, x) # min/max get autovect in equiv C but do
+      result.max = max(result.max, x) #..not in Nim with -fno-finite-math-only.
+      let x = x - dx
+      av = av + x
+      vr = vr + x*x
+    av = av * nInv; vr = vr * nInv
+    result.mean = F(av.float + dx)
+    result.sdev = F(sqrt(max(1e-30*av^2, vr - av*av)))
+  else:
+    result.min  = F(NaN); result.max  = F(NaN)
+    result.mean = F(NaN); result.sdev = F(NaN)
+
 func standardDeviation*[T: SomeNumber](xs: openArray[T], accum=32): float =
   ## standard deviation (population). `accum` != 32 => 64-bit accumulation.
   xs.variance(accum).sqrt
@@ -268,28 +290,6 @@ func standardDeviationS*[F:SomeFloat,C:SomeInteger](s: var MovingStat[F,C]):
                           float = s.varianceS.sqrt
 func standardDeviationS*[T: SomeNumber](xs: openArray[T], accum=32): float =
   xs.varianceS.sqrt
-
-func basicStats*[F:SomeFloat](xs:openArray[F]):BasicStats[F]{.codegenDecl:AVC.}=
-  ## Some summary stats in 1-pass using vector-CPU instructions, if possible.
-  result.n = xs.len     # --passC:-ffast-math can autovectorize the whole loop
-  if result.n > 0:      #..into vminp[sd]/vmaxp[sd]/vsubp[sd]/vaddp[sd] insns
-    result.min = xs[0]  #..which for sse/avx/avx2/avx512 can really zoom.
-    result.max = xs[0]         
-    let nInv = F(1)/F(result.n)
-    let dx = if result.n > 0: xs[0] else: F(0)
-    var av, vr: F
-    for x in xs:
-      result.min = min(result.min, x) # min/max get autovect in equiv C but do
-      result.max = max(result.max, x) #..not in Nim with -fno-finite-math-only.
-      let x = x - dx
-      av = av + x
-      vr = vr + x*x
-    av = av * nInv; vr = vr * nInv
-    result.mean = F(av.float + dx)
-    result.sdev = F(sqrt(max(1e-30*av^2, vr - av*av)))
-  else:
-    result.min  = F(NaN); result.max  = F(NaN)
-    result.mean = F(NaN); result.sdev = F(NaN)
 
 when isMainModule:
 #[from mpmath import *; mp.dps = 64; mp.pretty = True
