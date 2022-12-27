@@ -217,20 +217,23 @@ func range*[F: SomeFloat](xs: openArray[F]): (F, F) {.codegenDecl:AVC.}=
 
 func basicStats*[F:SomeFloat](xs:openArray[F]):BasicStats[F]{.codegenDecl:AVC.}=
   ## Some summary stats in 1-pass using vector-CPU instructions, if possible.
-  result.n = xs.len     # --passC:-ffast-math can autovectorize the whole loop
-  if result.n > 0:      #..into vminp[sd]/vmaxp[sd]/vsubp[sd]/vaddp[sd] insns
-    result.min = xs[0]  #..which for sse/avx/avx2/avx512 can really zoom.
-    result.max = xs[0]
+  result.n = xs.len    # --passC:"-Ofast -ffast-math" can autovectorize loop to
+  if result.n > 0:     #..vminp[sd]/vmaxp[sd]/vsubp[sd]/vaddp[sd] insns which
+    result.min = xs[0] #..for sse/avx* zooms, BUT conditions are fragile. E.g.,
+    result.max = xs[0] #..a later O3 can clobber Ofast, and flto can be..weird.
     let nInv = F(1)/F(result.n)
     let dx = if result.n > 0: xs[0] else: F(0)
-    var av, vr: F
+    var av, vr: F      #NOTE: Avoid min(),max,+=,*= below to get C codegen close
+    var mn = xs[0]     # to hand-written C to help autovectorizers pattern match
+    var mx = xs[0]
     for x in xs:
-      result.min = min(result.min, x) # min/max get autovect in equiv C but do
-      result.max = max(result.max, x) #..not in Nim with -fno-finite-math-only.
+      mn = if x < mn: x else: mn
+      mx = if x > mx: x else: mx
       let x = x - dx
       av = av + x
       vr = vr + x*x
     av = av * nInv; vr = vr * nInv
+    result.min  = mn; result.max = mx
     result.mean = F(av.float + dx)
     result.sdev = F(sqrt(max(1e-30*av^2, vr - av*av)))
   else:
