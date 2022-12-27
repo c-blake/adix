@@ -182,8 +182,8 @@ func `+`*[F](a, b: BasicStats[F]): BasicStats[F] = result = a; result.add b
   ## Operator notation for `add`.
 
 # Some APIs here ONLY EVEN EXIST to utilize backend C compiler autovectorizers.
-# Otherwise you should just use `push` & `pop` slowness above.  For these, we
-# define this AVC constant as shorthand for use in `codegenDecl`.
+# Otherwise you should just use `push` & `pop` slowness above.  For said APIs,
+# we define this AVC constant as shorthand for use in `codegenDecl`.
 const AVC = "__attribute__((optimize(\"Ofast\", \"fast-math\"))) $# $#$#"
 
 func mean*[T: SomeNumber](xs: openArray[T]): float {.codegenDecl:AVC.} =
@@ -203,12 +203,24 @@ func variance*[T:SomeNumber](xs:openArray[T],accum=32):float{.codegenDecl:AVC.}=
     result = F(v.float/xs.len.float - m.float*m.float)
   if accum == 32: impl(float32) else: impl(float64)
 
+func range*[F: SomeFloat](xs: openArray[F]): (F, F) {.codegenDecl:AVC.}=
+  ## Data range in 1-pass using vector-CPU instructions, if possible.  E.g.,
+  ## `let (mn,mx) = x.range`.
+  if xs.len > 0:
+    var mn = xs[0]
+    var mx = xs[0]
+    for x in xs:
+      mn = if x < mn: x else: mn
+      mx = if x > mx: x else: mx
+    result[0] = mn; result[1] = mx
+  else: result[0] = F(NaN); result[1] = F(NaN)
+
 func basicStats*[F:SomeFloat](xs:openArray[F]):BasicStats[F]{.codegenDecl:AVC.}=
   ## Some summary stats in 1-pass using vector-CPU instructions, if possible.
   result.n = xs.len     # --passC:-ffast-math can autovectorize the whole loop
   if result.n > 0:      #..into vminp[sd]/vmaxp[sd]/vsubp[sd]/vaddp[sd] insns
     result.min = xs[0]  #..which for sse/avx/avx2/avx512 can really zoom.
-    result.max = xs[0]         
+    result.max = xs[0]
     let nInv = F(1)/F(result.n)
     let dx = if result.n > 0: xs[0] else: F(0)
     var av, vr: F
@@ -336,6 +348,7 @@ when isMainModule:
   echo "  $: ", w2
   echo "\nArray, 32-bit accum"
   echo "  basic: ", xs.basicStats
+  echo "  range: ", xs.range
   echo "  vrnc:  ", selfError(xs.variance, exactVar)
   echo "  skew:  ", selfError(xs.skewness, exactSkew)
   echo "  kurt:  ", selfError(xs.kurtosis, exactKurt)
@@ -343,6 +356,7 @@ when isMainModule:
   var x64: seq[float]
   for x in xs: x64.add x
   echo "  basic: ", x64.basicStats
+  echo "  range: ", x64.range
   echo "  vrnc:  ", selfError(xs.variance(accum=64), exactVar)
   echo "  skew:  ", selfError(xs.skewness(accum=64), exactSkew)
   echo "  kurt:  ", selfError(xs.kurtosis(accum=64), exactKurt)
