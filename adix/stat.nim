@@ -20,7 +20,6 @@ else:
   proc fmtUncertainMerged(m, e: float, e0=1..2): string = $m & " +- " & $e
 from adix/lghisto import LgHisto, add, pop, quantile, cdf, init
 
-const avc = "__attribute__((optimize(\"fast-math\"))) $# $#$#" # autovec cgdecl
 type
   Option* = enum OrderStats
   MovingStat*[F:SomeFloat,C:SomeInteger] = object ##Statistical data accumulator
@@ -59,8 +58,7 @@ func clear*[F: SomeFloat, C: SomeInteger](s: var MovingStat[F,C]) {.inline.} =
   ## Reset `s` to same as `var s: MovingStat[F,C]`.
   zeroMem s.addr, s.sizeof
 
-func push*[F: SomeFloat, C: SomeInteger](s: var MovingStat[F,C],
-            x: SomeNumber) {.inline, codegenDecl: avc.} =
+func push*[F: SomeFloat, C: SomeInteger](s: var MovingStat[F,C], x: SomeNumber)=
   ## Pushes a value `x` into running sums.
   let x0 = F(x)
   if s.n == 0: s.min = x0; s.max = x0; s.dx = x0
@@ -74,8 +72,7 @@ func push*[F: SomeFloat, C: SomeInteger](s: var MovingStat[F,C],
   inc s.n
   if OrderStats in s.options: s.lgHisto.add x0
 
-func pop*[F: SomeFloat, C: SomeInteger](s: var MovingStat[F,C],
-           x: SomeNumber) {.inline, codegenDecl: avc.} =
+func pop*[F: SomeFloat, C: SomeInteger](s: var MovingStat[F,C], x: SomeNumber) =
   ## Pops (aka removes the influence) of a value `x` from running sums.
   let x  = F(x) - s.dx
   let x2 = x*x
@@ -184,11 +181,16 @@ func `+=`*[F](a: var BasicStats[F], b: BasicStats[F]) = a.add b
 func `+`*[F](a, b: BasicStats[F]): BasicStats[F] = result = a; result.add b
   ## Operator notation for `add`.
 
-func mean*[T: SomeNumber](xs: openArray[T]): float {.codegenDecl:avc.} =
+# Some APIs here ONLY EVEN EXIST to utilize backend C compiler autovectorizers.
+# Otherwise you should just use `push` & `pop` slowness above.  For these, we
+# define this AVC constant as shorthand for use in `codegenDecl`.
+const AVC = "__attribute__((optimize(\"Ofast\", \"fast-math\"))) $# $#$#"
+
+func mean*[T: SomeNumber](xs: openArray[T]): float {.codegenDecl:AVC.} =
   xs.sum.float/xs.len.float
   ## Arithmetic mean/average; Used `math.sum` can overflow for narrow types.
 
-func variance*[T:SomeNumber](xs:openArray[T],accum=32):float{.codegenDecl:avc.}=
+func variance*[T:SomeNumber](xs:openArray[T],accum=32):float{.codegenDecl:AVC.}=
   ## variance (population). `accum` != 32 => 64-bit accumulation.
   template impl(F) =
     var m, v: F
@@ -267,8 +269,8 @@ func standardDeviationS*[F:SomeFloat,C:SomeInteger](s: var MovingStat[F,C]):
 func standardDeviationS*[T: SomeNumber](xs: openArray[T], accum=32): float =
   xs.varianceS.sqrt
 
-func basicStats*[F:SomeFloat](xs:openArray[F]):BasicStats[F]{.codegenDecl:avc.}=
-  ## The summary stats you usually want in one pass (in native FP arith).
+func basicStats*[F:SomeFloat](xs:openArray[F]):BasicStats[F]{.codegenDecl:AVC.}=
+  ## Some summary stats in 1-pass using vector-CPU instructions, if possible.
   result.n = xs.len     # --passC:-ffast-math can autovectorize the whole loop
   if result.n > 0:      #..into vminp[sd]/vmaxp[sd]/vsubp[sd]/vaddp[sd] insns
     result.min = xs[0]  #..which for sse/avx/avx2/avx512 can really zoom.
