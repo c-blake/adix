@@ -1,11 +1,11 @@
 ## This module provides a memory optimized `seq[uint]` for a user-given range of
 ## numbers (by default its own initial length).  E.g., if the range is 0..7, it
-## uses just 3 bits per number (plus rounding error).  Another pithy way to
-## describe it is "the array version of bit fields".
+## uses just 3 bits per number (plus rounding error).  Other pithy descriptions
+## are "the array version of bit fields" | "the matrix version of bit vectors".
 ##
 ## In the best case, this allows packing numbers 8x (e.g., 8/1) more densely
 ## than a "next biggest CPU int rounded" approach (like 8,16,32,64).  The public
-## API uses only the widest type, usually a 64-bit unsigned integer.
+## API uses `uint`, usually a 64-bit unsigned integer.
 ##
 ## To store `n` indices from `0..n-1` takes `n*ceil(lg(n))` bits.  E.g., circa
 ## 2020 L3 CPU caches have become large enough to support any permutation of
@@ -15,18 +15,18 @@
 ## numbers up to said wide type ensures <= 2 consecutive backing items are ever
 ## needed to access a given number.
 ##
-## Dynamically growing a `seq` like this is possible and not even that hard, but
-## future work.  PRs welcome.
+## While dynamically growing a `SeqUint` works, changing *element size* doesn't.
+## So, callers must `t=initSeqUint(s.len, 1 shl (s.bits+1))` & copy as needed.
 
-# We also assume the almost universal pattern that the number of bits in that
-# widest type is a power of 2 like 16, 32, 64.  {NOTE: ISO/IEC JTC1 SC22 WG14
-# n2472 makes sizes of exact-bit ints next po2 anyway.}
+# We also assume the near universal pattern that the widest type is a power of 2
+# number of bits like 16, 32, 64.  { ISO/IEC JTC1 SC22 WG14 n2472 makes sizes of
+# exact-bit ints next po2 for C anyway. }
 #
 # NOTE: The core of this module is just `[]` & `[]=` which can *very likely* be
 # optimized in non-CPU-portable ways.  PRs for such are not only welcome, but
-# actively solicited.  This is a space optimization that almost everyone knows
-# about yet almost no one uses.  This is since an impl is just not handy or may
-# be slow.  A stdlib, especially with per CPU speed forks, could really help.
+# actively solicited.  This is a space optimization almost all know about yet
+# few use (since impls are just not handy or may be slow).  Thus it is not a bad
+# choice for Nim stdlib inclusion, especially with per CPU speed forks.
 
 import bitop
 const iBit = 8 * sizeof(int)
@@ -63,10 +63,9 @@ proc init*(s: var SeqUint, initialSize=0, numBound=0) {.inline.} =
              elif initialSize > 0: lg(initialSize)
              else: 0
   let bitsz = initialSize * bits
-  if bitsz > 0:
-    s.data.setLen (roundUp(bitsz) shr iShf)
-    s.len  = initialSize
-    s.bits = bits.int8
+  s.data.setLen if bitsz > 0: (roundUp(bitsz) shr iShf) else: 1
+  s.len  = initialSize
+  s.bits = bits.int8
 
 proc initSeqUint*(initialSize=0, numBound=0): SeqUint {.inline.} =
   result.init(initialSize, numBound)
@@ -197,3 +196,10 @@ when isMainModule:
     let n = uint((i * 19) and 31)
     s8[i] = n
     if s8[i] != n: echo "i: ", i, " SET ", n, " BUT GOT ", s8[i], " BACK"
+
+  var s9 = initSeqUint(0, numBound=32)
+  for x in s8: s9.add x
+  if $s9 != $s8: echo "grown seqUint != assigned"; echo s9; echo s8
+  s9.setLen 0
+  for x in s6: s9.add x
+  if $s9 != $s6: echo "grown seqUint != assigned2"; echo s9; echo s6
