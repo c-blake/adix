@@ -6,13 +6,14 @@ type
   Word   = distinct uint32
   Count  = uint32
   Histo  = LPTabz[Word, Count, Word, 0]
-  ThrDat = tuple[part: ptr MSlice, hp: ptr Histo]
+  ThrDat = tuple[part: ptr MSlice, hp: ptr Histo, nT: ptr uint64]
 
 template initHisto(sz): untyped =       # 4*16*8=512B max depth at 65536 entry
   initLPTabz[Word, Count, Word, 0](sz, numer=4, denom=1, robinHood=false)
 
 var mf: MFile
 var hs: seq[Histo]                      # NEED -d:useMalloc
+var nTs: seq[uint64]
 var thrs: seq[Thread[ThrDat]]
 
 const wb = 5                            # word len bits
@@ -74,8 +75,10 @@ else: # Knuth-McIlroy definition of "words"
 
 proc work(td: ThrDat) {.thread.} =      # Histogram one segment of an mmap
   setAffinity()                         # pin to CPU initially assigned
+  var nT = 0u64                         # Local accumulator to not thrash
   for w in td.part[].lowCaseWords:
-    td.hp[].mgetOrPut(w, 0).inc
+    nT.inc; td.hp[].mgetOrPut(w, 0).inc
+  td.nT[] = nT
 
 proc count(p: int, path: string) =      # split path into `p` ~equal segments
   var (mfLoc, parts) = p.nSplit(path, flags=MAP_PRIVATE)
@@ -85,47 +88,42 @@ proc count(p: int, path: string) =      # split path into `p` ~equal segments
       raise newException(RangeDefect, "\"" & path & "\" too large")
     if p > 1:                           # add mf.len > 65536|something?
       for i in 0 ..< parts.len:         # spawn workers
-        createThread thrs[i], work, (parts[i].addr, hs[i].addr)
+        createThread thrs[i], work, (parts[i].addr, hs[i].addr, nTs[i].addr)
       joinThreads thrs
-    else: work (parts[0].addr, hs[0].addr) # ST-mode does no spawn
+    else: work (parts[0].addr, hs[0].addr, nTs[0].addr) # ST-mode: No spawn
   else: stderr.write "wf: \"", path, "\" missing/irregular\n"
 
-iterator top(h: Histo, n=10, tot: ptr uint32=nil): (Word, Count) =
+iterator top(h: Histo, n=10): (Word, Count) =
   var q = initHeapQueue[(Count, Word)]()
   for key, val in h:
-    if tot != nil: tot[] += val         # normalizing total, if requested
     let elem = (val, key)               # maintain a heap..
     if q.len < n: q.push(elem)          # ..of the biggest n items
     elif elem > q[0]: discard q.replace(elem)
   var y: (Word, Count)                  # yielded tuple
   while q.len > 0:                      # q now has top n entries
     let r = q.pop
-    y[0] = r[1]
-    y[1] = r[0]
+    y[0] = r[1]; y[1] = r[0]
     yield y                             # yield in ASCENDING order
 
-proc wf(path:seq[string], n=10, c=false, grand=false, par=1, sz=9718, tm=false)=
+proc wf(path:seq[string], n=10, c=false, N=false, jobs=1, sz=9999, tm=false) =
   ## Parallel word frequency tool for one file < 128 MiB and words < 32 chars.
   ## Aggregate multiple via, e.g., `cat \*\*/\*.txt > /dev/shm/inp`.  Similar
   ## to Knuth-McIlroy `tr A-Z a-z|tr -sc a-z \\n|sort|uniq -c|sort -n|tail`,
   ## but ~46X faster than the pipeline (on TOTC; depends on vocab).
-  if path.len != 1: raise newException(ValueError, "only 1 file supported")
+  let path = if path.len > 1: path[1] else: "/dev/stdin"
   let t0 = epochTime()
-  let p = if par > 0: par else: countProcessors()
+  let p = if jobs > 0: jobs else: countProcessors()
   thrs.setLen p                         # allocate `thrs` & histos
-  for i in 0 ..< p: hs.add initHisto(sz)
-  p.count path[0]
+  for i in 0 ..< p: hs.add initHisto(sz); nTs.add 0u64
+  p.count path
   for i in 1 ..< p:                     # hs[0] += [1..<p]
+    nTs[0] += nTs[i]
     for wd, cnt in hs[i]: hs[0].mgetOrPut(wd, 0) += cnt
-  if not c:
-    let n = if n != 0: n else: hs[0].len
-    var tot = 0'u32
-    for wd, cnt in hs[0].top(n, tot.addr):
-      echo cnt, " ", wd                   # print histogram
-    if grand: echo tot, " TOTAL"          # with normalizing constant
-  else:
-    echo hs[0].len," uniqueWords"
-  if tm: stderr.write epochTime() - t0, " sec\n"
+  if c: echo hs[0].len," unique ",nTs[0]," total"
+  template o = echo (if N: $(c.float/nTs[0].float) else: $c)," ",w
+  if  n == 0: (for w, c in hs[0].pairs: o())      # unsorted whole
+  elif n > 0: (for w, c in hs[0].top(n): o())     # sorted top N
+  if tm: stderr.write epochTime() - t0, " sec\n"  # n < 0 = only `c`/tm
 
-dispatch(wf, help={"n": "print top n; 0=>all", "c": "count only", "tm": "time",
-  "grand": "grand total", "par": "num threads; 0=>auto", "sz": "init size"})
+dispatch(wf, help={"n": "print top n; 0=>all", "c": "count only", "N": "norm",
+  "tm": "time", "jobs": "num threads; 0=>auto", "sz": "init size"})
