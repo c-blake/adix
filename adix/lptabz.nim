@@ -141,18 +141,18 @@ proc mmap*[K,V,Z;z:static int](t: var LPTabz[K,V,Z,z], path: string) =
     t.rehash = 'r' in comps[1]
     if t.rehash and comps.len > 2: t.salt = parseInt(comps[2])
     let mf {.used.} = memfiles.open(path)
-    when defined(gcOrc):    #XXX Also need to block/hack destructor
-      when defined(cpp):    #XXX This is all horribly GC-unsafe
-        {.emit: """t.data.len = *(long *)`mf.mem`;
-                   t.data.p = (void*)((char *)`mf.mem` + 2*`sizeof(int)`);""".}
+    when defined(gcOrc)or defined(gcArc): #XXX Should also block/hack destructor
+      when defined(cpp):                  #XXX This is all horribly GC-unsafe
+        {.emit: """`t`.data.len = *(long *)`mf.mem`;
+                   `t`.data.p = (void*)((char *)`mf.mem`+2*`sizeof(int)`);""".}
       else:
-        {.emit: """t->data.len = *(long *)`mf.mem`;
-                   t->data.p = (void*)((char *)`mf.mem` + 2*`sizeof(int)`);""".}
+        {.emit: """`t`->data.len = *(long *)`mf.mem`;
+                   `t`->data.p = (void*)((char *)`mf.mem`+2*`sizeof(int)`);""".}
     else:
       when defined(cpp):
-        {.emit: "t.data = `mf.mem`;".}
+        {.emit: "`t`.data = `mf.mem`;".}
       else:
-        {.emit: "t->data = `mf.mem`;".}
+        {.emit: "`t`->data = `mf.mem`;".}
     t.pow2    = uint8(lg(t.getCap))
     t.numer   = uint8(lpNumer)
     t.denom   = uint8(lpDenom)
