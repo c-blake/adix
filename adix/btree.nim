@@ -1,45 +1,47 @@
 ## I know of no other as-simple/general FOSS B-Tree (in any prog.langs|books).
 ## Theory people recurse; DB code clutters w/sync; Other APIs are less general.
-## Please correct me if I am wrong/cite this if this is your starting point.
-## Minimal effort is made to explain these algos in comments as it's impractical
-## to cram a course into this file with no figures.  More details & resources
-## are at https://en.wikipedia.org/wiki/B-tree or in Graefe & Kuno 2011.
+## Correct me if I am wrong/cite this if it be your starting point.  Little
+## effort is made to explain these algos in comments as it's impractical to cram
+## a course into this file with no figures.  More details & resources are at
+## https://en.wikipedia.org/wiki/B-tree or in Graefe & Kuno 2011.
 ##
 ## This module defines a template that defines procs on a pretty general B-Tree.
 ## The tree can be positional-only, keyed-only or keyed-ranked, be either set of
 ## keyed rows or (key,value)-style, have its nodes allocated in any way (via
-## abstract ptrs & deref, e.g. on disk via ``memfiles``, via node pools hanging
+## abstract ptrs & deref, eg. on disk via `memfiles`, via node pools hanging
 ## off another object, or GC'd refs), & manage dup keys either inlined into the
 ## structure or handled externally (within the same rank space!).  This is >36
 ## (3rk*2kv*3alloc*2du) styles from one instantiation harness.  The template has
-## many parameters to control all these choices.  All but ``Ob`` are defaulted:
-## - ``K``: Key type; Caller provides ``getKey(Ob):K``; void if positional-only
-## - ``Pos``: type for node weight/position augmentation; void if keyed-only
-## - ``ObSize``: type for dup chain size if handled externally; void if embedded
-## - ``nodeSize``: size in bytes of a node.  B-Tree Order ``m`` is inferred from
+## many parameters to control all these choices.  All but `Ob` are defaulted:
+##
+## - `K`: Key type; Caller provides `getKey(Ob):K`; void if positional-only
+## - `Pos`: type for node weight/position augmentation; void if keyed-only
+## - `ObSize`: type for dup chain size if handled externally; void if embedded
+## - `nodeSize`: size in bytes of a node.  B-Tree Order `m` is inferred from
 ##   this.  Our notation is m..2m links split by m-1..2m-1 obs; 2 => a 234-tree;
 ##   2*m**(h-1)-1 <= numNodes <= (2m)**h-1 where h=height of tree.
-## - ``Ix``: type for object/link indices into node arrays
-## - ``Ln``: type for the link array in nodes
+## - `Ix`: type for object/link indices into node arrays
+## - `Ln`: type for the link array in nodes
 ## Common notation/abbreviations in this code/APiS:
-## - ``s|side``: 0|1 ``bool`` side of an op. E.g. path.seekAdj(true)==successor.
-## - ``Ob|ob``: abstract object type being stored or an instance/array of it.
-## - ``Ln|ln``: abstract link type being stored or an instance/array of it.
-## - ``allocProcs`` (btPool|btRef|btFile): allocation style for outer Nodes
-## - ``nodeProcs`` (btLinearNode|btNestedNode): in-Node organization style
+## - `s|side`: 0|1 `bool` side of an op. Eg. successor = path.seekAdj(true).
+## - `Ob|ob`: abstract object type being stored or an instance/array of it.
+## - `Ln|ln`: abstract link type being stored or an instance/array of it.
+## - `allocProcs` (btPool|btRef|btFile): allocation style for outer Nodes
+## - `nodeProcs` (btLinearNode|btNestedNode): in-Node organization style
+##
 ## Notable implementation choices:
 ## ======================================================
 ## There is no "Tree" type distinct from the "SubTree/Node" type.  Once made a
 ## root node never moves.  That root address is the only handle needed.  "nil"
 ## ptrs (in whatever allocation arena is used) are just empty trees.  Because
-## linear ordering always has exactly 2 sides, parameterization into ``s|side``
+## linear ordering always has exactly 2 sides, parameterization into `s|side`
 ## often keeps life simple/organized (cf. Mehlhorn DS&Algos|common sense).
 ##
-## Routines are all non-recursive.  Instead a ``Path`` object is central to the
+## Routines are all non-recursive.  Instead a `Path` object is central to the
 ## API & we clearly separate cursor manipulation from mutation.  This also makes
 ## the 3 main styles (ranked-only, keyed-only, keyed-ranked) symmetric & removes
-## recursion overhead (big for tall trees/small ``m``).  Duplicate keys are
-## always allowed; Each instance is a multiset/table with "sided" edits.
+## recursion overhead (big for tall trees/small `m`).  Each instance can be a
+## multiset/table with "sided" edits (stack/queue) of duplicate key series.
 ##
 ## Victim replacement selection in internal deletes biases toward uniform node
 ## occupancy rather than minimum node count.  The bulk loader to build a minimum
@@ -51,24 +53,22 @@
 ## Limitations/future work:
 ## ======================================================
 ## One limitation is that leaf&internal nodes have the same size&representation,
-## wasting ``~4..8*m`` bytes per leaf.  This is <33% waste for ``Ob`` >=8..16 bytes.
-## (Post aging, occupancy is ~69% anyway.)  This trade off is presently accepted
-## to avoid twin complexities of either two node allocation pools with dynamic
-## conversion or different-``m`` orders for leaf & internal nodes.  Going all
-## the way to max space utilization means specialization on key types, anyway,
-## to e.g. not store leading 'a's in a string-key leaf sandwiched between e.g.
-## ("aaab1","aaab2") and likely wider 4..7 node merge-splits.
+## wasting `~4..8*m` B/leaf.  This is <33% waste for `Ob` >=8..16 bytes.  (Post
+## aging, occupancy =~69% anyway.)  This cost is spent to avoid complexity of
+## either two node allocation pools with dynamic conversion or different-`m`
+## orders for leaf & internal nodes.  *Max* data density means wider 4..7 node
+## split-merges (not 2..3) & specializing on key types, anyway; Eg. for string
+## keys not duplicating prefixes in a leaf between ("aab1", "aab2").
 ##
-## This is a work in progress.  Algorithmically, we should at least do whole
-## tree ``catenate`` (helpful for seq style `&`), maybe do the more complex
-## whole-tree ``split``, and maybe do *many* embedded dups optimization.
-## Nim TODOs include: making run-tm errs compile-tm, doing GC'd & memfiles Ln
-## variants, doing distinct int ``Ln`` for overload/ figure out exports, adding
-## simple HashSet&Table calls in terms of this more complex core, and a big one:
-## doing a ``btNestedNode`` option with Path[].i -> subpath elsewhere.  Last
-## needed for good average case edit scaling {log_2(m) * log_m(N) = log_2(N)}.
-## Even DRAM has ideal node size ~ ``70ns*40GB/s=2800B/(2+4)=~466`` ob.  ``moveMem``
-## can have impressive constant factors, though.
+## This is a work in progress. Algorithmically, we should maybe do A) whole tree
+## `catenate` (helpful for seq style `&`), B) more complex whole tree `split` &
+## C) optimizations for giant dup blocks.  Nim TODOs incl: make easy to include
+## inside other generic types, add easy HashSet & Table uses in terms of this
+## lower-level core, make run-tm errs compile-tm, do GC'd&memfiles Ln variants,
+## do distinct int `Ln` for overload/figure out exports & BIG1 - `btNestedNode`
+## alloc option w/Path[].i -> subpath elsewhere for good avg case edit scaling
+## {log_2(m)*log_m(N)=log_2(N)}.  Even DRAM has ideal node size ~ `70ns*40GB/s =
+## 2800B/(2+4)=~466`, though `moveMem` can have great constant factors.
 
 proc orderFit*(target, wtSz, ixSz, obSz, lnSz: int): int =
   result = 2        # *Minimum* branching supported is a 2-3-4 tree
@@ -76,8 +76,8 @@ proc orderFit*(target, wtSz, ixSz, obSz, lnSz: int): int =
     result.inc      # Above calc assumes a packed node; Also, `void.sizeof==0`.
 
 template btPool*(Ob, Pos: type; nodeSize: int; Ix, Ln: type) =
-  ## A simple pool allocator.  Easily adapted to ``memfiles`` | GC'd allocators.
-  ## TODO: which we should also provide in this module for ease of use.
+  ## A simple pool allocator.  Easily adapted to `memfiles` | GC'd allocators.
+  # TODO: which we should also provide in this module for ease of use.
   const m = Ix(orderFit(nodeSize, Pos.sizeof, Ix.sizeof, Ob.sizeof, Ln.sizeof))
   proc btOrder(): Ix = m
   type
@@ -136,8 +136,7 @@ template btPool*(Ob, Pos: type; nodeSize: int; Ix, Ln: type) =
   else:
     proc refCk(t: Ln): bool {.used.} = false
 
-template btLinearNode*(Ob, K, Pos: type; M: untyped; Ix, Ln: type) =
-  ## In-Node ops
+template btLinearNode*(Ob, K, Pos: type; M: untyped; Ix, Ln: type) = ## Node ops
   const m = Ix(M)
   proc oPut(t: Ln, i: Ix, ob: Ob) =
     if i < t[].nO:
@@ -202,7 +201,7 @@ template btLinearNode*(Ob, K, Pos: type; M: untyped; Ix, Ln: type) =
           if t[].ob[lo].getKey >= searchKey: return lo
         return hi
       else:                        # binsearch can maybe be optimized for edges
-        var lo = 0.Ix              # E.g. maybe spend 1 [0] vs [nO-1] compares?
+        var lo = 0.Ix              # Eg. maybe spend 1 [0] vs [nO-1] compares?
         while lo < hi:
           let mid = (lo + hi) div 2
           if t[].ob[mid].getKey < searchKey: lo = mid + 1
@@ -210,22 +209,19 @@ template btLinearNode*(Ob, K, Pos: type; M: untyped; Ix, Ln: type) =
         return lo
 
 template defBTree*(Ob: type, K: type=void, Pos: type=void, ObSize: type=void,
-                   nodeSize: int=256, Ix: type=uint16, Ln: type=uint16,
+                   nodeSize: int=16, Ix: type=int16, Ln: type=uint16,
                    allocProcs=btPool, nodeProcs=btLinearNode) =
   when K isnot void:              # proc getKey(Ob) must get a K from an Ob
-    when not compiles(type(cast[ptr Ob](nil)[].getKey) is K):
-      stderr.write "must define `getKey(Ob)`" #XXX should be compile-time errs
-    when not compiles(cast[ptr Ob](nil)[].getKey < cast[ptr Ob](nil)[].getKey):
-      stderr.write "must define `<` on key type K"
-    when not compiles(cast[ptr Ob](nil)[].getKey == cast[ptr Ob](nil)[].getKey):
-      stderr.write "must define `==` on key type K"
+    when type(cast[ptr Ob](1'u)[].getKey) isnot K:  # ensure user defs accessor
+#XXX Should be compile-time but import std/macros for error breaks, eg. `copy`.
+      stderr.write "must define `getKey(Ob)`\n"
   when ObSize isnot void:         # proc size(Ob) must get an ObSize from an Ob
-    when not compiles(type(cast[ptr Ob](nil)[].size) is ObSize):
-      stderr.write "must define `size(Ob)`"
-    when not compiles(Ordinal(cast[ptr Ob](nil)[].size)):
-      stderr.write "`size(Ob)` must return an integer"
+    when type(cast[ptr Ob](nil)[].size) isnot ObSize:
+      stderr.write "must define `size(Ob)`\n"
+    when type(cast[ptr Ob](nil)[].size) isnot Ordinal:
+      stderr.write "`size(Ob)` must return an integer\n"
 
-  allocProcs(Ob, Pos, nodeSize, Ix, Ln) # injects: Node, Path, Ln0
+  allocProcs(Ob, Pos, nodeSize, Ix, Ln) # injects: Node, Path, Ln0, btOrder()
   const m = btOrder()
   proc isLeaf(p: Ln): bool {.inline.} = p[].nL == 0
   proc isFull(p: Ln): bool {.inline.} = p[].nO == 2*m - 1
@@ -289,7 +285,7 @@ template defBTree*(Ob: type, K: type=void, Pos: type=void, ObSize: type=void,
         p = p[].ln[i]                   # Descend
   
     # Well-defined sub-orders help when dup keys can occur.  seekKeys sets path
-    # to side==false|true-most key.  E.g., (seekKeys(1)+add, seekKeys(0)+del)
+    # to side==false|true-most key.  Eg., (seekKeys(1)+add, seekKeys(0)+del)
     # yields FIFO while (seekKeys(0)+add, seekKeys(0)+del) yields LIFO.
     proc seekKeys(t: Ln, path: var Path, side: bool, searchKey: K):bool{.used.}=
       if t == Ln0: return false         # Empty tree
@@ -300,7 +296,7 @@ template defBTree*(Ob: type, K: type=void, Pos: type=void, ObSize: type=void,
         path.add (p, i)                 # Record visit;ob ix to ins@,if desired
         if i < p[].nO and p[].ob[i].getKey == searchKey:
           if side or not p.isLeaf:      # Found: scan side-cessors to EOT|diff K
-            while seekAdj(path, side): #XXX Hop giant dup blks?
+            while seekAdj(path, side):  #TODO Hop giant dup blks?
               if path[^1].p[].ob[path[^1].i].getKey != searchKey:
                 break
             if path.len > 0:            # Diff key; reverse scan by 1
@@ -332,7 +328,7 @@ template defBTree*(Ob: type, K: type=void, Pos: type=void, ObSize: type=void,
             while true:
               when defined(btBug):            # WTF: 1st branch works elsewhere
                 n -= int(t[].ob[i].size)      #   ..in this VERY SAME proc, and
-              else:                           #   ..also on e.g., nim-0.20.2
+              else:                           #   ..also on eg., nim-0.20.2
                 n -= int(t[].ob[i..i][0].size)# Work around crazy bug
               if n < 0: break
               i.inc
