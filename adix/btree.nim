@@ -275,7 +275,7 @@ template defBTree*(Ob: type, K: type=void, Pos: type=void, ObSize: type=void,
       path.seekAdj true
   
   when K isnot void:
-    proc seekKey(t: Ln, path: var Path, searchKey: K): bool {.used.} =
+    proc seekKey(t: Ln, path: var Path, searchKey: K): bool{.used,discardable.}=
       if t == Ln0: return false         # Empty tree
       path.setLen 0
       var p = t
@@ -412,7 +412,7 @@ template defBTree*(Ob: type, K: type=void, Pos: type=void, ObSize: type=void,
       sib[].wt  = w                     # Set sib
       kid[].wt -= w + Pos(sz)           # Adjust kid
   
-  proc add(path: var Path, ob: Ob, side=true, keyPresent=false) =
+  proc add(path: var Path, ob: Ob, side=true, keyPresent=false) {.used.} =
     if keyPresent: path.seekPush(side)
     var d = path.len - 1                # [d, path.len) brackets nodes to split
     while d > 0 and path[d].p.isFull:
@@ -666,9 +666,9 @@ template defBTree*(Ob: type, K: type=void, Pos: type=void, ObSize: type=void,
       else:                                       # LEAF => DEPTH == HEIGHT
         if height == -1: height = depth
         if depth != height: t.err(depth, "leaf depth not height: " & $height)
+    var k {.used.} = 0
     when Pos isnot void:
       var path: Path
-      var k = 0
       seekMost(t, path, false)
       while true:
         when ObSize isnot void:
