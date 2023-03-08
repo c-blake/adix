@@ -69,6 +69,7 @@
 ## alloc option w/Path[].i -> subpath elsewhere for good avg case edit scaling
 ## {log_2(m)*log_m(N)=log_2(N)}.  Even DRAM has ideal node size ~ `70ns*40GB/s =
 ## 2800B/(2+4)=~466`, though `moveMem` can have great constant factors.
+when not declared(stderr): import std/syncio
 
 proc orderFit*(target, wtSz, ixSz, obSz, lnSz: int): int =
   result = 2        # *Minimum* branching supported is a 2-3-4 tree
