@@ -1,12 +1,14 @@
 when not declared(stdin): import std/[syncio, formatfloat]
 import adix/lptabz {.all.}, cligen, cligen/[mslice, osUt], std/times
+var str: string                 # Big (NON-RELOCATABLE!) stack of string data
 
-proc lfreq(n=0, count=false, uniq=false, Norm=false, size=1000, tm=false) =
+proc lfreq(n=0, count=false,uniq=false,Norm=false, size=7, dSize=99, tm=false)=
   ## Histogram `stdin` lines (read w/non-memory mapped IO to be pipe friendly).
-  let t0 = epochTime()
-  var cnt  = initLPTab[MSlice, int](size) # HCell 16+8+8=32B
+  ## (Needs manual dSize tuning of non-movable string stack.)
+  let t0   = epochTime()
   var nTot = 0
-  var str  = ""                 # A big stack of string data
+  str.setLen dSize; str.setLen 0
+  var cnt  = initLPTab[MSlice, int](size) # HCell 16+8+8=32B
   for (line, nLine) in stdin.getDelims:
     let ms = MSlice(mem: line, len: nLine - 1)
     inc nTot                    # Always bump `nTotal`
@@ -14,6 +16,7 @@ proc lfreq(n=0, count=false, uniq=false, Norm=false, size=1000, tm=false) =
       cnt.cell(i).val.inc       #   bump
     do:                         # Novel key->i:
       let off = str.len         #   alloc, copy, init
+      if off + ms.len+1 > dSize:raise newException(ValueError,"dSize too small")
       str.setLen off + ms.len+1 #   a noInit would be nice
       copyMem str[off].addr, ms.mem, ms.len
       cnt.cell(i).key = MSlice(mem: str[off].addr, len: ms.len)
@@ -36,9 +39,5 @@ when isMainModule: dispatch lfreq, help={
   "uniq" : "only emit unique lines, not frequencies",
   "Norm" : "normalize frequencies by dividing by grand tot",
   "size" : "pre-size hash table for size unique entries",
+  "dSize": "size string data area to this many bytes",
   "tm"   : "emit elapsed wall time to stderr"}
-
-#NOTE: 16B=Eg hc:30,off:34,len:30,cnt:34 has reasonable limits & if 1/2 very rnd
-# access memory saves you from a mem.hierarchy cliff that can matter by 2..1000X
-# BUT also requires a more user-defined-exported-to-lptabz like HCell interface.
-# https://github.com/c-blake/bst is an e.g. of an ANSI C89 interface for such.
