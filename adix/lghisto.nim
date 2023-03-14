@@ -35,6 +35,7 @@ type
     a, b: float         # histogram covers [-b, -a], (-a, a) in zero, [a, b]
     aLn, h, hInv: float # index scale conversion pre-computes
     bist: Bist[C]       # actual smart array of counters
+#2DO^ Fastr flat array option(cumsum for "final" quantiles); Lowr prec `ln`=>DDS
 
 func underflows*[C](s: LgHisto[C]): int = s.bist.pmf 0
 func overflows*[C](s: LgHisto[C]): int  = s.bist.pmf 2*s.n
