@@ -134,6 +134,12 @@ func cdf*[F,C](s: LgHisto[C], x: F): C =
   ## Raw count; Leave to caller to multiply by 1/s.bist.count; XXX Interpolate?
   if x.isNaN: NaN else: s.bist.cdf(s.toIx(x))
 
+func merge*[C](dst: var LgHisto[C], src: LgHisto[C]) =
+  ## Merge counts from src into dst.
+  if src.n != dst.n or src.a != dst.a or src.b != dst.b:
+    raise newException(ValueError, "src-dst histogram parameter mismatch")
+  for i in 0..2*src.n: dst.bist.inc i, src.bist.pmf(i) # Flat array can be fastr
+
 when isMainModule:
   when defined(test): # Helpful to run against: \ -12 \ -8 \ -4 \ -1 0 1 4 8 12
     proc lghist(a=0.125, b=10.0, n=8, qs = @[0.25, 0.5, 0.75], xs: seq[float]) =
