@@ -13,8 +13,9 @@ when defined(nimdoc):
   import adix/metab
   import adix/nsort
   import adix/sequint
-  #import adix/stat
+  import adix/stat
   import adix/tdigest
+  import adix/uniqce
   import adix/xlang
 else:
   {.error: "use `import adix/{module of interest}`".}
