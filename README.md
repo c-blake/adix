@@ -21,16 +21,16 @@ source code short & to the point.  In particular, as an overview/index here be:
      Very few have it). (Could buffer writes to ensure full cache-line pokes.)
 
  - Basic Sketches (abbreviated/approximate stores) for:
-   - quantiles: [lghisto](https://c-blake.github.io/adix/adix/lghisto.html) or
-   [tdigest](https://c-blake.github.io/adix/adix/tdigest.html) (for slower more
-   accurate tail quantiles)
-   - count distinct: [uniqce](https://c-blake.github.io/adix/adix/uniqce.html)
-   aka count unique or cardinality estimation
-   - membership: [bltab](https://c-blake.github.io/adix/adix/bltab.html) (bit-
+   - Membership: [bltab](https://c-blake.github.io/adix/adix/bltab.html) (bit-
    level table; Like more successfully marketed Bloom|Cuckoo filters, but lower
    latency & slightly bigger)
-   - approx most often: [amoft](https://c-blake.github.io/adix/adix/amoft.html)
+   - Count Distinct: [uniqce](https://c-blake.github.io/adix/adix/uniqce.html)
+   aka count unique or cardinality estimation
+   - Approx Most Often: [amoft](https://c-blake.github.io/adix/adix/amoft.html)
    (aka approximate top-K most frequent | heavy-hitters)
+   - Quantiles: [lghisto](https://c-blake.github.io/adix/adix/lghisto.html) or
+   [tdigest](https://c-blake.github.io/adix/adix/tdigest.html) (for slower more
+   accurate tail quantiles)
    - An assimilation: [`stat`](https://c-blake.github.io/adix/adix/stat.html)
    that works like `std/stats` but supports `del`, i.e. sliding/moving windows
    over data streams (like a moving average) as well as moving or running
