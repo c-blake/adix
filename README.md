@@ -26,10 +26,11 @@ source code short & to the point.  In particular, as an overview/index here be:
    accurate tail quantiles)
    - count distinct: [uniqce](https://c-blake.github.io/adix/adix/uniqce.html)
    aka count unique or cardinality estimation
-   - membership: [bltab](https://c-blake.github.io/adix/adix/bltab.html) (like
-   more successfully marketed Bloom filters, but lower latency&a little bigger)
+   - membership: [bltab](https://c-blake.github.io/adix/adix/bltab.html) (bit-
+   level table; Like more successfully marketed Bloom filters or Cuckoo filters,
+   but lower latency & slightly bigger)
    - approx most often: [amoft](https://c-blake.github.io/adix/adix/amoft.html)
-   (also called approximate top-K most frequent or heavy-hitters)
+   (aka approximate top-K most frequent | heavy-hitters)
    - In general, a sketch is a 'data summary' providing approximate answers.
    So, even std/stats.RunningStat technically counts.
    - An assimilation: [`stat`](https://c-blake.github.io/adix/adix/stat.html)
