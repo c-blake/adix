@@ -1,20 +1,20 @@
 when defined(nimdoc):
-  import adix/althash {.used.}
-  import adix/amoft {.used.}
-  import adix/bist {.used.}
-  import adix/bitop {.used.}
-  import adix/bltab {.used.}
-  import adix/btree {.used.}
-  import adix/cumsum {.used.}
-  import adix/ditab {.used.}
-  import adix/lghisto {.used.}
-  import adix/lptabz {.used.}
-  import adix/memutil {.used.}
-  import adix/metab {.used.}
-  import adix/nsort {.used.}
-  import adix/sequint {.used.}
-  #import adix/stat {.used.}
-  import adix/tdigest {.used.}
-  import adix/xlang {.used.}
+  import adix/althash
+  import adix/amoft
+  import adix/bist
+  import adix/bitop
+  import adix/bltab
+  import adix/btree
+  import adix/cumsum
+  import adix/ditab
+  import adix/lghisto
+  import adix/lptabz
+  import adix/memutil
+  import adix/metab
+  import adix/nsort
+  import adix/sequint
+  #import adix/stat
+  import adix/tdigest
+  import adix/xlang
 else:
   {.error: "use `import adix/{module of interest}`".}
