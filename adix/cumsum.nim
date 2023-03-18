@@ -47,7 +47,7 @@ when defined(amd64) and not defined(usePortable): #usePortable nice for timing
       mm_store(cast[ptr m128i](c[b + i].addr), v)     #Update array
       off = mm_shuffle_epi8(v, msk)                   #off=bcast high elt
     while i < n64:                                    #1-cache line at a time
-      prefetchw(c[i + 64].addr)
+      when defined(cpuPrefetch): prefetchw(c[i + 64].addr)
       do16(v0,  0)
       do16(v1, 16)
       do16(v2, 32)
@@ -71,7 +71,7 @@ when defined(amd64) and not defined(usePortable): #usePortable nice for timing
       mm_store(cast[ptr m128i](c[b + i].addr), v)   #Update array
       off = mm_shuffle_epi8(v, msk)                 #off=bcast high elt
     while i < n32:                                  #1-cache line at a time
-      prefetchw(c[i + 32].addr)
+      when defined(cpuPrefetch): prefetchw(c[i + 32].addr)
       do8(v0,  0)
       do8(v1,  8)
       do8(v2, 16)
@@ -94,7 +94,7 @@ when defined(amd64) and not defined(usePortable): #usePortable nice for timing
       mm_store(cast[ptr m128i](c[b + i].addr), v) #Update array
       off = mm_shuffle_epi32(v, msk)              #off=bcast high elt
     while i < n16:                                #1-cache line at a time
-      prefetchw(c[i + 16].addr)
+      when defined(cpuPrefetch): prefetchw(c[i + 16].addr)
       do4(v0,  0)
       do4(v1,  4)
       do4(v2,  8)
