@@ -20,7 +20,7 @@ source code short & to the point.  In particular, as an overview/index here be:
      you sort a lot of meso-scale data (merge sorts *always* win for HUGE data;
      Very few have it). (Could buffer writes to ensure full cache-line pokes.)
 
- - Basic Sketches (abbreviated/approximate stores) for:
+ - Basic Sketches (abbreviated/approximate stores; aka "Digests") for:
    - Membership: [bltab](https://c-blake.github.io/adix/adix/bltab.html) (bit-
    level table; Like more successfully marketed Bloom|Cuckoo filters, but lower
    latency & slightly bigger)
