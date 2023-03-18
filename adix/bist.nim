@@ -5,7 +5,7 @@
 ## While the Internet has many tutorials, to my knowledge, no one (yet) collects
 ## these algorithms all in one place.  Fenwick1994 itself messed up on what we
 ## here call ``invCDF``, correcting with a tech report a year later.  This
-## implementation is also careful to only allocate needed space/handle [0].
+## implementation is also careful to only allocate needed space/handle `[0]`.
 ##
 ## The basic idea of a standard binary heap with ``kids(k)@[2k],[2k+1]`` for
 ## dynamic distributions goes back to Wong&Easton 1980 (or earlier?).  Fenwick's
@@ -16,13 +16,13 @@
 ##
 ## The ``Bist[T]`` type in this module is generic over the type of counters used
 ## for partial sums|counts.  For few total items, you can use a ``Bist[uint8]``
-## while for many you may need to use Bist[uint32].  This can be space-optimized
+## while for many you want to use `Bist[uint32]`.  This can be space-optimized
 ## up to 2X further with a ``sequint`` specialized to store an array of B-bit
 ## counters.  Also, ranked B-trees start being faster for >28-bit index spaces.
 import xlang, bitop # cfor, `>>=`, `&=`
 when not declared(assert): import std/assertions
 
-type Bist*[T: SomeInteger] = object ## A razor thin wrapper around seq[T]
+type Bist*[T: SomeInteger] = object ## A razor thin wrapper around `seq[T]`
   data: seq[T]        # The Fenwick array/BIST; Relevant seq ops pass through
   tot: int            # total counted population, via history of inc(i, d)
 
@@ -42,7 +42,7 @@ proc inc*[T](t: var Bist[T]; i, d: SomeInteger) {.inline.} =
     t[i] = T(int(t[i]) + d)                       #Likely T unsigned, d signed
 
 proc cdf*[T](t: Bist[T], i: int): T {.inline.} =
-  ## Inclusive sum(pmf[0..i]), (rank,EDF,prefix sum,scan,..); Tm~1 bits in ``i``
+  ## Inclusive `sum(pmf[0..i])`, (rank,EDF,prefix sum,scan,..); Tm~1 bits in `i`
   cfor (var i = i + 1), i > 0, i &= i - 1:        #Go up interrogation tree
     result += t[i - 1]
 
@@ -53,7 +53,7 @@ proc pmf*[T](t: Bist[T], i: int): T {.inline.} =
     result -= t[i - mask]           #while LSB==1: subtract & mv up tree
 
 proc fromCnts*[T](t: var Bist[T]) =
-  ## In-place bulk convert T[] from counts to BIST; Max time ``~1*n``
+  ## In-place bulk convert/reformat `t[]` from counts to BIST; Max time `~1*n`.
   t.tot = 0
   for i in 0 ..< t.len:
     t.tot += int(t[i])
@@ -62,7 +62,7 @@ proc fromCnts*[T](t: var Bist[T]) =
       t[j] += t[i]
 
 proc toCnts*[T](t: var Bist[T]) =
-  ## In-place bulk convert T[] from BIST to counts; Max time ~1*n
+  ## In-place bulk convert/reformat `t[]` from BIST to counts; Max time ~1*n
   ## *Unlike the others, this routine only works for power of 2-sized arrays*.
   cfor (var i = t.len), i != 0, i >>= 1:      #Long strides give ~n inner loops.
     cfor (var j = 2*i - 1), j < t.len, j += 2*i:  #*Might* be slower than just

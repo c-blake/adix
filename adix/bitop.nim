@@ -2,13 +2,7 @@
 ## trouble due to importc's.  (I feel it's a better naming/factoring, too).
 
 proc ceilPow2*(x: int): int {.noSideEffect, inline.} =
-  ## Returns ``x`` rounded up to the nearest power of two.
-  ## Zero and negative numbers get rounded up to 1.
-  runnableExamples:
-    doAssert ceilPow2(16) == 16
-    doAssert ceilPow2(5) == 8
-    doAssert ceilPow2(0) == 1
-    doAssert ceilPow2(-16) == 1
+  ## Returns ``x`` rounded up to the nearest power of two.  <= 0 get 1.
   result = x - 1
   when defined(cpu64):
     result = result or (result shr 32)

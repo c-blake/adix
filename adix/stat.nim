@@ -34,13 +34,13 @@ type
 
 func init*[F: SomeFloat, C: SomeInteger](s: var MovingStat[F,C], a=1e-16,b=1e20,
             n=8300, options: set[Option]={}) {.inline.} =
-  ## Initialized a `MovingStat[F,C]` with a [-b,b] log-spaced histogram.
+  ## Initialized a `MovingStat[F,C]` with a `[-b,b]` log-spaced histogram.
   s.options = options
   if OrderStats in options: s.lgHisto.init a, b, n
 
 func initMovingStat*[F: SomeFloat, C: SomeInteger](a=1e-16, b=1e20, n=8300,
                        options: set[Option]={}): MovingStat[F,C] {.inline.} =
-  ## Return an initialized `MovingStat[F,C]` with a [-b,b] log-spaced histogram.
+  ## Return initialized `MovingStat[F,C]` with a `[-b,b]` log-spaced histogram.
   result.init a, b, n, options
 
 func nInv*[F: SomeFloat, C: SomeInteger](s: var MovingStat[F,C]): F {.inline.} =

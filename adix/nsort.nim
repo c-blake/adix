@@ -3,7 +3,7 @@
 ## keyed obs, but you should "tag sort" objects > 64B anyway).  This kind of
 ## interface allows low overhead generality and enables algorithms specialized
 ## to number types.  Such algorithms are often many times faster than comparison
-## sorts.  The algo is roughly counting sort for 1-Byte keys and for [248]Byte
+## sorts.  The algo is roughly counting sort for 1-Byte keys and for \[248\]Byte
 ## native type keys an LSD radix sort with optional transforms from signed|float
 ## domains.  This implementation has several sadly rare optimizations.
 ##
@@ -26,11 +26,11 @@
 ## histograms into cumulative distribution functions (really output bin offsets)
 ## is a dominant cost.  So, this impl does SIMD parallel prefix sum.  This optim
 ## is more effective as more counters fit into vector registers.  So, this impl
-## uses the smallest [1248]Byte counter needed for `n` items & takes care to
+## uses the smallest \[1248\]Byte counter needed for `n` items & takes care to
 ## align the 2 power of 2-sized counter buffers to maximize vector use.  Last, a
 ## time cost estimate formula & Newton's method is used to decide pass sizes.
 ##
-## FOURTH, bits that vary across keys are measured (mask or= (x[i-1] xor x[i]))
+## FOURTH, bits that vary across keys are measured (`mask or=(x[i-1] xor x[i])`)
 ## in the first read-pass.  Key-wise constant bits are zero in said mask.  Since
 ## an array MUST be sorted by constant key bits, smart digit plans can skip them
 ## to maybe shrink pass count.  `pext32/pext64` from Intel's Advanced Bit

@@ -50,7 +50,7 @@ proc rawGet[K,V](t: DITab[K,V], key: K): int {.inline.} =
   assert(t.range > 0, "Uninitialized DITab")  # Adjust *caller* not here
   let i = int(key) - key.low.int
   if i >= t.range:
-    raise newException(RangeError, "Direct Indexed key limit exceeded")
+    raise newException(RangeDefect, "Direct Indexed key limit exceeded")
   let j = t.idx[i].int                  # Get idx, cmp key
   if j < t.len and t.key(j) == i: j else: -1 - i
 
@@ -393,10 +393,10 @@ proc editKey*[K,V](t: var DITab[K,V]; old, new: K) {.inline.} =
   if old == new: return
   let i = int(old) - key.low.int
   if i >= t.range:
-    raise newException(RangeError, "old exceeds Direct Indexed key limit")
+    raise newException(RangeDefect, "old exceeds Direct Indexed key limit")
   let j = int(new) - key.low.int
   if j >= t.range:
-    raise newException(RangeError, "new exceeds Direct Indexed key limit")
+    raise newException(RangeDefect, "new exceeds Direct Indexed key limit")
   t.idx[j] = t.idx[i]
   t.idx[i] = 0          #Not really needed, but may lead to less confusion
 

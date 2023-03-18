@@ -9,11 +9,12 @@
 ##
 ## Misuse/attack is always possible.  Note that inserting *many* duplicates
 ## causes overlong scans as hash collisions can and is thus "misuse".  If this
-## is likely then use V=seq[T] instead.  We provide a few mitigations triggered,
-## like table growth, by overlong scans on underfull tables: A) automatic rehash
-## of user `hash` output with a strong integer hash, B) overlong scan warnings
-## (disabled in `danger` mode), C) automatic Robin Hood re-org activation, and
-## D) use `althash.getSalt` to allow hard to predict per-table hash salt.
+## is likely then use `V=seq[T]` instead.  We provide a few mitigations
+## triggered, like table growth, by overlong scans on underfull tables:
+##   A) automatic rehash of user `hash` output with a strong integer hash,
+##   B) overlong scan warnings (disabled in `danger` mode),
+##   C) automatic Robin Hood re-org activation, and
+##   D) use `althash.getSalt` to allow hard to predict per-table hash salt.
 ## Program-wide-tunable defaults are to rehash, warn, re-org & salt with vmAddr
 ## since this is the safest portable mode, but most can also be set init time.
 ##

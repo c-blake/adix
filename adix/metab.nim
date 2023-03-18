@@ -1,6 +1,6 @@
 ## This module provides an easy way to do compile-time switched impl swaps for
 ## various table/set reprs with various compile-time switched defaults.  You
-## should really just learn how to use LPTabz[] directly, though.
+## should really just learn how to use `LPTabz[..]` directly, though.
 import macros, strformat
 
 when defined(axRehash):

@@ -11,7 +11,7 @@
 ## abstract ptrs & deref, eg. on disk via `memfiles`, via node pools hanging
 ## off another object, or GC'd refs), & manage dup keys either inlined into the
 ## structure or handled externally (within the same rank space!).  This is >36
-## (3rk*2kv*3alloc*2du) styles from one instantiation harness.  The template has
+## (`3rk*2kv*3alloc*2du`) styles from 1 instantiation harness.  The template has
 ## many parameters to control all these choices.  All but `Ob` are defaulted:
 ##
 ## - `K`: Key type; Caller provides `getKey(Ob):K`; void if positional-only
@@ -19,7 +19,7 @@
 ## - `ObSize`: type for dup chain size if handled externally; void if embedded
 ## - `nodeSize`: size in bytes of a node.  B-Tree Order `m` is inferred from
 ##   this.  Our notation is m..2m links split by m-1..2m-1 obs; 2 => a 234-tree;
-##   2*m**(h-1)-1 <= numNodes <= (2m)**h-1 where h=height of tree.
+##   `2*m**(h-1)-1 <= numNodes <= (2m)**h-1` where h=height of tree.
 ## - `Ix`: type for object/link indices into node arrays
 ## - `Ln`: type for the link array in nodes
 ## Common notation/abbreviations in this code/APiS:
@@ -60,15 +60,15 @@
 ## split-merges (not 2..3) & specializing on key types, anyway; Eg. for string
 ## keys not duplicating prefixes in a leaf between ("aab1", "aab2").
 ##
-## This is a work in progress. Algorithmically, we should maybe do A) whole tree
-## `catenate` (helpful for seq style `&`), B) more complex whole tree `split` &
-## C) optimizations for giant dup blocks.  Nim TODOs incl: make easy to include
-## inside other generic types, add easy HashSet & Table uses in terms of this
-## lower-level core, make run-tm errs compile-tm, do GC'd&memfiles Ln variants,
-## do distinct int `Ln` for overload/figure out exports & BIG1 - `btNestedNode`
-## alloc option w/Path[].i -> subpath elsewhere for good avg case edit scaling
-## {log_2(m)*log_m(N)=log_2(N)}.  Even DRAM has ideal node size ~ `70ns*40GB/s =
-## 2800B/(2+4)=~466`, though `moveMem` can have great constant factors.
+## This is a work in progress. Algorithmically, we should (maybe) do
+##   A) Node Structure (eg. RB tree w/1B ptr); `moveMem` has good const factors,
+##      but even DRAM has ideal node sz ~ `70ns*40GB/s = 2800B/(2+4)=~466`
+##   B) Whole tree `catenate` (helpful for seq style `&`)
+##   C) More complex whole tree `split`
+##   D) Optimizations for giant dup blocks
+## Nim TODOs incl: make easy to include inside other generic types, add easy
+## HashSet & Table use in terms of this lower-level core, run-tm ->CT errs, do
+## GC'd&memfiles Ln variants, do distinct int `Ln` for ovrld/figure out exports.
 when not declared(stderr): import std/syncio
 
 proc orderFit*(target, wtSz, ixSz, obSz, lnSz: int): int =

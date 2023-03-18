@@ -1,3 +1,4 @@
+{.push hint[LineTooLong]:off.}  # Tabular readability trumps 80-col niceness
 proc cumsum*[T](c: ptr UncheckedArray[T]; n: uint) =
   for i in 1 ..< n:
     c[i] += c[i - 1]

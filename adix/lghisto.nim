@@ -30,7 +30,7 @@
 when not declared(addFloat): import std/formatfloat
 import adix/bist, math
 type
-  LgHisto*[C] = object  ## Log-spaced histogram Bist[C] backing
+  LgHisto*[C] = object  ## Log-spaced histogram with `Bist[C]` backing
     n: int              # number of bins
     a, b: float         # histogram covers [-b, -a], (-a, a) in zero, [a, b]
     aLn, h, hInv: float # index scale conversion pre-computes
@@ -46,7 +46,7 @@ func nBin*[C](s: LgHisto[C]): int       = s.n
 func bist*[C](s: LgHisto[C]): Bist[C]   = s.bist
 
 func init*[C](s: var LgHisto[C], a=1e-16, b=1e20, n=8300) =
-  ## Init histogram w/2n+1 log-spaced bins: [-∞..-b; -b..-a; 0; a..<b; b..∞]
+  ## Init histo w/2n+1 log-spaced bins: `[-∞..-b; -b..-a; 0; a..<b; b..∞]`.
   if b <= a: raise newException(ValueError, "inverted: [" & $a & "," & $b & "]")
   if a <= 0.0 or b <= 0.0: raise newException(ValueError, "a,b must both be >0")
   if n < 2: raise newException(ValueError, "n must >= 2")
@@ -59,13 +59,13 @@ func init*[C](s: var LgHisto[C], a=1e-16, b=1e20, n=8300) =
   s.bist = initBist[C](2*n + 1)
 
 func initLgHisto*[C](a=1e-16, b=1e20, n=8300): LgHisto[C] = result.init a, b, n
-  ## Initted Histo w/2n+1 log-spaced bins:[-inf..<-b; -b..<-a; 0; a..<b; b..inf]
+  ## Get Histo w/2n+1 log-spaced bins: `[-inf..<-b; -b..<-a; 0; a..<b; b..inf]`.
 
 func space*[C](s: LgHisto[C]): int = s.sizeof + s.bist.space
   ## Estimate space taken up by data structure in bytes
 
 func toIx*[F,C](s: LgHisto[C], x: F): int =
-  ## Find bin index for value `x`; underflows get [0] & overflows [2*n].
+  ## Find bin index for value `x`; underflows get `[0]` & overflows get `[2*n]`.
   if   x <= -s.a:
     if x >= -s.b: result = s.n - 1 - int( (ln(-x) - s.aLn)*s.hInv)
     else        : result = 0
