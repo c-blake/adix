@@ -4,7 +4,7 @@ proc cumsum*[T](c: ptr UncheckedArray[T]; n: uint) =
     c[i] += c[i - 1]
 
 when defined(amd64) and not defined(usePortable): #usePortable nice for timing
-  import cligen/prefetch #NOTE: must compile with -d:cpuPrefetch to do anything
+  when defined(cpuPrefetch): import cligen/prefetch
 
   template workToAligned(c, n, i, align: untyped) {.dirty.} =
     i = 1

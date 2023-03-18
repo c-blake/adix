@@ -55,8 +55,8 @@
 ## cheap compared to L2 or worse bandwidth costs.  So, 5-20% boost, I'd guess.)
 
 when not declared(stdout): import std/syncio
-import bitops, math, algorithm, cumsum,
-       cligen/prefetch  #NOTE: must compile with -d:cpuPrefetch to do anything
+import bitops, math, algorithm, cumsum
+when defined(cpuPrefetch): import cligen/prefetch
 const nTinySort = 20            #Typically 16-32 works well here XXX optimize
 const hMaxBits = 15             #2*counter-size*2**hMaxBits =~ L2 here
 const dGiantSort = 15 shl 30    #~50% of uncontended DIMM storage works well
@@ -206,7 +206,7 @@ proc cntSort[W: Ui12; C](obs, tmp: pointer; n, sz: int; off: W; xf: XForm;
   for i in 0 ..< n:
     let key = gKey(A(i), off, xf)
     let outAddr = B(h[key])
-    prefetch(cast[pointer](outAddr + (2 * sz).uint), pfWrite)
+    when defined(cpuPrefetch): prefetch cast[pointer](outAddr+2*sz.uint),pfWrite
     copyMem cast[pointer](outAddr), cast[pointer](A(i)), sz
     h[key].inc                                  #Advance output pointer
   return cast[pointer](B(0))
@@ -244,7 +244,7 @@ proc radix2[C](obs, tmp: pointer; n, sz: int; off: uint16; xf: XForm;
     for i in 0 ..< n:                           #Poke each A-record into its..
       let b = dig(gKey(A(i).uint, off, xf))     #..appropriate spot in B()
       let outAddr = B(h[p][b])
-      prefetch(cast[pointer](outAddr + (2 * sz).uint), pfWrite)
+      when defined(cpuPrefetch):prefetch cast[pointer](outAddr+2*sz.uint),pfWrite
       copyMem cast[pointer](outAddr), cast[pointer](A(i)), sz
       h[p][b].inc                               #Advance B/output pointer
   if need0:                                     #Only if necessary..
@@ -356,7 +356,7 @@ proc radix[W: Ui248; C](obs, tmp: pointer; n, sz: int; off: W; xf: XForm;
         h[j + 1][dNx + 1].inc                       #Count digit
       if j > 0 or need0wr:                      #Poke ob into correct out slot
         let outAddr = B(h[j][dig])
-        prefetch(cast[pointer](outAddr + (2 * sz).uint), pfWrite)
+        when defined(cpuPrefetch): prefetch(cast[pointer](outAddr + (2 * sz).uint), pfWrite)
         copyMem cast[pointer](outAddr), cast[pointer](A(i)), sz
         h[j][dig].inc                           #Advance output pointer
     if j > 0 or need0wr: swap tmp, obs          #Swap [AB] buffer pointers
