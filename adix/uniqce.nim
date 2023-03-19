@@ -51,7 +51,8 @@ proc nUnique*[F:SomeFloat](uc: UniqCe[F]): float32 =
 
 proc nUniqueErr*[F:SomeFloat](uc: UniqCe[F]): float32 =
   ## Estimated error on estimate of unique elements seen so far.
-  if uc.tail.len<uc.k: 0.float32 else: uc.nUnique/sqrt(uc.k - 1) #XXX Est better
+  if uc.tail.len<uc.k: 0.float32
+  else: uc.nUnique/sqrt(uc.k.float32 - 1) #XXX Est better
 
 proc jaccard*[F:SomeFloat](a: UniqCe[F], b: UniqCe[F]): float32 =
   ## Exact Jaccard coefficient (`|intersect|/|union|`) of the two sample tails.
