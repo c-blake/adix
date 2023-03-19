@@ -36,7 +36,7 @@ type
     aLn, h, hInv: float # index scale conversion pre-computes
     bist: Bist[C]       # actual smart array of counters: [0, 2*n] -> PMF/CDF
 #2DO^ Fastr flat array option(cumsum for "final" quantiles); Lowr prec `ln`=>DDS
-#Could also potentially take an option like `noNegative`.
+#Could also take an option like `noNegative`, but untouched cache matters little
 
 func underflows*[C](s: LgHisto[C]): int = s.bist.pmf 0
 func overflows*[C](s: LgHisto[C]): int  = s.bist.pmf 2*s.n
