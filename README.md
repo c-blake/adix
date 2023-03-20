@@ -1,9 +1,9 @@
 While this began just as a kind of adaptive index/hash table library, it has
 grown into more a collection in the theme of database/big-data related data
 structures & algorithms.  { Let's say the "ad" in "adix" now stands for
-"ADvanced" or "AscenDant" now instead of "adaptive" ;-) }  Most of these are
-just kind of *à la carte* and I hope you find them useful.  I try to keep the
-source code short & to the point.  In particular, as an overview/index here be:
+"ADvanced" | "AscenDant" instead of "adaptive" ;-) }  Most of these are *à la
+carte* and I hope you find them useful.  I try to keep the source code short &
+to the point.  In particular, as an overview/index here be:
 
  - The original associative lookup modules:
    - [ditab](https://c-blake.github.io/adix/adix/ditab.html): direct-indexed
@@ -37,20 +37,19 @@ source code short & to the point.  In particular, as an overview/index here be:
    quantiles via `lghisto`.  Also includes bulk array stats that in some compile
    modes get fully SIMD vectorized inner loops.
 
- - And a few utility modules:
-  - [althash](https://c-blake.github.io/adix/adix/althash.html): an assortment
-  of salt-able alternate hash functions for lptabz
-  - [xlang](https://c-blake.github.io/adix/adix/xlang.html): little definitions
-  for C refugees for bist
+And some utility modules:
+  - [althash](https://c-blake.github.io/adix/adix/althash.html): salt-able
+  alternate hash functions for lptabz
+  - [xlang](https://c-blake.github.io/adix/adix/xlang.html): Definitions for C
+  refugees for bist
   - [sequint](https://c-blake.github.io/adix/adix/sequint.html): a fixed stride
-  "bit matrix" for bltab that uses "batch" number operations (unlike how a naive
-  bit matrix over a bit vector would work).
+  "bit matrix" using "batch"/number ops.
   - [memutil](https://c-blake.github.io/adix/adix/memutil.html): memory shifting
-  utilities for lptabz
+  utilities
   - [cumsum](https://c-blake.github.io/adix/adix/cumsum.html): parallel prefix
   sum using Intel SIMD for nsort
-  - [bitop](https://c-blake.github.io/adix/adix/bitop.html): re-impl some
-  std/bitops things to be more CT friendly
+  - [bitop](https://c-blake.github.io/adix/adix/bitop.html): re-impl std/bitops
+  things to be more CT friendly
 
 A Word Of Caution
 =================
