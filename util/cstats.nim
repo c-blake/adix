@@ -1,5 +1,5 @@
 import std/[math, strutils, algorithm, heapqueue], cligen/strUt,
-       adix/stat, fitl/qtl,  labFloats
+       adix/mvstat, fitl/qtl,  labFloats
 when not declared(stdin): import std/[syncio, formatfloat]
 
 proc needToSort(stats: seq[string]): bool =
