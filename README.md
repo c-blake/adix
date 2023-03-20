@@ -31,7 +31,7 @@ to the point.  In particular, as an overview/index here be:
    - Quantiles: [lghisto](https://c-blake.github.io/adix/adix/lghisto.html) or
    [tdigest](https://c-blake.github.io/adix/adix/tdigest.html) (for slower more
    accurate tail quantiles)
-   - An assimilation: [`stat`](https://c-blake.github.io/adix/adix/stat.html)
+   - An amalgam: [`mvstat`](https://c-blake.github.io/adix/adix/mvstat.html)
    that works like `std/stats` but supports `del`, i.e. sliding/moving windows
    over data streams (like a moving average) as well as moving or running
    quantiles via `lghisto`.  Also includes bulk array stats that in some compile
