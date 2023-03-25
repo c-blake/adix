@@ -6,7 +6,7 @@ license     = "MIT/ISC"
 
 # Deps
 requires    "nim >= 1.2.0"
-requires    "cligen >= 1.6.0"
+requires    "cligen >= 1.6.0 & < 2.0.0"
 skipDirs    = @[ "tests" ]
 
 bin         = @[
