@@ -10,6 +10,5 @@ requires    "cligen >= 1.6.0"
 skipDirs    = @[ "tests" ]
 
 bin         = @[
-  "util/cstats",    # Preserve context/compute column stats filter
   "util/lfreq",     # Somewhat efficient line frequency calculator
 ]
