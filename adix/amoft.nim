@@ -50,7 +50,7 @@ proc inc*[K,C](cs: var CtMnSketch[K,C], key: K, r=1): C {.discardable.} =
     for i, s in cs.salts:
       hs[i] = Hash(uint(!$(kh !& s)) mod cs.w.uint)
       old = min(old, cs.data[i][hs[i]])
-    inc old, r.C
+    old += r.C
     for i in 0 ..< cs.salts.len:
       cs.data[i][hs[i]] = max(cs.data[i][hs[i]], old)
       result = min(result, cs.data[i][hs[i]])
