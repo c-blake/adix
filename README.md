@@ -1,9 +1,9 @@
 While this began just as a kind of adaptive index/hash table library, it has
 grown into more a collection in the theme of database/big-data related data
 structures & algorithms.  { Let's say the "ad" in "adix" now stands for
-"ADvanced" | "AscenDant" instead of "adaptive" ;-) }  Most of these are *à la
+"ADvanced" | "AscenDant" as well as "adaptive" ;-) }  Most of these are *à la
 carte* and I hope you find them useful.  I try to keep the source code short &
-to the point.  In particular, as an overview/index here be:
+to the point.  In particular, as an overview/index, here be:
 
  - The original associative lookup modules:
    - [ditab](https://c-blake.github.io/adix/adix/ditab.html): direct-indexed
