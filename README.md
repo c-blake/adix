@@ -56,11 +56,13 @@ A Word Of Caution
 While sketches are popular, like merge sort (vs. radix sort), they often need
 huge data to pay off.  Essentially, probabilistic analysis ("Oh wow, I can do
 that?!") distracts from space-time trade-offs.  This distraction is worsened by
-there being space-time-accuracy "trade-off pyramids".  So, I can say here
-"spending a bit more space can yield major speed-ups", and it sounds blatantly
-obvious to even the most casual observer.  Yet, I have also seen it neglected in
-this context countless times.  The academic literature does not help, often
-being "blood sport" for more compressed data | accuracy without regard to speed.
+there being space-time-accuracy "trade-off pyramids".
+
+So, I can say here "spending a bit more space can yield major speed-ups", and it
+sounds blatantly obvious to even the most casual observer.  Yet, I've also seen
+it neglected in this context countless times.  The academic literature does not
+help, often being "blood sport" for more compressed data | accuracy with no
+regard to speed.
 
 So, e.g., on my primary 32 GiB RAM dev box with `bu/zipf`, I cannot make exact
 `lfreq` slower than Approximately Most Often sketches(`bu/oft`).  `tests/bl.nim`
