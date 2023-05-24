@@ -1,5 +1,5 @@
 ## This module provides a directly indexed set/table representation via a dense
-## ``seq[T]`` with an auxilliary sparse direct index to accelerate searching.
+## ``seq[T]`` with an auxiliary sparse direct index to accelerate searching.
 ## "direct" means the same size as the key space or "alphabet".  The index says
 ## what ``seq`` index has each (unique) key.  This can do any unordered set op
 ## in guaranteed unit time cost per element -- make, insert, delete, member
