@@ -68,7 +68,8 @@ So, e.g., on my primary 32 GiB RAM dev box with `bu/zipf`, I cannot make exact
 `lfreq` slower than Approximately Most Often sketches(`bu/oft`).  `tests/bl.nim`
 shows another example in a Bloom filter / membership approximation context where
 spending 2-4X what a Bloom takes space-wise can buy a 7-10X latency shrink.
-(histograms & UCE are both pretty good deals, though, if errors are acceptable.)
+(histograms & UCE are both pretty good deals, though, if errors are acceptable,
+and `adix/bltab` with fingerprint keys is arguably just "a better sketch").
 
 A little more on LPTabz & friends
 =================================
