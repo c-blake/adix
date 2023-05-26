@@ -73,7 +73,7 @@ and `adix/bltab` with fingerprint keys is arguably just "a better sketch").
 
 A little more on LPTabz & friends
 =================================
-As a brief guide I would start with `NOTES.md` and then look at the top half of
+As a brief guide I would start with `NOTES.md` and then look at the top part of
 `lptabz.nim`.  `TODO.md` also has a lot of notes in it.  My overarching vision
 is to allow "the fast way" most of the time, especially for developers that know
 how to provide a good `hash`, but to also have auto fall backs to "safer ways"
