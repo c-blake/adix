@@ -80,7 +80,7 @@ echo paramCount()-2-s.len, '/', paramCount()-2, ". false pos. (if all +)"
 # latency.  Some basic math will perhaps clarify the issue.
 # 
 # The short of it is just this:
-#   { ^ -> exponentiation[not xor], lg=log base 2, lg_foo = log base foo }
+#   { ^ -> exponentiation[not xor], lg=log base 2 }
 # 
 #   Consider N objects/packet-types/whatever and an M-bit table.
 #   Then let a = N / M be the "load".  We have (see, e.g. Knuth)
@@ -98,23 +98,30 @@ echo paramCount()-2-s.len, '/', paramCount()-2, ". false pos. (if all +)"
 # Suppose we manage collisions with open-addressed linear probing (a cache
 # friendly thing).  To achieve 2 table accesses/query (probably 1 slow memory
 # access) we need the load to be ~70% (see Knuth 6.4 table 4).  Specifically,
-# M = 1.44*N slots = 1.44*N*B bits.  Anything in the address space does get
+# M' = 1.44*N slots = 1.44*N*B bits.  Anything in the address space does get
 # stored in the table.  So the false positive rate we expect is the collision
 # rate in the B-bit address space for N objects.
 # 
-# Thus p = 1 - exp(-N/2^B), or B = lg(-N/log(1-p)), and so
-#     M' = 1.44*N*lg(-N/log(1-p)).
-# Now if p << 1, log(1-p) =~ -p, and { error is =~ .5*p^2 < 5% for p < .1 }
+# Standard binomial birthday simplification of multinomial collision analysis is
+#     p = 1 − (1 − 1/M')^(N-1), or as M,N get big
+#     p = 1 - exp(N*log(1 - 1/M')) =~ 1 - exp(-N/M') = 1 - exp(-N/2^B) or
+#     B = lg(-N/log(1-p)).  And so,
+#     M' = 1.44*N*lg(-N/log(1-p)) bits.
+# Now if p << 1, again using log(1-p) =~ -p { err =~ .5*p^2 < 5% for p < .1 }
 #     M' = 1.44*N*lg(N/p).
 # 
 # So there you have it.  The ratio of storage needed for M' (hash table) over
 # M (Bloom filter) simplifies for "small" p to (with log_1/p == log base 1/p):
 # 
-#     M'/M = lg(N/p) / lg(1/p) = 1 + lg N/lg(1/p) = 1+log_1/p (N) =1+lg N/-lg p
+#     M'/M = lg(N/p) / lg(1/p) = (lg(1/p) + lg N)/log(1/p) =
+#          = 1 + lg N/lg(1/p) = 1 + log_1/p (N) = 1 + lg N/-lg p
 # 
 # This tells you exactly what you need to know -- Bloom filters save space only
-# when both N and *p*'s are large.  This may be surprising as a naive assumption
-# might be that you want to use Bloom filters when you want small false positive
-# rates, which in fact is totally false.  For low p you end up with many hash
-# functions.  Bloom filters then use lots of computation and memory accesses to
-# save even less memory.
+# when N is very large relative to 1/p.  E.g., N=1e6 and p=1% give M' = 4M.
+# This may surprise as a naive perception may be that you want to Bloom when you
+# want small false positive rates.  However, for low p, this costs a lot of time
+# as you end up with many hash functions also probing memory randomly.
+#
+# In time, Bloom only pays off when you are near enough a cliff in latency of
+# the memory hierarchy where `k` Bloom accesses beat the 1 LinearProbe access
+# because the `k` can operate in region (1+lgN/-lg p)X smaller.
