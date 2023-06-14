@@ -57,9 +57,9 @@
 when not declared(stdout): import std/syncio
 import bitops, math, algorithm, cumsum
 when defined(cpuPrefetch): import cligen/prefetch
-const nTinySort = 20            #Typically 16-32 works well here XXX optimize
-const hMaxBits = 15             #2*counter-size*2**hMaxBits =~ L2 here
-const dGiantSort = 15 shl 30    #~50% of uncontended DIMM storage works well
+const nTinySort{.intdefine.} = 24         # Usually 16-32 is good
+const hMaxBits{.intdefine.} = 15          #2*counter-size*2**hMaxBits =~ L2 here
+const dGiantSort{.intdefine.} = 15 shl 30 #~50% of uncontended DIMM storage
 
 when defined(amd64) and (defined(gcc) or defined(clang)) and#XXX Run-Time CPU
      not defined(portablensort):
