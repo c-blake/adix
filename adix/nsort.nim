@@ -55,8 +55,7 @@
 ## cheap compared to L2 or worse bandwidth costs.  So, 5-20% boost, I'd guess.)
 
 when not declared(stdout): import std/syncio
-import bitops, math, algorithm, cumsum
-when defined(cpuPrefetch): import cligen/prefetch
+import bitops, math, algorithm, cumsum, cligen/prefetch
 const nTinySort{.intdefine.} = 24         # Usually 16-32 is good
 const hMaxBits{.intdefine.} = 15          #2*counter-size*2**hMaxBits =~ L2 here
 const dGiantSort{.intdefine.} = 15 shl 30 #~50% of uncontended DIMM storage
