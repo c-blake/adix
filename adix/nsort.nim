@@ -60,30 +60,29 @@ const nTinySort{.intdefine.} = 24         # Usually 16-32 is good
 const hMaxBits{.intdefine.} = 15          #2*counter-size*2**hMaxBits =~ L2 here
 const dGiantSort{.intdefine.} = 15 shl 30 #~50% of uncontended DIMM storage
 
-when defined(amd64) and (defined(gcc) or defined(clang)) and#XXX Run-Time CPU
-     not defined(portablensort):
-  {.passc: "-march=native".}                                # ..feature test.
+const haveBMI2 =
+  when defined(amd64) and not defined(noSIMD):
+    when defined(gcc): #        ||||||||||||| gcc.options here (for X-compiles)
+      staticExec("touch j.c;gcc -march=native -dM -E j.c|grep __BMI2__;rm -f j.c").len > 0
+    elif defined(clang):
+      staticExec("touch j.c;clang -march=native -dM -E j.c|grep __BMI2__;rm -f j.c").len > 0
+    else: false
+
+when haveBMI2:
   proc pext(val,msk:uint32):uint32 {.importc:"_pext_u32", header:"x86intrin.h".}
   proc pext(val,msk:uint64):uint64 {.importc:"_pext_u64", header:"x86intrin.h".}
 else:
-  proc pext(val, msk: uint32): uint32 =
-    var val = cast[int32](val)
-    var msk = cast[int32](msk)
-    var bb = 1'u32
-    while msk != 0:
-      if (val and msk and -msk) != 0:
-        result = result or bb
-      msk = msk and (msk - 1)
-      bb += bb
-  proc pext(val, msk: uint64): uint64 =
-    var val = cast[int64](val)
-    var msk = cast[int64](msk)
-    var bb = 1'u64
-    while msk != 0:
-      if (val and msk and -msk) != 0:
-        result = result or bb
-      msk = msk and (msk - 1)
-      bb += bb
+  {.warning: "nsort compiling without BMI2; Likely slow".}
+  template pextPortable(Ts, Tu) =
+    proc pext(val, msk: Tu): Tu =
+      let val = val.Ts
+      var msk = msk.Ts
+      var bb = 1'u32
+      while msk != 0:
+        if (val and msk and -msk) != 0: result = result or bb
+        msk = msk and (msk - 1)
+        bb += bb
+  pextPortable(int32, uint32); pextPortable(int64, uint64)
 
 when defined(windows):                          #import alloca
   proc alloca(n:int): pointer{.importc,header:"<malloc.h>".}
