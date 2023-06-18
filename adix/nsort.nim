@@ -55,21 +55,13 @@
 ## cheap compared to L2 or worse bandwidth costs.  So, 5-20% boost, I'd guess.)
 
 when not declared(stdout): import std/syncio
-import bitops, math, algorithm, cumsum
+import adix/[cpuCT, cumsum], std/[bitops, math, algorithm]
 when defined(cpuPrefetch): import cligen/prefetch # Keep cligen a soft-dep
 const nTinySort{.intdefine.} = 24         # Usually 16-32 is good
 const hMaxBits{.intdefine.} = 15          #2*counter-size*2**hMaxBits =~ L2 here
 const dGiantSort{.intdefine.} = 15 shl 30 #~50% of uncontended DIMM storage
 
-const haveBMI2 =
-  when defined(amd64) and not defined(noSIMD):
-    when defined(gcc): #        ||||||||||||| gcc.options here (for X-compiles)
-      staticExec("touch j.c;gcc -march=native -dM -E j.c|grep __BMI2__;rm -f j.c").len > 0
-    elif defined(clang):
-      staticExec("touch j.c;clang -march=native -dM -E j.c|grep __BMI2__;rm -f j.c").len > 0
-    else: false
-
-when haveBMI2:
+when defined(amd64) and not defined(noSIMD) and x86bmi2 in x86features:
   proc pext(val,msk:uint32):uint32 {.importc:"_pext_u32", header:"x86intrin.h".}
   proc pext(val,msk:uint64):uint64 {.importc:"_pext_u64", header:"x86intrin.h".}
 else:

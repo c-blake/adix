@@ -1,9 +1,11 @@
-#{.push hint[LineTooLong]:off.}  # Tabular readability trumps 80-col niceness
+import adix/cpuCT
+
 proc cumsum*[T](c: ptr UncheckedArray[T]; n: uint) =
   for i in 1 ..< n:
     c[i] += c[i - 1]
 
-when defined(amd64) and not defined(usePortable): #usePortable nice for timing
+#NOTE: SSSE3 => SSE2 which is also used.
+when defined(amd64) and not defined(noSIMD) and x86ssse3 in x86features:
   when defined(cpuPrefetch): import cligen/prefetch
 
   template workToAligned(c, n, i, align: untyped) {.dirty.} =
