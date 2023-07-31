@@ -1,7 +1,7 @@
 when not declared(stdin): import std/[syncio, formatfloat]
 import std/[hashes, times], cligen, cligen/[mslice, osUt], adix/oats
 
-const bLen {.intdefine.} = 16   # <16K long;  RT params better but less easy
+const bLen {.intdefine.} = 16   # <16K long;  RT params better but more work
 const bOff {.intdefine.} = 32   # <4G UNIQUE line data
 const bCnt {.intdefine.} = 32   # <4 GiCount
 type
@@ -41,7 +41,8 @@ proc incFailed(h: var Counts, ms: MSlice): bool =
     h.dat[i].len = ms.len.uint32# Init
     h.dat[i].cnt = 1u32
 
-proc lfreq(n=10, count=false,Norm=false, size=9999,dSize=81920, tm=false) =
+proc lfreq(n=10, count=false,Norm=false, size=9999,dSize=81920,
+           recTerm='\n',RecTerm="\n", tm=false) =
   ## Histogram `stdin` lines (read w/non-memory mapped IO to be pipe friendly).
   ## Limits: <4 GiB unique data; <16 KiB lines; <4 GiCount.
   let t0 = if tm: epochTime() else: 0.0
@@ -49,13 +50,13 @@ proc lfreq(n=10, count=false,Norm=false, size=9999,dSize=81920, tm=false) =
   s.setLen dSize; s.setLen 0
   var nTot = 0
   block IO:
-    for (line, nLine) in stdin.getDelims:
+    for (line, nLine) in stdin.getDelims(recTerm):
       let ms = MSlice(mem: line, len: nLine - 1)
       inc nTot                  # Always bump `nTotal`
       if h.incFailed(ms): break IO
   if count: outu h.len," unique ",nTot," total ",s.len," B\n"
   template output =
-    if Norm: outu c.float/nTot.float," ",k,"\n" else: outu c," ",k,"\n"
+    if Norm: outu c.float/nTot.float," ",k,RecTerm else: outu c," ",k,RecTerm
   if n == 0: (for (k, c) in pairs(h): output())
   elif n > 0: (for (k, c) in h.topByVal(n): output())
   if tm: stderr.write epochTime() - t0, "\n"
@@ -66,4 +67,6 @@ when isMainModule: dispatch lfreq, help={
   "Norm" : "normalize frequencies by dividing by grand tot",
   "size" : "pre-size hash table for size unique entries",
   "dSize": "pre-size str data area to this many bytes",
+  "recTerm": "input record terminator",
+  "RecTerm": "output record terminator",
   "tm"   : "emit wall time of counting to stderr & quit"}
