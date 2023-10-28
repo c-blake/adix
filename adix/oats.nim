@@ -1,7 +1,6 @@
-#TODO Re-do all lptabz.nim functionality here,but in this new-style Concept way.
-# In some perfect universe & done correctly this should be able to back-end:
-# nd/setFile, suggest, thes, lptabz, likely nimsearch/pack (any persistent|not
-# table with no need for concurrent view coherence in the presence of deletes).
+#TODO Re-do all lptabz.nim ideas here,but in this new-style Concept way.  Done
+# well this should be able to back-end: nd/[setFile,invidx], suggest, thes,
+# lptabz, likely nimsearch/pack (any persistent|not table sans tombstones.
 import std/[hashes, heapqueue], adix/bitop
 type
   Void* = distinct array[1, int] ## For V,H,U to disable pairs/hash/use-caching
@@ -38,23 +37,22 @@ proc rawGet*[K,V,H,U](s: Oat[K,V,H,U]; key: K; hc: Hash; d: var Hash): int =
 func slotsGuess(n: int, mnFree: int): int = ceilPow2(n + max(1, mnFree))
 
 proc tooFull*[K,V,H,U](s: var Oat[K,V,H,U]; d: int; newSize: var int): bool =
-  if s.len + 1 + 1 > s.getCap:          # Whether|not to call setCap pre-put
-    newSize = s.getCap shl 1            # Got very lucky on `d`s..
-    return true
-  let p2 = lgCeil(s.getCap)
-  if d < 3*p2 + 1: return false
-  if s.len > s.getCap shr 1:
+  let sLen = s.len                      # A getCap-long loop if unCounted
+  if sLen + 1 + 1 > s.getCap:           # Call setCap pre-put? +1 new, +1 free
+    newSize = s.getCap shl 1; return true
+  let p2 = lgCeil(s.getCap)     # NOT an over-deep search; Would like to test
+  if d < 3*p2 + 1:              #..first since it is guaranteed cheap, but need
+    return false                #..cond to ensure tiny tables terminate probeSeq
+  if sLen > s.getCap shr 1:             # Over-deep on under-full: re-salt hash?
     newSize = s.getCap; return true
 
 proc setCap*[K,V,H,U](s: var Oat[K,V,H,U]; newSize = -1) =
-  var newSz, d: int
-  if newSize < 0:
-    newSz = max(4, s.getCap shl 1)
-  else: # `max()` below blocks shrinking capacity below what is contained.
-    newSz = slotsGuess(max(newSize, s.len), 1)
+  let newSz = if newSize < 0: max(2, s.getCap shl 1)
+              else: slotsGuess(max(newSize, s.len), 1) # max blocks over-shrink
   if newSz == s.getCap and newSize == -1:
     return
   var ns = s.newOfCap(newSz)
+  var d: int
   for i in 0 ..< s.getCap:
     if s.used(i): #XXX condition s.hash(i) use on H.sizeof big enough for newSz
       ns.copy(-1 - ns.rawGet(s.key(i), s.hash(i), d), s, i)
