@@ -78,6 +78,9 @@ proc incl*[K,V,H,U](s: var Oat[K,V,H,U], key: K) =
   s.getPut(i, key, hc): discard
   do: echo "initialize cell ",i #XXX impl
 
+iterator items*[K,V,H,U](s: Oat[K,V,H,U]): K =
+  for i in 0 ..< s.getCap: (if s.used(i): yield s.key(i))
+
 iterator pairs*[K,V,H,U](s: Oat[K,V,H,U]): (K, V) =
   when V is Void: {.error: "`pairs` called when V == Void".}
   for i in 0 ..< s.getCap: (if s.used(i): yield (s.key(i), s.val(i)))
