@@ -1,6 +1,6 @@
-#TODO Re-do all lptabz.nim ideas here,but in this new-style Concept way.  Done
-# well this should be able to back-end: nd/[setFile,invidx], suggest, thes,
-# lptabz, likely nimsearch/pack (any persistent|not table sans tombstones.
+#TODO Re-do all lptabz.nim ideas here,but in new-style Concept way.  Done well,
+# this should back-end: nd/[setFile,invIdx], suggest, thes, adix/[lptabz,bltab]
+# & likely nimsearch/pack (in short, any persistent|not sans-tombstones table).
 import std/[hashes, heapqueue], adix/bitop
 type
   Void* = distinct array[1, int] ## For V,H,U to disable pairs/hash/use-caching
