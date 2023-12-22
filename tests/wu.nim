@@ -12,23 +12,21 @@ type
     dat: seq[Count]
     nUsed: int
 
-var s: string; s.keyStack off,uint32, Count,MSlice
+var s: string; oatKStack s, Counts, Count, off,uint32, MSlice, MSlice
 proc key(c: Counts, i: int): MSlice = c.dat[i].key
-proc val(c: Counts, i: int): Void {.used.} = discard #NONE
 proc used(c: Counts, i: int): bool = c.dat[i].len != 0
 when defined hashCache:         # 2nd def triggers saving lpt behavior
+  proc hash(ms: MSlice): Hash = mslice.hash(ms).uint32.Hash
+  proc hash(c: var Counts, i: int, hc: Hash) {.used.} = c.dat[i].hc = hc.uint32
   proc hash(c: Counts, i: int): Hash = c.dat[i].hc.Hash
-  proc hash(c: var Counts, i: int, hc: uint32) {.used.} = c.dat[i].hc = hc
-else:
-  proc hash(c: Counts, i: int): Hash = c.dat[i].key.hash
-  proc hash(c: var Counts, i: int, hc: Void) {.used.} = discard
-Counts.useCountedCellSeq dat, nUsed
+oatCounted c,Counts, c.nUsed; oatSeq Counts, dat  # make counted & resizable
+when Counts is ROat[MSlice, MSlice]: {.warning: "Counts is a ROat"}
 
 proc incFailed(h: var Counts, ms: MSlice): bool =
   if ms.len > (1 shl bLen) - 1: # Careful to not overflow
     erru "skipping too long word: ",$ms,"\n"
     return                      # Cannot go on LOCALLY
-  h.getPut(i, ms, hc): discard  # Found key @i:
+  h.upSert(ms, i): discard      # Found key @i:
   do:                           # Novel key->i:
     h.dat[i].off = s.add(ms, (1 shl bOff) - 1):
       erru "unique word data overflow at:",$ms,"\n" #XXX rate limit
