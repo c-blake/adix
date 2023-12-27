@@ -11,15 +11,15 @@
 ## other data structures like hash tables & B-trees will outperform this.
 ## Iteration is always in insertion order whenever no deletes have occurred.
 ## The "unit" is also 2 memory accesses per operation, vs. often 1 for lptabz.
-## So, very large scale can make this guaranteed to be ~2X slowe than a good
+## So, very large scale can make this guaranteed to be ~2X slower than a good
 ## average case for `lptabz`, all depending upon exact requirements, of course.
 ##
-## The earliest reference I have elaborating the properties of this approach is
-## An Efficient Representation for Sparse Sets by Preston Briggs & Linda Torczon
-## from Rice in 1993.  It's simple enough that the idea may date back to early
-## 1960s DB work (likely by Codd), maybe under a term like "direct indexing".
-## The key type here must have an available conversion to ``int``.  Duplicate
-## keys are not allowed for this one.
+## The earliest reference I have elaborating this approach is _An Efficient
+## Representation for Sparse Sets_ by Preston Briggs & Linda Torczon from Rice
+## in 1993 referencing an exercise in Aho, Croft & Ullman 1974.  It's simple
+## enough that the idea may date to early 1960s DB work (e.g. by Codd), maybe
+## under another term like "direct indexing".  `K` below must have an available
+## conversion to ``int``.  Duplicate keys cannot be allowed for this one.
 
 import althash, sequint, heapqueue
 when not declared(assert): import std/assertions
