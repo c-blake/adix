@@ -1,5 +1,5 @@
 when not declared(stdin): import std/[syncio, formatfloat]
-import std/[hashes, times], cligen, cligen/[mslice, osUt], adix/oats
+import std/[hashes,times,sugar,algorithm], cligen,cligen/[mslice,osUt],adix/oats
 
 const bLen {.intdefine.} = 16   # <16K long;  RT params better but more work
 const bOff {.intdefine.} = 32   # <4G UNIQUE line data
@@ -59,6 +59,9 @@ proc lfreq(n=10, count=false,Norm=false, size=9999,dSize=81920,
     if Norm: outu c.float/nTot.float," ",k,RecTerm else: outu c," ",k,RecTerm
   if n == 0: (for (k, c) in pairs(h): output())
   elif n > 0: (for (k, c) in h.topByVal(n): output())
+  elif n < -1:  # -1 is same as +1; Hijack value to mean no output()
+    var x = collect(for (k, c) in h.topByVal(-n): (k, c))
+    x.reverse; (for (k, c) in x: output())
   if tm: stderr.write epochTime() - t0, "\n"
 
 when isMainModule: dispatch lfreq, help={
