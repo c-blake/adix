@@ -1,0 +1,16 @@
+SeqUint	adix/sequint.html#SeqUint	sequint: SeqUint	
+bits	adix/sequint.html#bits,SeqUint	sequint: bits(s: SeqUint): int	
+low	adix/sequint.html#low,SeqUint	sequint: low(s: SeqUint): int	
+addr0	adix/sequint.html#addr0,SeqUint	sequint: addr0(s: SeqUint): pointer	
+len	adix/sequint.html#len,SeqUint	sequint: len(s: SeqUint): int	
+high	adix/sequint.html#high,SeqUint	sequint: high(s: SeqUint): int	
+clear	adix/sequint.html#clear,SeqUint	sequint: clear(s: var SeqUint)	
+init	adix/sequint.html#init,SeqUint,int,int	sequint: init(s: var SeqUint; initialSize = 0; numBound = 0)	
+initSeqUint	adix/sequint.html#initSeqUint,int,int	sequint: initSeqUint(initialSize = 0; numBound = 0): SeqUint	
+`[]`	adix/sequint.html#[],SeqUint,	sequint: `[]`(s: SeqUint; i: int | uint): uint	
+`[]=`	adix/sequint.html#[]=,SeqUint,,	sequint: `[]=`(s: var SeqUint; i: int | uint; x: int | uint)	
+setLen	adix/sequint.html#setLen,SeqUint,int	sequint: setLen(s: var SeqUint; size: int)	
+add	adix/sequint.html#add,SeqUint,uint	sequint: add(s: var SeqUint; v: uint)	
+items	adix/sequint.html#items.i,SeqUint	sequint: items(s: SeqUint): uint	
+pairs	adix/sequint.html#pairs.i,SeqUint	sequint: pairs(s: SeqUint): (int, uint)	
+`$`	adix/sequint.html#$,SeqUint	sequint: `$`(s: SeqUint): string	

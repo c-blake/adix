@@ -1,0 +1,20 @@
+LgHisto	adix/lghisto.html#LgHisto	lghisto: LgHisto	
+underflows	adix/lghisto.html#underflows,LgHisto[C]	lghisto: underflows[C](s: LgHisto[C]): int	
+overflows	adix/lghisto.html#overflows,LgHisto[C]	lghisto: overflows[C](s: LgHisto[C]): int	
+low	adix/lghisto.html#low,LgHisto[C]	lghisto: low[C](s: LgHisto[C]): float	
+high	adix/lghisto.html#high,LgHisto[C]	lghisto: high[C](s: LgHisto[C]): float	
+nBin	adix/lghisto.html#nBin,LgHisto[C]	lghisto: nBin[C](s: LgHisto[C]): int	
+bist	adix/lghisto.html#bist,LgHisto[C]	lghisto: bist[C](s: LgHisto[C]): Bist[C]	
+init	adix/lghisto.html#init,LgHisto[C],float,float,int	lghisto: init[C](s: var LgHisto[C]; a = 1e-16; b = 1e+20; n = 8300)	
+initLgHisto	adix/lghisto.html#initLgHisto,float,float,int	lghisto: initLgHisto[C](a = 1e-16; b = 1e+20; n = 8300): LgHisto[C]	
+space	adix/lghisto.html#space,LgHisto[C]	lghisto: space[C](s: LgHisto[C]): int	
+toIx	adix/lghisto.html#toIx,LgHisto[C],F	lghisto: toIx[F, C](s: LgHisto[C]; x: F): int	
+fromIx	adix/lghisto.html#fromIx,LgHisto[C],int,F	lghisto: fromIx[F, C](s: LgHisto[C]; i: int; offset: F = 0.5): F	
+binAB	adix/lghisto.html#binAB,LgHisto[C],F	lghisto: binAB[F, C](s: LgHisto[C]; x: F): (float, float)	
+add	adix/lghisto.html#add,LgHisto[C],F,typeof(1.C)	lghisto: add[F, C](s: var LgHisto[C]; x: F; w = 1.C)	
+pop	adix/lghisto.html#pop,LgHisto[C],F,typeof(1.C)	lghisto: pop[F, C](s: var LgHisto[C]; x: F; w = 1.C)	
+bins	adix/lghisto.html#bins.i,LgHisto[C]	lghisto: bins[C](s: LgHisto[C]): (float, float, C)	
+`$`	adix/lghisto.html#$,LgHisto[C]	lghisto: `$`[C](s: LgHisto[C]; nonZero = true): string	
+quantile	adix/lghisto.html#quantile,LgHisto[C],F	lghisto: quantile[F, C](s: LgHisto[C]; q: F): F	
+cdf	adix/lghisto.html#cdf,LgHisto[C],F	lghisto: cdf[F, C](s: LgHisto[C]; x: F): C	
+merge	adix/lghisto.html#merge,LgHisto[C],LgHisto[C]	lghisto: merge[C](dst: var LgHisto[C]; src: LgHisto[C])	

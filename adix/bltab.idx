@@ -1,0 +1,26 @@
+BLTab	adix/bltab.html#BLTab	bltab: BLTab	
+blInitialSize	adix/bltab.html#blInitialSize	bltab: blInitialSize	
+blValueBits	adix/bltab.html#blValueBits	bltab: blValueBits	
+blSentinel	adix/bltab.html#blSentinel	bltab: blSentinel	
+blNumer	adix/bltab.html#blNumer	bltab: blNumer	
+blDenom	adix/bltab.html#blDenom	bltab: blDenom	
+blMinFree	adix/bltab.html#blMinFree	bltab: blMinFree	
+blGrowPow2	adix/bltab.html#blGrowPow2	bltab: blGrowPow2	
+blRobinHood	adix/bltab.html#blRobinHood	bltab: blRobinHood	
+blRehash	adix/bltab.html#blRehash	bltab: blRehash	
+len	adix/bltab.html#len,BLTab	bltab: len(s: BLTab): int	
+getCap	adix/bltab.html#getCap,BLTab	bltab: getCap(s: BLTab): int	
+save	adix/bltab.html#save,BLTab,string	bltab: save(t: BLTab; pathStub: string)	
+load	adix/bltab.html#load,BLTab,string	bltab: load(t: var BLTab; path: string)	
+loadBLTab	adix/bltab.html#loadBLTab,string	bltab: loadBLTab(path: string): BLTab	
+mmap	adix/bltab.html#mmap,BLTab,string	bltab: mmap(t: var BLTab; path: string)	
+init	adix/bltab.html#init,BLTab,int,int	bltab: init(s: var BLTab; size, mask: int)	
+initBLTab	adix/bltab.html#initBLTab,int,int	bltab: initBLTab(size, mask: int): BLTab	
+contains	adix/bltab.html#contains,BLTab,Hash	bltab: contains(s: BLTab; hc: Hash): bool	
+containsOrIncl	adix/bltab.html#containsOrIncl,BLTab,Hash	bltab: containsOrIncl(s: var BLTab; hc: Hash): bool	
+missingOrExcl	adix/bltab.html#missingOrExcl,BLTab,Hash	bltab: missingOrExcl(s: var BLTab; hc: Hash): bool	
+clear	adix/bltab.html#clear,BLTab	bltab: clear(s: var BLTab)	
+items	adix/bltab.html#items.i,BLTab	bltab: items(s: BLTab): Hash	
+pairs	adix/bltab.html#pairs.i,BLTab	bltab: pairs(s: BLTab): tuple[a: int, b: Hash]	
+depths	adix/bltab.html#depths,BLTab	bltab: depths(s: BLTab): seq[int]	
+debugDump	adix/bltab.html#debugDump,BLTab,string	bltab: debugDump(s: BLTab; label = &quot;&quot;)	

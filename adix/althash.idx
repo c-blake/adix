@@ -1,0 +1,22 @@
+hashRoMu1	adix/althash.html#hashRoMu1	althash: hashRoMu1(x: SomeOrdinal | Hash): Hash	
+hashRoMu2	adix/althash.html#hashRoMu2	althash: hashRoMu2(x: SomeOrdinal | Hash): Hash	
+hashWangYi1	adix/althash.html#hashWangYi1,T	althash: hashWangYi1[T: Ordinal | enum](x: T): Hash	
+hashWY0	adix/althash.html#hashWY0,T	althash: hashWY0[T: Ordinal | enum](x: T): Hash	
+hashMoreMur	adix/althash.html#hashMoreMur,T	althash: hashMoreMur[T: Ordinal | enum](x: T): Hash	
+hashNASAM	adix/althash.html#hashNASAM,T	althash: hashNASAM[T: Ordinal | enum](x: T): Hash	
+hashIdentity	adix/althash.html#hashIdentity,T	althash: hashIdentity[T: Ordinal | enum](x: T): Hash	
+hashSplitMix	adix/althash.html#hashSplitMix,T	althash: hashSplitMix[T: Ordinal | enum](x: T): Hash	
+hashSplit64	adix/althash.html#hashSplit64,T	althash: hashSplit64[T: Ordinal | enum](x: T): Hash	
+hashDegski	adix/althash.html#hashDegski,T	althash: hashDegski[T: Ordinal | enum](x: T): Hash	
+hashRevFib	adix/althash.html#hashRevFib	althash: hashRevFib(x: int32 | uint32): Hash	
+hashRevFib	adix/althash.html#hashRevFib_2	althash: hashRevFib(x: int64 | uint64): Hash	
+secureSalt	adix/althash.html#secureSalt,pointer	althash: secureSalt(x: pointer): Hash	
+vmaddrSalt	adix/althash.html#vmaddrSalt,pointer	althash: vmaddrSalt(x: pointer): Hash	
+zeroSalt	adix/althash.html#zeroSalt,pointer	althash: zeroSalt(x: pointer): Hash	
+getSalt	adix/althash.html#getSalt	althash: getSalt	
+hashRoMu1	adix/althash.html#hashRoMu1,uint	althash: hashRoMu1(x: uint): Hash	
+hashRevFib	adix/althash.html#hashRevFib,uint	althash: hashRevFib(x: uint): Hash	
+hash	adix/althash.html#hash,Hash,Hash	althash: hash(hsh, salt: Hash): Hash	
+dbg	adix/althash.html#dbg.t	althash: dbg(x)	
+raiseNotFound	adix/althash.html#raiseNotFound,K	althash: raiseNotFound[K](key: K)	
+normalized	adix/althash.html#normalized,openArray[T]	althash: normalized[T](x: openArray[T]): seq[float]	

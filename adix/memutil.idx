@@ -1,0 +1,2 @@
+pushUp	adix/memutil.html#pushUp,seq[T],int,int	memutil: pushUp[T](x: var seq[T]; i, n: int)	
+pullDown	adix/memutil.html#pullDown,seq[T],int,int	memutil: pullDown[T](x: var seq[T]; i, n: int)	

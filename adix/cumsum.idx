@@ -1,0 +1,7 @@
+cumsum	adix/cumsum.html#cumsum,ptr.UncheckedArray[T],uint	cumsum: cumsum[T](c: ptr UncheckedArray[T]; n: uint)	
+cumsum	adix/cumsum.html#cumsum,ptr.UncheckedArray[uint8],uint	cumsum: cumsum(c: ptr UncheckedArray[uint8]; n: uint)	
+cumsum	adix/cumsum.html#cumsum,ptr.UncheckedArray[uint16],uint	cumsum: cumsum(c: ptr UncheckedArray[uint16]; n: uint)	
+cumsum	adix/cumsum.html#cumsum,ptr.UncheckedArray[uint32],uint	cumsum: cumsum(c: ptr UncheckedArray[uint32]; n: uint)	
+cumsum	adix/cumsum.html#cumsum,ptr.UncheckedArray[uint64],uint	cumsum: cumsum(c: ptr UncheckedArray[uint64]; n: uint)	
+cumsum	adix/cumsum.html#cumsum,openArray[T]	cumsum: cumsum[T](c: var openArray[T])	
+cumsum	adix/cumsum.html#cumsum,ptr.T,uint	cumsum: cumsum[T](c: ptr T; n: uint)	

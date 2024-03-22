@@ -1,0 +1,6 @@
+ccPreDefs	adix/cpuCT.html#ccPreDefs	cpuCT: ccPreDefs	
+x86sse2	adix/cpuCT.html#x86sse2	X86Feature.x86sse2	
+x86ssse3	adix/cpuCT.html#x86ssse3	X86Feature.x86ssse3	
+x86bmi2	adix/cpuCT.html#x86bmi2	X86Feature.x86bmi2	
+X86Feature	adix/cpuCT.html#X86Feature	cpuCT: X86Feature	
+x86features	adix/cpuCT.html#x86features	cpuCT: x86features	

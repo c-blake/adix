@@ -1,0 +1,7 @@
+CtMnSketch	adix/amoft.html#CtMnSketch	amoft: CtMnSketch	
+AMOft	adix/amoft.html#AMOft	amoft: AMOft	
+initCtMnSketch	adix/amoft.html#initCtMnSketch,int,int,seq[int]	amoft: initCtMnSketch[K, C](w: int; d = 4; salts: seq[int] = @[]): CtMnSketch[K, C]	
+inc	adix/amoft.html#inc,CtMnSketch[K,C],K,int	amoft: inc[K, C](cs: var CtMnSketch[K, C]; key: K; r = 1): C	
+initAMOft	adix/amoft.html#initAMOft,int,int,int,seq[int]	amoft: initAMOft[K, C](k, w: int; d = 4; salts: seq[int] = @[]): AMOft[K, C]	
+inc	adix/amoft.html#inc,AMOft[K,C],K,int	amoft: inc[K, C](a: var AMOft[K, C]; key: K; r = 1)	
+mostCommon	adix/amoft.html#mostCommon.i,AMOft[K,C],int	amoft: mostCommon[K, C](a: AMOft[K, C]; k = 0): (K, C)	

@@ -1,0 +1,108 @@
+LPTabz	adix/lptabz.html#LPTabz	lptabz: LPTabz	
+LPSetz	adix/lptabz.html#LPSetz	lptabz: LPSetz	
+LPTab	adix/lptabz.html#LPTab	lptabz: LPTab	
+LPSet	adix/lptabz.html#LPSet	lptabz: LPSet	
+lpInitialSize	adix/lptabz.html#lpInitialSize	lptabz: lpInitialSize	
+lpNumer	adix/lptabz.html#lpNumer	lptabz: lpNumer	
+lpDenom	adix/lptabz.html#lpDenom	lptabz: lpDenom	
+lpMinFree	adix/lptabz.html#lpMinFree	lptabz: lpMinFree	
+lpGrowPow2	adix/lptabz.html#lpGrowPow2	lptabz: lpGrowPow2	
+lpRobinHood	adix/lptabz.html#lpRobinHood	lptabz: lpRobinHood	
+lpRehash	adix/lptabz.html#lpRehash	lptabz: lpRehash	
+lpWarn	adix/lptabz.html#lpWarn	lptabz: lpWarn	
+lpMaxWarn	adix/lptabz.html#lpMaxWarn	lptabz: lpMaxWarn	
+save	adix/lptabz.html#save,LPTabz[K,V,Z,z],string	lptabz: save[K, V, Z; z: static int](t: LPTabz[K, V, Z, z]; pathStub: string)	
+load	adix/lptabz.html#load,LPTabz[K,V,Z,z],string	lptabz: load[K, V, Z; z: static int](t: var LPTabz[K, V, Z, z]; path: string)	
+loadLPTabz	adix/lptabz.html#loadLPTabz,string	lptabz: loadLPTabz[K, V, Z; z: static int](path: string): LPTabz[K, V, Z, z]	
+mmap	adix/lptabz.html#mmap,LPTabz[K,V,Z,z],string	lptabz: mmap[K, V, Z; z: static int](t: var LPTabz[K, V, Z, z]; path: string)	
+len	adix/lptabz.html#len,LPTabz[K,V,Z,z]	lptabz: len[K, V, Z; z: static int](t: LPTabz[K, V, Z, z]): int	
+getCap	adix/lptabz.html#getCap,LPTabz[K,V,Z,z]	lptabz: getCap[K, V, Z; z: static int](t: LPTabz[K, V, Z, z]): int	
+depths	adix/lptabz.html#depths,LPTabz[K,V,Z,z]	lptabz: depths[K, V, Z; z: static int](t: LPTabz[K, V, Z, z]): seq[int]	
+init	adix/lptabz.html#init,LPTabz[K,V,Z,z]	lptabz: init[K, V, Z; z: static int](t: var LPTabz[K, V, Z, z];\n                             initialSize = lpInitialSize; numer = lpNumer;\n                             denom = lpDenom; minFree = lpMinFree;\n                             growPow2 = lpGrowPow2; rehash = lpRehash;\n                             robinhood = lpRobinHood)	
+setCap	adix/lptabz.html#setCap,LPTabz[K,V,Z,z],int	lptabz: setCap[K, V, Z; z: static int](t: var LPTabz[K, V, Z, z]; newSize = -1)	
+initLPTabz	adix/lptabz.html#initLPTabz	lptabz: initLPTabz[K, V, Z; z: static int](initialSize = lpInitialSize; numer = lpNumer;\n                                   denom = lpDenom; minFree = lpMinFree;\n                                   growPow2 = lpGrowPow2; rehash = lpRehash;\n                                   robinhood = lpRobinHood): LPTabz[K, V, Z, z]	
+setPolicy	adix/lptabz.html#setPolicy,LPTabz[K,V,Z,z]	lptabz: setPolicy[K, V, Z; z: static int](t: var LPTabz[K, V, Z, z]; numer = lpNumer;\n                                  denom = lpDenom; minFree = lpMinFree;\n                                  growPow2 = lpGrowPow2; rehash = lpRehash;\n                                  robinhood = lpRobinHood)	
+rightSize	adix/lptabz.html#rightSize,int,int,int,int	lptabz: rightSize(count: int; numer = 0; denom = 0; minFree = 0): int	
+contains	adix/lptabz.html#contains,LPTabz[K,V,Z,z],K	lptabz: contains[K, V, Z; z: static int](t: LPTabz[K, V, Z, z]; key: K): bool	
+containsOrIncl	adix/lptabz.html#containsOrIncl,LPTabz[K,void,Z,z],K	lptabz: containsOrIncl[K, Z; z: static int](t: var LPTabz[K, void, Z, z]; key: K): bool	
+setOrIncl	adix/lptabz.html#setOrIncl,LPTabz[K,void,Z,z],K	lptabz: setOrIncl[K, Z; z: static int](t: var LPTabz[K, void, Z, z]; key: K): bool	
+mgetOrPut	adix/lptabz.html#mgetOrPut,LPTabz[K,V,Z,z],K,V	lptabz: mgetOrPut[K, V, Z; z: static int](t: var LPTabz[K, V, Z, z]; key: K; val: V): var V	
+mgetOrPut	adix/lptabz.html#mgetOrPut,LPTabz[K,V,Z,z],K,V,bool	lptabz: mgetOrPut[K, V, Z; z: static int](t: var LPTabz[K, V, Z, z]; key: K; val: V;\n                                  had: var bool): var V	
+editOrInit	adix/lptabz.html#editOrInit.t,LPTabz[K,V,Z,z],K,untyped,untyped,untyped	lptabz: editOrInit[K, V, Z; z: static int](t: var LPTabz[K, V, Z, z]; key: K;\n                                   v, found, missing: untyped): untyped	
+withIt	adix/lptabz.html#withIt.t,LPTabz[K,V,Z,z],K,,	lptabz: withIt[K, V, Z; z: static int](t: var LPTabz[K, V, Z, z]; k: K; edit, init): untyped	
+getItOrFail	adix/lptabz.html#getItOrFail.t,LPTabz[K,V,Z,z],K,,	lptabz: getItOrFail[K, V, Z; z: static int](t: LPTabz[K, V, Z, z]; k: K; found, missing): untyped	
+add	adix/lptabz.html#add,LPTabz[K,void,Z,z],K	lptabz: add[K, Z; z: static int](t: var LPTabz[K, void, Z, z]; key: K)	
+add	adix/lptabz.html#add,LPTabz[K,V,Z,z],K,V	lptabz: add[K, V, Z; z: static int](t: var LPTabz[K, V, Z, z]; key: K; val: V)	
+missingOrExcl	adix/lptabz.html#missingOrExcl,LPTabz[K,V,Z,z],K	lptabz: missingOrExcl[K, V, Z; z: static int](t: var LPTabz[K, V, Z, z]; key: K): bool	
+take	adix/lptabz.html#take,LPTabz[K,void,Z,z],K	lptabz: take[K, Z; z: static int](t: var LPTabz[K, void, Z, z]; key: var K): bool	
+take	adix/lptabz.html#take,LPTabz[K: not void,V: not void,Z,z],K,V	lptabz: take[K, V: not void; Z; z: static int](t: var LPTabz[K, V, Z, z]; key: K;\n                                       val: var V): bool	
+pop	adix/lptabz.html#pop,LPTabz[K,void,Z,z]	lptabz: pop[K, Z; z: static int](t: var LPTabz[K, void, Z, z]): K	
+pop	adix/lptabz.html#pop,LPTabz[K: not void,V: not void,Z,z]	lptabz: pop[K, V: not void; Z; z: static int](t: var LPTabz[K, V, Z, z]): (K, V)	
+editKey	adix/lptabz.html#editKey,LPTabz[K,V,Z,z],K,K	lptabz: editKey[K, V, Z; z: static int](t: var LPTabz[K, V, Z, z]; old, new: K)	
+nthKey	adix/lptabz.html#nthKey,LPTabz[K,void,Z,z],int	lptabz: nthKey[K, Z; z: static int](t: LPTabz[K, void, Z, z]; n: int): K	
+nthPair	adix/lptabz.html#nthPair,LPTabz[K: not void,V: not void,Z,z],int	lptabz: nthPair[K, V: not void; Z; z: static int](t: LPTabz[K, V, Z, z]; n: int): (K, V)	
+nthPair	adix/lptabz.html#nthPair,LPTabz[K: not void,V: not void,Z,z],int_2	lptabz: nthPair[K, V: not void; Z; z: static int](t: var LPTabz[K, V, Z, z]; n: int): (\n    K, ptr V)	
+clear	adix/lptabz.html#clear,LPTabz[K,V,Z,z]	lptabz: clear[K, V, Z; z: static int](t: var LPTabz[K, V, Z, z])	
+items	adix/lptabz.html#items.i,LPTabz[K,void,Z,z]	lptabz: items[K, Z; z: static int](s: LPTabz[K, void, Z, z]): K	
+mitems	adix/lptabz.html#mitems.i,LPTabz[K,void,Z,z]	lptabz: mitems[K, Z; z: static int](s: var LPTabz[K, void, Z, z]): var K	
+hcodes	adix/lptabz.html#hcodes.i,LPTabz[K,void,Z,z]	lptabz: hcodes[K, Z; z: static int](s: LPTabz[K, void, Z, z]): (int, Hash)	
+allItems	adix/lptabz.html#allItems.i,LPTabz[K,void,Z,z],K	lptabz: allItems[K, Z; z: static int](s: LPTabz[K, void, Z, z]; key: K): K	
+numItems	adix/lptabz.html#numItems,LPTabz[K,void,Z,z],K	lptabz: numItems[K, Z; z: static int](t: LPTabz[K, void, Z, z]; key: K): int	
+numItems	adix/lptabz.html#numItems.i,LPTabz[K,void,Z,z]	lptabz: numItems[K, Z; z: static int](t: LPTabz[K, void, Z, z]): (K, int)	
+pairs	adix/lptabz.html#pairs.i,LPTabz[K,void,Z,z]	lptabz: pairs[K, Z; z: static int](t: LPTabz[K, void, Z, z]): (int, K)	
+pairs	adix/lptabz.html#pairs.i,LPTabz[K,V,Z,z]	lptabz: pairs[K, V, Z; z: static int](t: LPTabz[K, V, Z, z]): (K, V)	
+mpairs	adix/lptabz.html#mpairs.i,LPTabz[K,V,Z,z]	lptabz: mpairs[K, V, Z; z: static int](t: var LPTabz[K, V, Z, z]): (K, var V)	
+keys	adix/lptabz.html#keys.i,LPTabz[K,V,Z,z]	lptabz: keys[K, V, Z; z: static int](t: LPTabz[K, V, Z, z]): K	
+values	adix/lptabz.html#values.i,LPTabz[K,V,Z,z]	lptabz: values[K, V, Z; z: static int](t: LPTabz[K, V, Z, z]): V	
+mvalues	adix/lptabz.html#mvalues.i,LPTabz[K,V,Z,z]	lptabz: mvalues[K, V, Z; z: static int](t: var LPTabz[K, V, Z, z]): var V	
+allValues	adix/lptabz.html#allValues.i,LPTabz[K,V,Z,z],K	lptabz: allValues[K, V, Z; z: static int](t: LPTabz[K, V, Z, z]; key: K): V	
+allValues	adix/lptabz.html#allValues.i,LPTabz[K,V,Z,z],seq[V]	lptabz: allValues[K, V, Z; z: static int](t: LPTabz[K, V, Z, z]; vals: var seq[V]): K	
+allValues	adix/lptabz.html#allValues,LPTabz[K,V,Z,z],K,seq[V]	lptabz: allValues[K, V, Z; z: static int](t: LPTabz[K, V, Z, z]; key: K;\n                                  vals: var seq[V]): bool	
+debugDump	adix/lptabz.html#debugDump,LPTabz[K,V,Z,z],string	lptabz: debugDump[K, V, Z; z: static int](s: LPTabz[K, V, Z, z]; label = &quot;&quot;)	
+pop	adix/lptabz.html#pop,LPTabz[K,void,Z,z],K	lptabz: pop[K, Z; z: static int](s: var LPTabz[K, void, Z, z]; key: var K): bool	
+incl	adix/lptabz.html#incl,LPTabz[K,void,Z,z],K	lptabz: incl[K, Z; z: static int](s: var LPTabz[K, void, Z, z]; elt: K)	
+excl	adix/lptabz.html#excl,LPTabz[K,void,Z,z],K	lptabz: excl[K, Z; z: static int](s: var LPTabz[K, void, Z, z]; elt: K)	
+incl	adix/lptabz.html#incl,LPTabz[K,void,Z,z],LPTabz[K,void,Z,z]	lptabz: incl[K, Z; z: static int](s: var LPTabz[K, void, Z, z];\n                          other: LPTabz[K, void, Z, z])	
+excl	adix/lptabz.html#excl,LPTabz[K,void,Z,z],LPTabz[K,void,Z,z]	lptabz: excl[K, Z; z: static int](s: var LPTabz[K, void, Z, z];\n                          other: LPTabz[K, void, Z, z])	
+card	adix/lptabz.html#card,LPTabz[K,void,Z,z]	lptabz: card[K, Z; z: static int](s: LPTabz[K, void, Z, z]): int	
+union	adix/lptabz.html#union,LPTabz[K,void,Z,z],LPTabz[K,void,Z,z]	lptabz: union[K, Z; z: static int](s1, s2: LPTabz[K, void, Z, z]): LPTabz[K, void, Z, z]	
+intersection	adix/lptabz.html#intersection,LPTabz[K,void,Z,z],LPTabz[K,void,Z,z]	lptabz: intersection[K, Z; z: static int](s1, s2: LPTabz[K, void, Z, z]): LPTabz[K,\n    void, Z, z]	
+difference	adix/lptabz.html#difference,LPTabz[K,void,Z,z],LPTabz[K,void,Z,z]	lptabz: difference[K, Z; z: static int](s1, s2: LPTabz[K, void, Z, z]): LPTabz[K, void,\n    Z, z]	
+symmetricDifference	adix/lptabz.html#symmetricDifference,LPTabz[K,void,Z,z],LPTabz[K,void,Z,z]	lptabz: symmetricDifference[K, Z; z: static int](s1, s2: LPTabz[K, void, Z, z]): LPTabz[\n    K, void, Z, z]	
+`+`	adix/lptabz.html#+,LPTabz[K,void,Z,z],LPTabz[K,void,Z,z]	lptabz: `+`[K, Z; z: static int](s1, s2: LPTabz[K, void, Z, z]): LPTabz[K, void, Z, z]	
+`*`	adix/lptabz.html#*,LPTabz[K,void,Z,z],LPTabz[K,void,Z,z]	lptabz: `*`[K, Z; z: static int](s1, s2: LPTabz[K, void, Z, z]): LPTabz[K, void, Z, z]	
+`-`	adix/lptabz.html#-,LPTabz[K,void,Z,z],LPTabz[K,void,Z,z]	lptabz: `-`[K, Z; z: static int](s1, s2: LPTabz[K, void, Z, z]): LPTabz[K, void, Z, z]	
+`-+-`	adix/lptabz.html#-+-,LPTabz[K,void,Z,z],LPTabz[K,void,Z,z]	lptabz: `-+-`[K, Z; z: static int](s1, s2: LPTabz[K, void, Z, z]): LPTabz[K, void, Z, z]	
+disjoint	adix/lptabz.html#disjoint,LPTabz[K,void,Z,z],LPTabz[K,void,Z,z]	lptabz: disjoint[K, Z; z: static int](s1, s2: LPTabz[K, void, Z, z]): bool	
+`&lt;=`	adix/lptabz.html#<=,LPTabz[K,void,Z,z],LPTabz[K,void,Z,z]	lptabz: `&lt;=`[K, Z; z: static int](s, t: LPTabz[K, void, Z, z]): bool	
+`&lt;`	adix/lptabz.html#<,LPTabz[K,void,Z,z],LPTabz[K,void,Z,z]	lptabz: `&lt;`[K, Z; z: static int](s, t: LPTabz[K, void, Z, z]): bool	
+`==`	adix/lptabz.html#==,LPTabz[K,void,Z,z],LPTabz[K,void,Z,z]	lptabz: `==`[K, Z; z: static int](s, t: LPTabz[K, void, Z, z]): bool	
+map	adix/lptabz.html#map,LPTabz[K,void,Z,z],proc(K)	lptabz: map[K, A, Z; z: static int](data: LPTabz[K, void, Z, z];\n                            op: proc (x: K): A {.closure.}): LPTabz[A, void, Z,\n    z]	
+toLPTabz	adix/lptabz.html#toLPTabz,openArray[K]	lptabz: toLPTabz[K; V: void; Z; z: static int](keys: openArray[K]; dups = false): LPTabz[\n    K, V, Z, z]	
+`$`	adix/lptabz.html#$,LPTabz[K,void,Z,z]	lptabz: `$`[K, Z; z: static int](s: LPTabz[K, void, Z, z]): string	
+hash	adix/lptabz.html#hash,LPTabz[K,void,Z,z]	lptabz: hash[K, Z; z: static int](s: LPTabz[K, void, Z, z]): Hash	
+depthStats	adix/lptabz.html#depthStats,LPTabz[K,V,Z,z]	lptabz: depthStats[K, V, Z; z: static int](s: LPTabz[K, V, Z, z]): tuple[m1, m2: float,\n    mx: int]	
+toLPTabz	adix/lptabz.html#toLPTabz,openArray[]	lptabz: toLPTabz[K; V: not void; Z; z: static int](pairs: openArray[(K, V)];\n    dups = false): LPTabz[K, V, Z, z]	
+`$`	adix/lptabz.html#$,LPTabz[K: not void,V: not void,Z,z]	lptabz: `$`[K, V: not void; Z; z: static int](t: LPTabz[K, V, Z, z]): string	
+pop	adix/lptabz.html#pop,LPTabz[K: not void,V: not void,Z,z],K,V	lptabz: pop[K, V: not void; Z; z: static int](t: var LPTabz[K, V, Z, z]; key: K;\n                                      val: var V): bool	
+withValue	adix/lptabz.html#withValue.t,LPTabz[K,V,Z,z],K,untyped,untyped	lptabz: withValue[K, V, Z; z: static int](t: var LPTabz[K, V, Z, z]; key: K;\n                                  value, found: untyped): untyped	
+withValue	adix/lptabz.html#withValue.t,LPTabz[K,V,Z,z],K,untyped,untyped,untyped	lptabz: withValue[K, V, Z; z: static int](t: var LPTabz[K, V, Z, z]; key: K;\n                                  value, found, missing: untyped): untyped	
+`[]`	adix/lptabz.html#[],LPTabz[K,V,Z,z],K	lptabz: `[]`[K, V, Z; z: static int](t: LPTabz[K, V, Z, z]; key: K): V	
+`[]`	adix/lptabz.html#[],LPTabz[K,V,Z,z],K_2	lptabz: `[]`[K, V, Z; z: static int](t: var LPTabz[K, V, Z, z]; key: K): var V	
+`[]=`	adix/lptabz.html#[]=,LPTabz[K,V,Z,z],K,V	lptabz: `[]=`[K, V, Z; z: static int](t: var LPTabz[K, V, Z, z]; key: K; val: V)	
+`{}`	adix/lptabz.html#{},LPTabz[K,V,Z,z],K	lptabz: `{}`[K, V, Z; z: static int](t: LPTabz[K, V, Z, z]; key: K): V	
+`{}`	adix/lptabz.html#{},LPTabz[K,V,Z,z],K_2	lptabz: `{}`[K, V, Z; z: static int](t: var LPTabz[K, V, Z, z]; key: K): var V	
+`{}=`	adix/lptabz.html#{}=,LPTabz[K,V,Z,z],K,V	lptabz: `{}=`[K, V, Z; z: static int](t: var LPTabz[K, V, Z, z]; key: K; val: V)	
+hasKey	adix/lptabz.html#hasKey,LPTabz[K,V,Z,z],K	lptabz: hasKey[K, V, Z; z: static int](t: LPTabz[K, V, Z, z]; key: K): bool	
+hasKeyOrPut	adix/lptabz.html#hasKeyOrPut,LPTabz[K,V,Z,z],K,V	lptabz: hasKeyOrPut[K, V, Z; z: static int](t: var LPTabz[K, V, Z, z]; key: K; val: V): bool	
+getOrDefault	adix/lptabz.html#getOrDefault,LPTabz[K,V,Z,z],K,typeof(default(V))	lptabz: getOrDefault[K, V, Z; z: static int](t: LPTabz[K, V, Z, z]; key: K;\n                                     default = default(V)): V	
+del	adix/lptabz.html#del,LPTabz[K,V,Z,z],K	lptabz: del[K, V, Z; z: static int](t: var LPTabz[K, V, Z, z]; key: K)	
+`==`	adix/lptabz.html#==,LPTabz[K: not void,V: not void,Z,z],LPTabz[K: not void,V: not void,Z,z]	lptabz: `==`[K, V: not void; Z; z: static int](x, y: LPTabz[K, V, Z, z]): bool	
+indexBy	adix/lptabz.html#indexBy,A,proc(V)	lptabz: indexBy[A, K, V, Z; z: static int](collection: A; index: proc (x: V): K): LPTabz[\n    K, V, Z, z]	
+inc	adix/lptabz.html#inc,LPTabz[K,V,Z,z],K,V	lptabz: inc[K, V, Z; z: static int](c: var LPTabz[K, V, Z, z]; key: K; amount: V = 1)	
+merge	adix/lptabz.html#merge,LPTabz[K,V,Z,z],LPTabz[K,V,Z,z]	lptabz: merge[K, V, Z; z: static int](c: var LPTabz[K, V, Z, z]; b: LPTabz[K, V, Z, z])	
+topByVal	adix/lptabz.html#topByVal.i,LPTabz[K,V,Z,z],int	lptabz: topByVal[K, V, Z; z: static int](c: LPTabz[K, V, Z, z]; n = 10; min = V.low): (\n    K, V)	
+mostCommon	adix/lptabz.html#mostCommon.i,openArray[K],int	lptabz: mostCommon[K](xs: openArray[K]; n = 10): (K, int)	
+initLPSetz	adix/lptabz.html#initLPSetz	lptabz: initLPSetz[K, Z; z: static int](initialSize = lpInitialSize; numer = lpNumer;\n                                denom = lpDenom; minFree = lpMinFree;\n                                growPow2 = lpGrowPow2; rehash = lpRehash;\n                                robinhood = lpRobinHood): LPSetz[K, Z, z]	
+initLPSet	adix/lptabz.html#initLPSet	lptabz: initLPSet[K](initialSize = lpInitialSize; numer = lpNumer; denom = lpDenom;\n             minFree = lpMinFree; growPow2 = lpGrowPow2; rehash = lpRehash;\n             robinhood = lpRobinHood): LPSet[K]	
+initLPTab	adix/lptabz.html#initLPTab	lptabz: initLPTab[K, V](initialSize = lpInitialSize; numer = lpNumer; denom = lpDenom;\n                minFree = lpMinFree; growPow2 = lpGrowPow2; rehash = lpRehash;\n                robinhood = lpRobinHood): LPTab[K, V]	

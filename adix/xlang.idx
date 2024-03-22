@@ -1,0 +1,6 @@
+cfor	adix/xlang.html#cfor.t,untyped,untyped,untyped,untyped	xlang: cfor(init, test, update, body: untyped)	
+`&amp;=`	adix/xlang.html#&=,T,U	xlang: `&amp;=`[T, U](a: var T; b: U)	
+`|=`	adix/xlang.html#|=,T,U	xlang: `|=`[T, U](a: var T; b: U)	
+`^=`	adix/xlang.html#^=,T,U	xlang: `^=`[T, U](a: var T; b: U)	
+`&lt;&lt;=`	adix/xlang.html#<<=,T,U	xlang: `&lt;&lt;=`[T, U](a: var T; b: U)	
+`&gt;&gt;=`	adix/xlang.html#>>=,T,U	xlang: `&gt;&gt;=`[T, U](a: var T; b: U)	

@@ -1,0 +1,19 @@
+Bist	adix/bist.html#Bist	bist: Bist	
+initBist	adix/bist.html#initBist,int	bist: initBist[T](len: int): Bist[T]	
+len	adix/bist.html#len,Bist[T]	bist: len[T](t: Bist[T]): int	
+space	adix/bist.html#space,Bist[T]	bist: space[T](t: Bist[T]): int	
+count	adix/bist.html#count,Bist[T]	bist: count[T](t: Bist[T]): int	
+`[]`	adix/bist.html#[],Bist[T],int	bist: `[]`[T](t: Bist[T]; i: int): T	
+`[]`	adix/bist.html#[],Bist[T],int_2	bist: `[]`[T](t: var Bist[T]; i: int): var T	
+`[]=`	adix/bist.html#[]=,Bist[T],int,T	bist: `[]=`[T](t: var Bist[T]; i: int; x: T)	
+inc	adix/bist.html#inc,Bist[T],SomeInteger,SomeInteger	bist: inc[T](t: var Bist[T]; i, d: SomeInteger)	
+cdf	adix/bist.html#cdf,Bist[T],int	bist: cdf[T](t: Bist[T]; i: int): T	
+pmf	adix/bist.html#pmf,Bist[T],int	bist: pmf[T](t: Bist[T]; i: int): T	
+fromCnts	adix/bist.html#fromCnts,Bist[T]	bist: fromCnts[T](t: var Bist[T])	
+toCnts	adix/bist.html#toCnts,Bist[T]	bist: toCnts[T](t: var Bist[T])	
+invCDF	adix/bist.html#invCDF,Bist[T],T,T	bist: invCDF[T](t: Bist[T]; s: T; s0: var T): int	
+invCDF	adix/bist.html#invCDF,Bist[T],T,T,T	bist: invCDF[T](t: Bist[T]; s: T; s0, s1: var T): int	
+min	adix/bist.html#min,Bist[T]	bist: min[T](t: Bist[T]): int	
+max	adix/bist.html#max,Bist[T]	bist: max[T](t: Bist[T]): int	
+quantile	adix/bist.html#quantile,Bist[T],float,int,int	bist: quantile[T](t: Bist[T]; q: float; iL, iH: var int): float	
+quantile	adix/bist.html#quantile,Bist[T],float	bist: quantile[T](t: Bist[T]; q: float): float	

@@ -1,0 +1,12 @@
+ceilPow2	adix/bitop.html#ceilPow2,int	bitop: ceilPow2(x: int): int	
+floorPow2	adix/bitop.html#floorPow2,int	bitop: floorPow2(x: int): int	
+lgPow2	adix/bitop.html#lgPow2,int	bitop: lgPow2(x: int): int	
+lgCeil	adix/bitop.html#lgCeil,int	bitop: lgCeil(x: int): int	
+lgFloor	adix/bitop.html#lgFloor,int	bitop: lgFloor(x: int): int	
+lg	adix/bitop.html#lg,int	bitop: lg(x: int): int	
+rotateLeftBits	adix/bitop.html#rotateLeftBits,uint64,int	bitop: rotateLeftBits(a: uint64; numBits: int): uint64	
+rotateRightBits	adix/bitop.html#rotateRightBits,uint64,int	bitop: rotateRightBits(a: uint64; numBits: int): uint64	
+reverseBitsByte	adix/bitop.html#reverseBitsByte,uint8	bitop: reverseBitsByte(x: uint8): uint8	
+reverseBits	adix/bitop.html#reverseBits,uint32	bitop: reverseBits(x: uint32): uint32	
+reverseBits	adix/bitop.html#reverseBits,uint64	bitop: reverseBits(x: uint64): uint64	
+isPow2	adix/bitop.html#isPow2,int	bitop: isPow2(x: int): bool	

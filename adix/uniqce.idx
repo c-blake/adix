@@ -1,0 +1,8 @@
+UniqCe	adix/uniqce.html#UniqCe	uniqce: UniqCe	
+initUniqCe	adix/uniqce.html#initUniqCe,int	uniqce: initUniqCe[F: SomeFloat](k = 1024): UniqCe[F]	
+push	adix/uniqce.html#push,UniqCe[F: SomeFloat],F	uniqce: push[F: SomeFloat](uc: var UniqCe[F]; h: F)	
+nUnique	adix/uniqce.html#nUnique,UniqCe[F: SomeFloat]	uniqce: nUnique[F: SomeFloat](uc: UniqCe[F]): float32	
+nUniqueErr	adix/uniqce.html#nUniqueErr,UniqCe[F: SomeFloat]	uniqce: nUniqueErr[F: SomeFloat](uc: UniqCe[F]): float32	
+jaccard	adix/uniqce.html#jaccard,UniqCe[F: SomeFloat],UniqCe[F: SomeFloat]	uniqce: jaccard[F: SomeFloat](a: UniqCe[F]; b: UniqCe[F]): float32	
+union	adix/uniqce.html#union,UniqCe[F: SomeFloat],UniqCe[F: SomeFloat]	uniqce: union[F: SomeFloat](a: var UniqCe[F]; b: UniqCe[F])	
+union	adix/uniqce.html#union,UniqCe[F: SomeFloat],UniqCe[F: SomeFloat]_2	uniqce: union[F: SomeFloat](a: UniqCe[F]; b: UniqCe[F]): UniqCe[F]	

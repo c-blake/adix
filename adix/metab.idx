@@ -1,0 +1,7 @@
+rightSz	adix/metab.html#rightSz,Natural	metab: rightSz(x: Natural): int	
+Tab	adix/metab.html#Tab	metab: Tab	
+initTab	adix/metab.html#initTab	metab: initTab[K, V](sz = lpInitialSize; numer = lpNumer; denom = lpDenom;\n              minFree = lpMinFree; growPow2 = lpGrowPow2; rehash = rDefault;\n              robinHood = rhDefault): Tab[K, V]	
+toTab	adix/metab.html#toTab,openArray[]	metab: toTab[K, V](pairs: openArray[(K, V)]; dups = false): Tab[K, V]	
+Set	adix/metab.html#Set	metab: Set	
+initSet	adix/metab.html#initSet	metab: initSet[K](sz = lpInitialSize; numer = lpNumer; denom = lpDenom;\n           minFree = lpMinFree; growPow2 = lpGrowPow2; rehash = rDefault;\n           robinHood = rhDefault): Set[K]	
+toSet	adix/metab.html#toSet,openArray[K]	metab: toSet[K](keys: openArray[K]; dups = false): Set[K]	

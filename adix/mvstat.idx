@@ -1,0 +1,50 @@
+OrderStats	adix/mvstat.html#OrderStats	Option.OrderStats	
+Option	adix/mvstat.html#Option	mvstat: Option	
+MovingStat	adix/mvstat.html#MovingStat	mvstat: MovingStat	
+BasicStats	adix/mvstat.html#BasicStats	mvstat: BasicStats	
+init	adix/mvstat.html#init,MovingStat[F: SomeFloat,C: SomeInteger],float,float,int,set[Option]	mvstat: init[F: SomeFloat; C: SomeInteger](s: var MovingStat[F, C]; a = 1e-16;\n                                   b = 1e+20; n = 8300;\n                                   options: set[Option] = {})	
+initMovingStat	adix/mvstat.html#initMovingStat,float,float,int,set[Option]	mvstat: initMovingStat[F: SomeFloat; C: SomeInteger](a = 1e-16; b = 1e+20; n = 8300;\n    options: set[Option] = {}): MovingStat[F, C]	
+nInv	adix/mvstat.html#nInv,MovingStat[F: SomeFloat,C: SomeInteger]	mvstat: nInv[F: SomeFloat; C: SomeInteger](s: var MovingStat[F, C]): F	
+nInv	adix/mvstat.html#nInv,MovingStat[F: SomeFloat,C: SomeInteger]_2	mvstat: nInv[F: SomeFloat; C: SomeInteger](s: MovingStat[F, C]): F	
+clear	adix/mvstat.html#clear,MovingStat[F: SomeFloat,C: SomeInteger]	mvstat: clear[F: SomeFloat; C: SomeInteger](s: var MovingStat[F, C])	
+push	adix/mvstat.html#push,MovingStat[F: SomeFloat,C: SomeInteger],SomeNumber	mvstat: push[F: SomeFloat; C: SomeInteger](s: var MovingStat[F, C]; x: SomeNumber)	
+pop	adix/mvstat.html#pop,MovingStat[F: SomeFloat,C: SomeInteger],SomeNumber	mvstat: pop[F: SomeFloat; C: SomeInteger](s: var MovingStat[F, C]; x: SomeNumber)	
+quantile	adix/mvstat.html#quantile,MovingStat[F: SomeFloat,C: SomeInteger],float	mvstat: quantile[F: SomeFloat; C: SomeInteger](s: MovingStat[F, C]; q: float): float	
+cdf	adix/mvstat.html#cdf,MovingStat[F: SomeFloat,C: SomeInteger],float	mvstat: cdf[F: SomeFloat; C: SomeInteger](s: MovingStat[F, C]; x: float): float	
+sum	adix/mvstat.html#sum,MovingStat[F: SomeFloat,C: SomeInteger]	mvstat: sum[F: SomeFloat; C: SomeInteger](s: MovingStat[F, C]): float	
+mean	adix/mvstat.html#mean,MovingStat[F: SomeFloat,C: SomeInteger]	mvstat: mean[F: SomeFloat; C: SomeInteger](s: MovingStat[F, C]): float	
+mean	adix/mvstat.html#mean,MovingStat[F: SomeFloat,C: SomeInteger]_2	mvstat: mean[F: SomeFloat; C: SomeInteger](s: var MovingStat[F, C]): float	
+variance	adix/mvstat.html#variance,MovingStat[F: SomeFloat,C: SomeInteger]	mvstat: variance[F: SomeFloat; C: SomeInteger](s: MovingStat[F, C]): float	
+variance	adix/mvstat.html#variance,MovingStat[F: SomeFloat,C: SomeInteger]_2	mvstat: variance[F: SomeFloat; C: SomeInteger](s: var MovingStat[F, C]): float	
+standardDeviation	adix/mvstat.html#standardDeviation,MovingStat[F: SomeFloat,C: SomeInteger]	mvstat: standardDeviation[F: SomeFloat; C: SomeInteger](s: MovingStat[F, C]): float	
+standardDeviation	adix/mvstat.html#standardDeviation,MovingStat[F: SomeFloat,C: SomeInteger]_2	mvstat: standardDeviation[F: SomeFloat; C: SomeInteger](s: var MovingStat[F, C]): float	
+stderror	adix/mvstat.html#stderror,MovingStat[F: SomeFloat,C: SomeInteger]	mvstat: stderror[F: SomeFloat; C: SomeInteger](s: MovingStat[F, C]): float	
+stderror	adix/mvstat.html#stderror,MovingStat[F: SomeFloat,C: SomeInteger]_2	mvstat: stderror[F: SomeFloat; C: SomeInteger](s: var MovingStat[F, C]): float	
+skewness	adix/mvstat.html#skewness,MovingStat[F: SomeFloat,C: SomeInteger]	mvstat: skewness[F: SomeFloat; C: SomeInteger](s: MovingStat[F, C]): float	
+skewness	adix/mvstat.html#skewness,MovingStat[F: SomeFloat,C: SomeInteger]_2	mvstat: skewness[F: SomeFloat; C: SomeInteger](s: var MovingStat[F, C]): float	
+kurtosis	adix/mvstat.html#kurtosis,MovingStat[F: SomeFloat,C: SomeInteger]	mvstat: kurtosis[F: SomeFloat; C: SomeInteger](s: MovingStat[F, C]): float	
+kurtosis	adix/mvstat.html#kurtosis,MovingStat[F: SomeFloat,C: SomeInteger]_2	mvstat: kurtosis[F: SomeFloat; C: SomeInteger](s: var MovingStat[F, C]): float	
+`$`	adix/mvstat.html#$,MovingStat[F: SomeFloat,C: SomeInteger]	mvstat: `$`[F: SomeFloat; C: SomeInteger](s: MovingStat[F, C]): string	
+add	adix/mvstat.html#add,BasicStats[F],BasicStats[F]	mvstat: add[F](a: var BasicStats[F]; b: BasicStats[F])	
+`+=`	adix/mvstat.html#+=,BasicStats[F],BasicStats[F]	mvstat: `+=`[F](a: var BasicStats[F]; b: BasicStats[F])	
+`+`	adix/mvstat.html#+,BasicStats[F],BasicStats[F]	mvstat: `+`[F](a, b: BasicStats[F]): BasicStats[F]	
+mean	adix/mvstat.html#mean,openArray[T]	mvstat: mean[T: SomeNumber](xs: openArray[T]): float	
+variance	adix/mvstat.html#variance,openArray[T],int	mvstat: variance[T: SomeNumber](xs: openArray[T]; accum = 32): float	
+range	adix/mvstat.html#range,openArray[F]	mvstat: range[F: SomeFloat](xs: openArray[F]): (F, F)	
+basicStats	adix/mvstat.html#basicStats,openArray[F]	mvstat: basicStats[F: SomeFloat](xs: openArray[F]): BasicStats[F]	
+standardDeviation	adix/mvstat.html#standardDeviation,openArray[T],int	mvstat: standardDeviation[T: SomeNumber](xs: openArray[T]; accum = 32): float	
+stderror	adix/mvstat.html#stderror,openArray[T],int	mvstat: stderror[T: SomeNumber](xs: openArray[T]; accum = 32): float	
+skewness	adix/mvstat.html#skewness,openArray[T],int	mvstat: skewness[T: SomeNumber](xs: openArray[T]; accum = 32): float	
+kurtosis	adix/mvstat.html#kurtosis,openArray[T],int	mvstat: kurtosis[T: SomeNumber](xs: openArray[T]; accum = 32): float	
+varianceS	adix/mvstat.html#varianceS	mvstat: varianceS[F: SomeFloat; C: SomeInteger](s`gensym21: MovingStat[F, C]): float	
+varianceS	adix/mvstat.html#varianceS_2	mvstat: varianceS[F: SomeFloat; C: SomeInteger](s`gensym21: var MovingStat[F, C]): float	
+varianceS	adix/mvstat.html#varianceS,,int	mvstat: varianceS[T: SomeNumber](xs`gensym21: openArray[T]; accum`gensym21 = 32): float	
+skewnessS	adix/mvstat.html#skewnessS	mvstat: skewnessS[F: SomeFloat; C: SomeInteger](s`gensym28: MovingStat[F, C]): float	
+skewnessS	adix/mvstat.html#skewnessS_2	mvstat: skewnessS[F: SomeFloat; C: SomeInteger](s`gensym28: var MovingStat[F, C]): float	
+skewnessS	adix/mvstat.html#skewnessS,,int	mvstat: skewnessS[T: SomeNumber](xs`gensym28: openArray[T]; accum`gensym28 = 32): float	
+kurtosisS	adix/mvstat.html#kurtosisS	mvstat: kurtosisS[F: SomeFloat; C: SomeInteger](s`gensym35: MovingStat[F, C]): float	
+kurtosisS	adix/mvstat.html#kurtosisS_2	mvstat: kurtosisS[F: SomeFloat; C: SomeInteger](s`gensym35: var MovingStat[F, C]): float	
+kurtosisS	adix/mvstat.html#kurtosisS,,int	mvstat: kurtosisS[T: SomeNumber](xs`gensym35: openArray[T]; accum`gensym35 = 32): float	
+standardDeviationS	adix/mvstat.html#standardDeviationS,MovingStat[F: SomeFloat,C: SomeInteger]	mvstat: standardDeviationS[F: SomeFloat; C: SomeInteger](s: MovingStat[F, C]): float	
+standardDeviationS	adix/mvstat.html#standardDeviationS,MovingStat[F: SomeFloat,C: SomeInteger]_2	mvstat: standardDeviationS[F: SomeFloat; C: SomeInteger](s: var MovingStat[F, C]): float	
+standardDeviationS	adix/mvstat.html#standardDeviationS,openArray[T],int	mvstat: standardDeviationS[T: SomeNumber](xs: openArray[T]; accum = 32): float	

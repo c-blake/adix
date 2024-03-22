@@ -1,0 +1,87 @@
+DITab	adix/ditab.html#DITab	ditab: DITab	
+DISet	adix/ditab.html#DISet	ditab: DISet	
+len	adix/ditab.html#len,DITab[K,V]	ditab: len[K, V](t: DITab[K, V]): int	
+depths	adix/ditab.html#depths,DITab[K,V]	ditab: depths[K, V](t: DITab[K, V]): seq[int]	
+diInitialSize	adix/ditab.html#diInitialSize	ditab: diInitialSize	
+diNumer	adix/ditab.html#diNumer	ditab: diNumer	
+diDenom	adix/ditab.html#diDenom	ditab: diDenom	
+diMinFree	adix/ditab.html#diMinFree	ditab: diMinFree	
+diGrowPow2	adix/ditab.html#diGrowPow2	ditab: diGrowPow2	
+diRehash	adix/ditab.html#diRehash	ditab: diRehash	
+diRobinHood	adix/ditab.html#diRobinHood	ditab: diRobinHood	
+init	adix/ditab.html#init,DITab[K,V],int,int,int,int,int	ditab: init[K, V](t: var DITab[K, V]; initialSize = 0; numer = 0; denom = 0;\n           minFree = 0; growPow2 = 0; rehash = false; robinhood = false)	
+initDITab	adix/ditab.html#initDITab,int,int,int,int,int	ditab: initDITab[K, V](initialSize = 0; numer = 0; denom = 0; minFree = 0;\n                growPow2 = 0; rehash = false; robinhood = false): DITab[K, V]	
+setPolicy	adix/ditab.html#setPolicy,DITab[K,V],int,int,int,int,int,int	ditab: setPolicy[K, V](t: var DITab[K, V]; numer = 0; denom = 0; minFree = 0;\n                growPow2 = 0; rehash = 0; robinhood = 0)	
+rightSize	adix/ditab.html#rightSize,int,int,int,int	ditab: rightSize(count: int; numer = 0; denom = 0; minFree = 0): int	
+getCap	adix/ditab.html#getCap,DITab[K,V]	ditab: getCap[K, V](t: var DITab[K, V]): int	
+setCap	adix/ditab.html#setCap,DITab[K,V],int	ditab: setCap[K, V](t: var DITab[K, V]; newSize = -1)	
+contains	adix/ditab.html#contains,DITab[K,V],K	ditab: contains[K, V](t: DITab[K, V]; key: K): bool	
+containsOrIncl	adix/ditab.html#containsOrIncl,DITab[K,void],K	ditab: containsOrIncl[K](t: var DITab[K, void]; key: K): bool	
+setOrIncl	adix/ditab.html#setOrIncl,DITab[K,void],K	ditab: setOrIncl[K](t: var DITab[K, void]; key: K): bool	
+mgetOrPut	adix/ditab.html#mgetOrPut,DITab[K,V],K,V	ditab: mgetOrPut[K, V](t: var DITab[K, V]; key: K; val: V): var V	
+mgetOrPut	adix/ditab.html#mgetOrPut,DITab[K,V],K,V,bool	ditab: mgetOrPut[K, V](t: var DITab[K, V]; key: K; val: V; had: var bool): var V	
+editOrInit	adix/ditab.html#editOrInit.t,DITab[K,V],K,untyped,untyped,untyped	ditab: editOrInit[K, V](t: var DITab[K, V]; key: K; v, body1, body2: untyped)	
+missingOrExcl	adix/ditab.html#missingOrExcl,DITab[K,V],K	ditab: missingOrExcl[K, V](t: var DITab[K, V]; key: K): bool	
+take	adix/ditab.html#take,DITab[K,void],K	ditab: take[K](t: var DITab[K, void]; key: var K): bool	
+take	adix/ditab.html#take,DITab[K: not void,V: not void],K,V	ditab: take[K, V: not void](t: var DITab[K, V]; key: K; val: var V): bool	
+pop	adix/ditab.html#pop,DITab[K,void]	ditab: pop[K](t: var DITab[K, void]): K	
+pop	adix/ditab.html#pop,DITab[K: not void,V: not void]	ditab: pop[K, V: not void](t: var DITab[K, V]): (K, V)	
+clear	adix/ditab.html#clear,DITab[K,V]	ditab: clear[K, V](t: var DITab[K, V])	
+items	adix/ditab.html#items.i,DITab[K,void]	ditab: items[K](t: DITab[K, void]): K	
+mitems	adix/ditab.html#mitems.i,DITab[K,void]	ditab: mitems[K](t: var DITab[K, void]): var K	
+pairs	adix/ditab.html#pairs.i,DITab[K,void]	ditab: pairs[K](t: DITab[K, void]): (int, K)	
+pairs	adix/ditab.html#pairs.i,DITab[K: not void,V: not void]	ditab: pairs[K, V: not void](t: DITab[K, V]): (K, V)	
+mpairs	adix/ditab.html#mpairs.i,DITab[K: not void,V: not void]	ditab: mpairs[K, V: not void](t: DITab[K, V]): (K, var V)	
+hcodes	adix/ditab.html#hcodes.i,DITab[K,V]	ditab: hcodes[K, V](t: DITab[K, V]): (int, Hash)	
+debugDump	adix/ditab.html#debugDump,DITab[K,V],string	ditab: debugDump[K, V](t: DITab[K, V]; label = &quot;&quot;)	
+keys	adix/ditab.html#keys.i,DITab[K,V]	ditab: keys[K, V](t: DITab[K, V]): K	
+values	adix/ditab.html#values.i,DITab[K,V]	ditab: values[K, V](t: DITab[K, V]): V	
+mvalues	adix/ditab.html#mvalues.i,DITab[K,V]	ditab: mvalues[K, V](t: var DITab[K, V]): var V	
+pop	adix/ditab.html#pop,DITab[K,void],K	ditab: pop[K](s: var DITab[K, void]; key: var K): bool	
+incl	adix/ditab.html#incl,DITab[K,void],K	ditab: incl[K](s: var DITab[K, void]; elt: K)	
+excl	adix/ditab.html#excl,DITab[K,void],K	ditab: excl[K](s: var DITab[K, void]; elt: K)	
+incl	adix/ditab.html#incl,DITab[K,void],DITab[K,void]	ditab: incl[K](s: var DITab[K, void]; other: DITab[K, void])	
+excl	adix/ditab.html#excl,DITab[K,void],DITab[K,void]	ditab: excl[K](s: var DITab[K, void]; other: DITab[K, void])	
+card	adix/ditab.html#card,DITab[K,void]	ditab: card[K](s: DITab[K, void]): int	
+union	adix/ditab.html#union,DITab[K,void],DITab[K,void]	ditab: union[K](s1, s2: DITab[K, void]): DITab[K, void]	
+intersection	adix/ditab.html#intersection,DITab[K,void],DITab[K,void]	ditab: intersection[K](s1, s2: DITab[K, void]): DITab[K, void]	
+difference	adix/ditab.html#difference,DITab[K,void],DITab[K,void]	ditab: difference[K](s1, s2: DITab[K, void]): DITab[K, void]	
+symmetricDifference	adix/ditab.html#symmetricDifference,DITab[K,void],DITab[K,void]	ditab: symmetricDifference[K](s1, s2: DITab[K, void]): DITab[K, void]	
+`+`	adix/ditab.html#+,DITab[K,void],DITab[K,void]	ditab: `+`[K](s1, s2: DITab[K, void]): DITab[K, void]	
+`*`	adix/ditab.html#*,DITab[K,void],DITab[K,void]	ditab: `*`[K](s1, s2: DITab[K, void]): DITab[K, void]	
+`-`	adix/ditab.html#-,DITab[K,void],DITab[K,void]	ditab: `-`[K](s1, s2: DITab[K, void]): DITab[K, void]	
+`-+-`	adix/ditab.html#-+-,DITab[K,void],DITab[K,void]	ditab: `-+-`[K](s1, s2: DITab[K, void]): DITab[K, void]	
+disjoint	adix/ditab.html#disjoint,DITab[K,void],DITab[K,void]	ditab: disjoint[K](s1, s2: DITab[K, void]): bool	
+`&lt;=`	adix/ditab.html#<=,DITab[K,void],DITab[K,void]	ditab: `&lt;=`[K](s, t: DITab[K, void]): bool	
+`&lt;`	adix/ditab.html#<,DITab[K,void],DITab[K,void]	ditab: `&lt;`[K](s, t: DITab[K, void]): bool	
+`==`	adix/ditab.html#==,DITab[K,void],DITab[K,void]	ditab: `==`[K](s, t: DITab[K, void]): bool	
+map	adix/ditab.html#map,DITab[K,void],proc(K)	ditab: map[K, A](data: DITab[K, void]; op: proc (x: K): A {.closure.}): DITab[A, void]	
+toDITab	adix/ditab.html#toDITab,openArray[K]	ditab: toDITab[K](keys: openArray[K]; dups = false): DITab[K, void]	
+`$`	adix/ditab.html#$,DITab[K,void]	ditab: `$`[K](s: DITab[K, void]): string	
+hash	adix/ditab.html#hash,DITab[K,void]	ditab: hash[K](s: DITab[K, void]): Hash	
+depthStats	adix/ditab.html#depthStats,DITab[K,V]	ditab: depthStats[K, V](s: DITab[K, V]): tuple[m1, m2: float, mx: int]	
+toDITab	adix/ditab.html#toDITab,openArray[]	ditab: toDITab[K, V: not void](pairs: openArray[(K, V)]; dups = false): DITab[K, V]	
+`$`	adix/ditab.html#$,DITab[K: not void,V: not void]	ditab: `$`[K, V: not void](t: DITab[K, V]): string	
+pop	adix/ditab.html#pop,DITab[K: not void,V: not void],K,V	ditab: pop[K, V: not void](t: var DITab[K, V]; key: K; val: var V): bool	
+withValue	adix/ditab.html#withValue.t,DITab[K,V],K,untyped,untyped	ditab: withValue[K, V](t: var DITab[K, V]; key: K; value, body: untyped)	
+withValue	adix/ditab.html#withValue.t,DITab[K,V],K,untyped,untyped,untyped	ditab: withValue[K, V](t: var DITab[K, V]; key: K; value, body1, body2: untyped)	
+`[]`	adix/ditab.html#[],DITab[K,V],K	ditab: `[]`[K, V](t: DITab[K, V]; key: K): V	
+`[]`	adix/ditab.html#[],DITab[K,V],K_2	ditab: `[]`[K, V](t: var DITab[K, V]; key: K): var V	
+`[]=`	adix/ditab.html#[]=,DITab[K,V],K,V	ditab: `[]=`[K, V](t: var DITab[K, V]; key: K; val: V)	
+`{}`	adix/ditab.html#{},DITab[K,V],K	ditab: `{}`[K, V](t: DITab[K, V]; key: K): V	
+`{}`	adix/ditab.html#{},DITab[K,V],K_2	ditab: `{}`[K, V](t: var DITab[K, V]; key: K): var V	
+`{}=`	adix/ditab.html#{}=,DITab[K,V],K,V	ditab: `{}=`[K, V](t: var DITab[K, V]; key: K; val: V)	
+hasKey	adix/ditab.html#hasKey,DITab[K,V],K	ditab: hasKey[K, V](t: DITab[K, V]; key: K): bool	
+hasKeyOrPut	adix/ditab.html#hasKeyOrPut,DITab[K,V],K,V	ditab: hasKeyOrPut[K, V](t: var DITab[K, V]; key: K; val: V): bool	
+getOrDefault	adix/ditab.html#getOrDefault,DITab[K,V],K,typeof(default(V))	ditab: getOrDefault[K, V](t: DITab[K, V]; key: K; default = default(V)): V	
+del	adix/ditab.html#del,DITab[K,V],K	ditab: del[K, V](t: var DITab[K, V]; key: K)	
+`==`	adix/ditab.html#==,DITab[K,V],DITab[K,V]	ditab: `==`[K, V](x, y: DITab[K, V]): bool	
+indexBy	adix/ditab.html#indexBy,A,proc(V)	ditab: indexBy[A, K, V](collection: A; index: proc (x: V): K): DITab[K, V]	
+editKey	adix/ditab.html#editKey,DITab[K,V],K,K	ditab: editKey[K, V](t: var DITab[K, V]; old, new: K)	
+nthKey	adix/ditab.html#nthKey,DITab[K,void],int	ditab: nthKey[K](t: DITab[K, void]; n: int): K	
+nthPair	adix/ditab.html#nthPair,DITab[K: not void,V: not void],int	ditab: nthPair[K, V: not void](t: DITab[K, V]; n: int): (K, V)	
+nthPair	adix/ditab.html#nthPair,DITab[K: not void,V: not void],int_2	ditab: nthPair[K, V: not void](t: var DITab[K, V]; n: int): (K, ptr V)	
+inc	adix/ditab.html#inc,DITab[K: SomeInteger,V: SomeInteger],K,SomeInteger	ditab: inc[K, V: SomeInteger](t: var DITab[K, V]; key: K; amount: SomeInteger = 1)	
+merge	adix/ditab.html#merge,DITab[K: SomeInteger,V: SomeInteger],DITab[K: SomeInteger,V: SomeInteger]	ditab: merge[K, V: SomeInteger](c: var DITab[K, V]; b: DITab[K, V])	
+topByVal	adix/ditab.html#topByVal.i,DITab[K,V],int	ditab: topByVal[K, V](c: DITab[K, V]; n = 10; min = V.low): (K, V)	
+initDISet	adix/ditab.html#initDISet,int	ditab: initDISet[K](initialSize = 0; numer = diNumer; denom = diDenom;\n             minFree = diMinFree; growPow2 = diGrowPow2; rehash = diRehash;\n             robinhood = diRobinHood): DISet[K]	

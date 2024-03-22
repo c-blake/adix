@@ -1,0 +1,15 @@
+scLog	adix/tdigest.html#scLog	Scale.scLog	
+Scale	adix/tdigest.html#Scale	tdigest: Scale	
+Group	adix/tdigest.html#Group	tdigest: Group	
+DigesT	adix/tdigest.html#DigesT	tdigest: DigesT	
+init	adix/tdigest.html#init,DigesT,float,int,int	tdigest: init(s: var DigesT; cpr = 100.0; scale = scLog; mainLen = 0; nBuf = 0)	
+initDigesT	adix/tdigest.html#initDigesT,float,int,int	tdigest: initDigesT(cpr = 100.0; scale = scLog; mainLen = 0; nBuf = 0): DigesT	
+space	adix/tdigest.html#space,DigesT	tdigest: space(s: DigesT): int	
+weight	adix/tdigest.html#weight,DigesT	tdigest: weight(s: DigesT): int	
+mergeNew	adix/tdigest.html#mergeNew,DigesT,float	tdigest: mergeNew(s: var DigesT; force = false; cpr = -1.0)	
+add	adix/tdigest.html#add,DigesT,float,int	tdigest: add(s: var DigesT; x: float; w = 1)	
+compress	adix/tdigest.html#compress,DigesT	tdigest: compress(s: var DigesT)	
+groups	adix/tdigest.html#groups.i,DigesT	tdigest: groups(s: DigesT): Group	
+add	adix/tdigest.html#add,DigesT,openArray[DigesT]	tdigest: add(s: var DigesT; others: var openArray[DigesT])	
+quantile	adix/tdigest.html#quantile,DigesT,float	tdigest: quantile(s: var DigesT; q: float): float	
+cdf	adix/tdigest.html#cdf,DigesT,float	tdigest: cdf(s: var DigesT; x: float): float	

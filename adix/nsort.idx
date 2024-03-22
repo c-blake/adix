@@ -1,0 +1,14 @@
+xfNone	adix/nsort.html#xfNone	XForm.xfNone	
+xfRev	adix/nsort.html#xfRev	XForm.xfRev	
+xfSgn	adix/nsort.html#xfSgn	XForm.xfSgn	
+xfSgnRev	adix/nsort.html#xfSgnRev	XForm.xfSgnRev	
+xfFlt	adix/nsort.html#xfFlt	XForm.xfFlt	
+xfFltRev	adix/nsort.html#xfFltRev	XForm.xfFltRev	
+XForm	adix/nsort.html#XForm	nsort: XForm	
+verb	adix/nsort.html#verb	nsort: verb	
+nsort	adix/nsort.html#nsort,pointer,pointer,int,int,uint8,XForm,int	nsort: nsort(obs, tmp: pointer; n, sz: int; off: uint8; xf: XForm; b0 = 0): pointer	
+nsort	adix/nsort.html#nsort,pointer,pointer,int,int,W,XForm,int	nsort: nsort[W: Ui248](obs, tmp: pointer; n, sz: int; off: W; xf: XForm; b0 = 0): pointer	
+nsort	adix/nsort.html#nsort,openArray[O],W,int	nsort: nsort[O, W](obs: var openArray[O]; off: W; xf = xfNone; b0 = 0)	
+nsortByRaw	adix/nsort.html#nsortByRaw.t,untyped,untyped,int	nsort: nsortByRaw(x, field: untyped; b0 = 0): untyped	
+nsortByTag	adix/nsort.html#nsortByTag.t,untyped,untyped,int	nsort: nsortByTag(x, field: untyped; b0 = 0): untyped	
+nsortBy	adix/nsort.html#nsortBy.t,untyped,untyped,int	nsort: nsortBy(x, field: untyped; b0 = 0): untyped	
