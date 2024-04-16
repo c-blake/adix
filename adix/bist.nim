@@ -1,6 +1,6 @@
 ## Binary Indexed Sum Tree (BIST); Invented by P.Fenwick in 1994. { Fenwick
 ## proposed "BIT" but that A) collides with many uses, B) takes partial sums as
-## implied, while the trick applies more broadly (e.g.products), and C) does not
+## implied, but explicit is better (though products could work), and C) does not
 ## rhyme with "dist" (for distribution, which is what this is mostly about). }
 ## While the Internet has many tutorials, to my knowledge, no one (yet) collects
 ## these algorithms all in one place.  Fenwick1994 itself messed up on what we
