@@ -26,20 +26,21 @@ type Bist*[T: SomeInteger] = object ## A razor thin wrapper around `seq[T]`
   data: seq[T]        # The Fenwick array/BIST; Relevant seq ops pass through
   tot: int            # total counted population, via history of inc(i, d)
 
-proc initBist*[T](len: int): Bist[T] {.inline.} =
-  result.data = newSeq[T](len)
+proc initBist*[T](len: int): Bist[T] {.inline.} = result.data = newSeq[T](len)
 proc len*[T](t: Bist[T]): int {.inline.} = t.data.len
 func space*[T](t: Bist[T]): int = t.sizeof + t.data.len*T.sizeof
 proc count*[T](t: Bist[T]): int {.inline.} = t.tot
 proc `[]`*[T](t: Bist[T], i: int): T {.inline.} = t.data[i]
 proc `[]`*[T](t: var Bist[T], i: int): var T {.inline.} = t.data[i]
 proc `[]=`*[T](t: var Bist[T], i: int, x: T) {.inline.} = t.data[i] = x
+proc clear*[T](t: var Bist[T]) {.inline.} =
+  t.tot = 0; zeroMem t.data[0].addr, t.len*T.sizeof
 
 proc inc*[T](t: var Bist[T]; i, d: SomeInteger) {.inline.} =
   ## Adjust for count update; Eg. inc(T,i,-1) decs count@i; Tm ~ 1/2..3/4 lg n
   t.tot += int(d)                                 #Likely T unsigned, d signed
-  cfor (var i = i), i < t.len, i |= i + 1:        #Go down update tree
-    t[i] = T(int(t[i]) + d)                       #Likely T unsigned, d signed
+  cfor (var i = i.int), i < t.len, i |= i + 1:    #Go down update tree
+    t[i] = T(int(t[i]) + d.int)                   #Likely T unsigned, d signed
 
 proc cdf*[T](t: Bist[T], i: int): T {.inline.} =
   ## Inclusive `sum(pmf[0..i])`, (rank,EDF,prefix sum,scan,..); Tm~1 bits in `i`
