@@ -116,7 +116,7 @@ proc `$`*[C](s: LgHisto[C], nonZero=true): string =
   result.add "bins,cnts:\n"
   var tot = 0; var n = 0
   for (a, b, c) in s.bins:
-    tot += int(c)
+    let c = int(c); tot += c
     if nonZero:
       if c != 0: result.add "  [ " & $a & " , " & $b & " ): " & $c & "\n"; inc n
     else       : result.add "  [ " & $a & " , " & $b & " ): " & $c & "\n"
