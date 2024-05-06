@@ -1,5 +1,6 @@
 when not declared(stdin): import std/[syncio, formatfloat]
-import std/[hashes,times,sugar,algorithm], cligen,cligen/[mslice,osUt],adix/oats
+import std/[hashes, times, sugar, algorithm, strutils],
+       cligen, cligen/[mslice, strUt, osUt], adix/oats
 
 const bLen {.intdefine.} = 16   # <16K long;  RT params better but more work
 const bOff {.intdefine.} = 32   # <4G UNIQUE line data
@@ -41,8 +42,8 @@ proc incFailed(h: var Counts, ms: MSlice): bool =
     h.dat[i].len = ms.len.uint32# Init
     h.dat[i].cnt = 1u32
 
-proc lfreq(n=10, count=false,Norm=false, size=9999,dSize=81920,
-           recTerm='\n',RecTerm="\n", tm=false) =
+proc lfreq(n=10, count=false, size=9999, dSize=81920, recTerm='\n',
+           format="@c @k", RecTerm="\n", tm=false) =
   ## Histogram `stdin` lines (read w/non-memory mapped IO to be pipe friendly).
   ## Limits: <4 GiB unique data; <16 KiB lines; <4 GiCount.
   let t0 = if tm: epochTime() else: 0.0
@@ -55,8 +56,16 @@ proc lfreq(n=10, count=false,Norm=false, size=9999,dSize=81920,
       inc nTot                  # Always bump `nTotal`
       if h.incFailed(ms): break IO
   if count: outu h.len," unique ",nTot," total ",s.len," B\n"
+  let nInv = 1.0/nTot.float; var cs, fs: string # Setup for..
+  let prs = format.tmplParsed('@')              #..nice output
   template output =
-    if Norm: outu c.float/nTot.float," ",k,RecTerm else: outu c," ",k,RecTerm
+    for (id, arg, call) in prs:
+      if id.idIsLiteral: outu MSlice(mem: format[arg.a].addr, len: arg.len)
+      elif format[id.a] == 'c': cs.setLen 0; cs.addInt c; outu cs
+      elif format[id.a] == 'k': outu k
+      elif format[id.a] == 'f': fs.setLen 0; fs.fcvt c.float*nInv, 9; outu fs
+      else: outu MSlice(mem: format[call.a].addr, len: call.len)
+    outu RecTerm
   if n == 0: (for (k, c) in pairs(h): output())
   elif n > 0: (for (k, c) in h.topByVal(n): output())
   elif n < -1:  # -1 is same as +1; Hijack value to mean no output()
@@ -67,9 +76,9 @@ proc lfreq(n=10, count=false,Norm=false, size=9999,dSize=81920,
 when isMainModule: dispatch lfreq, help={
   "n"    : "only emit most frequent `n` lines(!=0=>sorted)",
   "count": "only emit counts: unique & grand total",
-  "Norm" : "normalize frequencies by dividing by grand tot",
   "size" : "pre-size hash table for size unique entries",
   "dSize": "pre-size str data area to this many bytes",
   "recTerm": "input record terminator",
   "RecTerm": "output record terminator",
+  "format" : "output format: $k=key $c=count $f=fraction",
   "tm"   : "emit wall time of counting to stderr & quit"}
