@@ -543,10 +543,10 @@ proc setPolicy*[K,V,Z;z:static int](t: var LPTabz[K,V,Z,z]; numer=lpNumer,
     denom=lpDenom, minFree=lpMinFree, growPow2=lpGrowPow2, rehash=lpRehash,
     robinhood=lpRobinHood) {.inline.} =
   ## Must call `setCap` after changing certain params here (e.g. `rehash`).
-  t.numer    = numer
-  t.denom    = denom
+  t.numer    = uint8(numer)
+  t.denom    = uint8(denom)
   t.minFree  = max(1, minFree).uint8
-  t.growPow2 = growPow2
+  t.growPow2 = uint8(growPow2)
   t.rehash   = rehash
   t.robin    = robinhood
 
