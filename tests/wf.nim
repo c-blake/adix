@@ -31,7 +31,8 @@ proc len(w: Word): uint32 = uint32(w) and wm
 proc mem(w: Word): pointer = mf.mem +! int(w.uint32 shr wb)
 
 # Case insens hash/==|Local stack allocator | may be faster than MAP_PRIVATE.
-proc hash(w: Word): Hash {.inline.} = hashData(w.mem, w.len.int)
+proc hash(w: Word): Hash {.inline.} =
+  hash toOpenArray[byte](cast[ptr UncheckedArray[byte]](w.mem), 0, w.len.int-1)
 
 proc `==`(a, b: Word): bool {.inline.} =
   a.len == b.len and cmemcmp(a.mem, b.mem, a.len) == 0
