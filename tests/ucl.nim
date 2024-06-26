@@ -1,8 +1,8 @@
 when not declared(stdin): import std/[syncio, formatfloat]
 import std/[hashes, times], cligen, cligen/[mslice, osUt], adix/oats
 
-const bLen {.intdefine.} = 10   # <1024 long; RT limits nicer but harder
-const bOff {.intdefine.} = 22   # <4MiB UNIQUE line data
+const bLen {.intdefine.} =  8   # <256 long; RT limits nicer but harder
+const bOff {.intdefine.} = 24   # <16MiB UNIQUE line data
 type
   Count {.packed.} = object     # Dense-ish hash Count type
     when defined hashCache: hc: uint32 # 4B|8B per cell
