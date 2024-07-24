@@ -8,7 +8,7 @@ template isSaved(t): untyped =      # S)aved Hashes
   compiles(block:(var vt=t; hash(vt, 0, 0.Hash))) and # Set hash of slot `i`
   compiles(hash(t, 0).Hash)                           # Get hash of slot `i`
 
-#XXX Un-commenting any of eq, key(var Self), hash(Q) blocks concept match
+#XXX Un-commenting any of `hash(Q)`, `eq`, `keyR`, `key` blocks concept match
 type    # More adaptable than Nim std/tables which are VROats in present terms
   Oat*[K,Q] = concept       # Lowest Common Denominator Open-Addressed Table
     proc cap(t: Self): int               # Query alloc num. of slots
@@ -19,8 +19,8 @@ type    # More adaptable than Nim std/tables which are VROats in present terms
 #   proc key(t: var Self, i: int, k: K)  # Set key for slot `i`
     proc key(t: Self, i: int): K         # Get key for slot `i`
     proc used(t: Self, i: int): bool     # Test if slot `i` is used | free
-#   proc inUse(c: var Self, n: int)      # Set number of slots in use
-#   proc inUse(c: Self): int             # Get number of slots in use
+    proc inUse(c: var Self, n: int)      # Set number of slots in use
+    proc inUse(c:     Self): int         # Get number of slots in use
 
   VOat*[K,Q,V] = concept    # Valued-Oat; Needs val; Adds []/{}/.values/etc.
     proc cap(t: Self): int               # Query alloc num. of slots
@@ -31,9 +31,9 @@ type    # More adaptable than Nim std/tables which are VROats in present terms
 #   proc key(t: var Self, i: int, k: K)  # Set key for slot `i`
     proc key(t:     Self, i: int): K     # Get key for slot `i`
     proc used(t:    Self, i: int): bool  # Test if slot `i` is used | free
-#   proc inUse(c: var Self, n: int)      # Set number of slots in use
-#   proc inUse(c: Self): int             # Get number of slots in use
-#   proc val(t: var Self, i: int, v: V)  # Set val for slot `i`
+    proc inUse(c: var Self, n: int)      # Set number of slots in use
+    proc inUse(c:     Self): int         # Get number of slots in use
+    proc val(t: var Self, i: int, v: V)  # Set val for slot `i`
     proc val(t:     Self, i: int): V     # Get val for slot `i`
 
   ROat*[K,Q] = concept      # R)esizable Oat; Needs new/cp/set; Adds setCap..
@@ -45,8 +45,8 @@ type    # More adaptable than Nim std/tables which are VROats in present terms
 #   proc key(t: var Self, i: int, k: K)  # Set key for slot `i`
     proc key(t: Self, i: int): K         # Get key for slot `i`
     proc used(t: Self, i: int): bool     # Test if slot `i` is used | free
-#   proc inUse(c: var Self, n: int)      # Set number of slots in use
-#   proc inUse(c: Self): int             # Get number of slots in use
+    proc inUse(c: var Self, n: int)      # Set number of slots in use
+    proc inUse(c:     Self): int         # Get number of slots in use
     proc newOfCap(t: Self, n: int): Self # Get a new `n`-slot instance
     proc copy(t: var Self, i: int, u: Self, j: int) # Abstract t[i] = u[j]
     proc setNew(t, u: var Self)          # Efficiently set all t = u
@@ -60,10 +60,10 @@ type    # More adaptable than Nim std/tables which are VROats in present terms
 #   proc key(t: var Self, i: int, k: K)  # Set key for slot `i`
     proc key(t: Self, i: int): K         # Get key for slot `i`
     proc used(t: Self, i: int): bool     # Test if slot `i` is used | free
-#   proc inUse(c: var Self, n: int)      # Set number of slots in use
-#   proc inUse(c: Self): int             # Get number of slots in use
+    proc inUse(c: var Self, n: int)      # Set number of slots in use
+    proc inUse(c:     Self): int         # Get number of slots in use
     proc val(t: var Self, i: int, v: V)  # Set val for slot `i`
-    proc val(t: Self, i: int): V         # Get val for slot `i`
+    proc val(t:     Self, i: int): V     # Get val for slot `i`
     proc newOfCap(t: Self, n: int): Self # Get a new `n`-slot instance
     proc copy(t: var Self, i: int, u: Self, j: int) # Abstract t[i] = u[j]
     proc setNew(t, u: var Self)          # Efficiently set all t = u
