@@ -52,7 +52,7 @@ jobs:
       fail-fast: false
       matrix:
         os: ['ubuntu-latest']
-        nim: ['version-1-6']
+        nim: ['version-2-0']
     name: '${{ matrix.os }} (${{ matrix.nim }})'
     runs-on: ${{ matrix.os }}
     steps:
