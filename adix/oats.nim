@@ -1,4 +1,4 @@
-import std/[hashes, heapqueue], adix/bitop
+import std/hashes, adix/[bitop, topk]; export topk.TopKOrder
 template pua*(T: typedesc): untyped = ptr UncheckedArray[T]
 # Since want no `setCap | pairs` to exist for fixed size | set-like `t`, what is
 # `concept` is driven by the external interface, but performance tweaks { like
@@ -159,22 +159,12 @@ iterator values*[K,Q,V](t: VOat[K,Q,V]): V =
 iterator pairs*[K,Q,V](t: VOat[K,Q,V]): (K, V) =
   for i in 0 ..< t.cap: (if t.used i: yield (t.key i, t.val i))
 
-iterator topByVal*[K,Q,V](s: VOat[K,Q,V], n=10, min=V.low): (K, V) =
+iterator topByVal*[K,Q,V](s: VOat[K,Q,V], n=10, min=V.low, order=topk.Cheap): (K, V)=
   ## Iterate from smallest to largest over biggest `n` items by value in `s`.
   ## If `n==0` this is effectively heapSort of `s` by value `V`.
-  proc `<`(a, b: (V,K)): bool = a[0] < b[0] # ignore K => only partial order
-  var q = initHeapQueue[(V,K)]()
-  for k, v in oats.pairs(s):
-    if v >= min:
-      let e = (v, k)
-      if n == 0 or q.len < n: q.push e
-      elif e > q[0]: discard q.replace(e)
-  var y: (K,V)
-  while q.len > 0:        # q now has top n entries
-    let r = q.pop
-    y[0] = r[1]
-    y[1] = r[0]
-    yield y               # yield in ascending order
+  var t = initTopK[(V,K)](n)
+  for k, v in oats.pairs(s): (if v >= min: t.push (v, k))
+  for e in topk.maybeOrdered(t, order): yield (e[1], e[0])
 
 template oatKStack*(s, Self, Cell, off, offT, K, Q) =
   ## Def routines for back-to-back/stacked variable length, unpadded key data.

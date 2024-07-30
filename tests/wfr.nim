@@ -58,12 +58,13 @@ proc wfr(n=10, count=false,Norm=false, size=9999,dsize=81920, tm=false, Dlm="")=
   if count: echo h.len," unique ",nTot," total ",s.len," B"
   template output =
     if Norm: outu c.float/nTot.float," ",k,"\n" else: outu c," ",k,"\n"
-  if n == 0: (for (k, c) in pairs(h): output())
-  elif n > 0: (for (k, c) in h.topByVal(n): output())
+  if   n == 0: (for (k, c) in pairs(h): output())
+  elif n > 0 : (for (k, c) in h.topByVal(n): output())
+  elif n < -1: (for (k, c) in h.topByVal(n, order=Descending): output())
   if tm: stderr.write epochTime() - t0, "\n"
 
 when isMainModule: dispatch wfr, help={
-  "n"    : "only emit most frequent `n` lines(!=0=>sorted)",
+  "n"    : "emit `n`-most common  lines(0:all; <0 sorted)",
   "count": "only emit counts: unique & grand total",
   "Norm" : "normalize frequencies by dividing by grand tot",
   "size" : "pre-size hash table for size unique entries",

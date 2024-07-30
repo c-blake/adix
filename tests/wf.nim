@@ -1,7 +1,6 @@
 when not declared(addFloat): import std/[formatfloat, typedthreads]
 when not declared(Thread): import std/threads
-import std/[heapqueue, hashes, osproc, times],
-       adix/lptabz, cligen/[mfile, mslice, osUt], cligen
+import std/[hashes,osproc,times], adix/lptabz, cligen/[mfile,mslice,osUt],cligen
 type
   Word   = distinct uint32
   Count  = uint32
@@ -37,7 +36,7 @@ proc hash(w: Word): Hash {.inline.} =
 proc `==`(a, b: Word): bool {.inline.} =
   a.len == b.len and cmemcmp(a.mem, b.mem, a.len) == 0
 
-proc `<`(a, b: Word): bool {.inline.} = # for heapqueue
+proc `<`(a, b: Word): bool {.inline.} = # for topk.push
   let c = cmemcmp(a.mem, b.mem, min(a.len, b.len))
   if c == 0: a.len < b.len else: c < 0
 
@@ -94,18 +93,6 @@ proc count(p: int, path: string) =      # split path into `p` ~equal segments
     else: work (parts[0].addr, hs[0].addr, nTs[0].addr) # ST-mode: No spawn
   else: stderr.write "wf: \"", path, "\" missing/irregular\n"
 
-iterator top(h: Histo, n=10): (Word, Count) =
-  var q = initHeapQueue[(Count, Word)]()
-  for key, val in h:
-    let elem = (val, key)               # maintain a heap..
-    if q.len < n: q.push(elem)          # ..of the biggest n items
-    elif elem > q[0]: discard q.replace(elem)
-  var y: (Word, Count)                  # yielded tuple
-  while q.len > 0:                      # q now has top n entries
-    let r = q.pop
-    y[0] = r[1]; y[1] = r[0]
-    yield y                             # yield in ASCENDING order
-
 proc wf(path:seq[string], n=10, c=false, N=false, jobs=1, sz=9999, tm=false) =
   ## Parallel word frequency tool for one file < 128 MiB and words < 32 chars.
   ## Aggregate multiple via, e.g., `cat \*\*/\*.txt > /dev/shm/inp`.  Similar
@@ -122,9 +109,10 @@ proc wf(path:seq[string], n=10, c=false, N=false, jobs=1, sz=9999, tm=false) =
     for wd, cnt in hs[i]: hs[0].mgetOrPut(wd, 0) += cnt
   if c: echo hs[0].len," unique ",nTs[0]," total"
   template o = echo (if N: $(c.float/nTs[0].float) else: $c)," ",w
-  if  n == 0: (for w, c in hs[0].pairs: o())      # unsorted whole
-  elif n > 0: (for w, c in hs[0].top(n): o())     # sorted top N
-  if tm: stderr.write epochTime() - t0, " sec\n"  # n < 0 = only `c`/tm
+  if   n == 0: (for w, c in hs[0].pairs: o())       # unsorted whole
+  elif n > 0 : (for w, c in hs[0].topByVal(n): o()) # unsorted top N
+  elif n < -1: (for w, c in hs[0].topByVal(n, order=Descending): o()) # sorted
+  if tm: stderr.write epochTime() - t0, " sec\n"    # n == -1: only `c`/tm
 
-dispatch(wf, help={"n": "print top n; 0=>all", "c": "count only", "N": "norm",
+dispatch(wf, help={"n": "do top n; 0all,<0sort", "c": "count only", "N": "norm",
   "tm": "time", "jobs": "num threads; 0=>auto", "sz": "init size"})

@@ -33,8 +33,8 @@
 ## `seq[(K,V)]`.  6..8 bits avoids most "double cache misses" for miss
 ## lookups/inserts. `z=0` works if space matters more than time.
 
-import althash, memutil, bitop, heapqueue, sequint, strutils, memfiles
-export Hash, sequint
+import althash, memutil, bitop, topk, sequint, std/[strutils, memfiles]
+export Hash, sequint, topk.TopKOrder
 when not declared(assert): import std/[assertions, objectdollar]
 when declared(File):
   template stdOpen(x: varargs[untyped]): untyped = system.open(x)
@@ -1082,21 +1082,12 @@ proc merge*[K,V,Z;z:static int](c: var LPTabz[K,V,Z,z], b: LPTabz[K,V,Z,z]) =
   for key, val in b: c.inc(key, val)
 
 iterator topByVal*[K,V,Z;z:static int](c: LPTabz[K,V,Z,z], n=10,
-                                       min=V.low): (K, V) =
+                                       min=V.low, order=Cheap): (K, V) =
   ## Iterate from smallest to largest over biggest `n` items by value in `c`.
-  ## If `n==0` this is effectively heap sort of `c` by value `V`.
-  var q = initHeapQueue[(V, K)]()
-  for key, val in c:
-    if val >= min:
-      let e = (val, key)
-      if n == 0 or q.len < n: q.push(e)
-      elif e > q[0]: discard q.replace(e)
-  var y: (K, V)
-  while q.len > 0:        # q now has top n entries
-    let r = q.pop
-    y[0] = r[1]
-    y[1] = r[0]
-    yield y               # yield in ascending order
+  ## `order` can be `Cheap`, `Ascending`, or `Descending`.
+  var t = initTopK[(V,K)](n)
+  for k, v in lptabz.pairs(c): (if v >= min: t.push (v, k))
+  for e in topk.maybeOrdered(t, order): yield (e[1], e[0])
 
 iterator mostCommon*[K](xs: openArray[K], n=10): (K, int) =
   ## Iterate over (`n` most common values in `xs`, their counts) tuples.

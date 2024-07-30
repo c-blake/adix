@@ -21,7 +21,7 @@
 ## under another term like "direct indexing".  `K` below must have an available
 ## conversion to ``int``.  Duplicate keys cannot be allowed for this one.
 
-import althash, sequint, heapqueue
+import althash, sequint, topk; export topk.TopKOrder
 when not declared(assert): import std/assertions
 type
   DITab*[K,V] = object  ## Alphabet size determines `K`; `V` may be `void`
@@ -425,19 +425,10 @@ proc inc*[K,V: SomeInteger](t: var DITab[K,V], key: K,
 proc merge*[K,V: SomeInteger](c: var DITab[K,V], b: DITab[K,V]) =
   for key, val in b: c.inc(key, val)
 
-iterator topByVal*[K,V](c: DITab[K,V], n=10, min=V.low): (K, V) =
-  var q = initHeapQueue[(V, K)]()
-  for key, val in c:
-    if val >= min:
-      let e = (val, key)
-      if q.len < n: q.push(e)
-      elif e > q[0]: discard q.replace(e)
-  var y: (K, V)
-  while q.len > 0:        # q now has top n entries
-    let r = q.pop
-    y[0] = r[1]
-    y[1] = r[0]
-    yield y               # yield in ascending order
+iterator topByVal*[K,V](c: DITab[K,V], n=10, min=V.low, order=Cheap): (K, V) =
+  var t = initTopK[(V,K)](n)
+  for k, v in ditab.pairs(c): (if v >= min: t.push (v, k))
+  for e in topk.maybeOrdered(t, order): yield (e[1], e[0])
 
 proc initDISet*[K](initialSize=0, numer=diNumer, denom=diDenom,
                    minFree=diMinFree, growPow2=diGrowPow2, rehash=diRehash,

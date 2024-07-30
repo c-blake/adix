@@ -1,6 +1,5 @@
 when not declared(stdin): import std/[syncio, formatfloat]
-import std/[hashes, times, sugar, algorithm, strutils],
-       cligen, cligen/[mslice, strUt, osUt], adix/oats
+import std/[hashes,times,strutils], adix/oats, cligen/[mslice,strUt,osUt],cligen
 
 const bLen {.intdefine.} = 16   # <16K long;  RT params better but more work
 const bOff {.intdefine.} = 32   # <4G UNIQUE line data
@@ -29,7 +28,7 @@ when Counts is VROat[MSlice, MSlice, uint32]: {.warning: "Counts is a VROat"}
 
 proc incFailed(h: var Counts, ms: MSlice): bool =
   if ms.len > (1 shl bLen) - 1: # Careful to not overflow
-    erru "skipping too long line: ", ($ms)[0..<128], "\n"
+    erru "skipping too long line: ", ($ms)[0..<128], "...\n"
     return false                # Cannot go on LOCALLY
   h.upSert(ms, i):              # Found key @i:
     if h.dat[i].cnt == (1 shl bCnt) - 1:
@@ -66,15 +65,13 @@ proc lfreq(n=10, count=false, size=9999, dSize=81920, recTerm='\n',
       elif format[id.a] == 'f': fs.setLen 0; fs.fcvt c.float*nInv, 9; outu fs
       else: outu MSlice(mem: format[call.a].addr, len: call.len)
     outu RecTerm
-  if n == 0: (for (k, c) in pairs(h): output())
-  elif n > 0: (for (k, c) in h.topByVal(n): output())
-  elif n < -1:  # -1 is same as +1; Hijack value to mean no output()
-    var x = collect(for (k, c) in h.topByVal(-n): (k, c))
-    x.reverse; (for (k, c) in x: output())
-  if tm: stderr.write epochTime() - t0, "\n"
+  if   n == 0: (for (k, c) in pairs(h): output())
+  elif n > 0 : (for (k, c) in h.topByVal(n): output())
+  elif n < -1: (for (k, c) in h.topByVal(-n, order=Descending): output())
+  if tm: stderr.write epochTime() - t0, "\n"  # -n-1 for only time output
 
 when isMainModule: dispatch lfreq, help={
-  "n"    : "only emit most frequent `n` lines(!=0=>sorted)",
+  "n"    : "emit `n`-most common  lines(0:all; <0 sorted)",
   "count": "only emit counts: unique & grand total",
   "size" : "pre-size hash table for size unique entries",
   "dSize": "pre-size str data area to this many bytes",
