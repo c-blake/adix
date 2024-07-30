@@ -2,30 +2,23 @@ name: CI
 on:
   #schedule:
   #  - cron: '30 5 * * *'
-
   push:
     branches:
       - master
   pull_request:
     branches:
       - '*'
-
-
 jobs:
   changes:
-    # Disable the filter on scheduled runs because we don't want to skip those
-    if: github.event_name != 'schedule'
-    continue-on-error: true # Makes sure errors won't stop us
+    if: github.event_name != 'schedule'     # Do not want to skip scheduled runs
+    continue-on-error: true                 # Ensure errors don't stop us
     runs-on: ubuntu-latest
     outputs:
       src: ${{ steps.filter.outputs.src }}
     steps:
-      # For PRs the path filter check with Github API, so no need to checkout
-      # for them.
-      - if: github.event_name != 'pull_request'
-        name: Checkout (if not PR)
+      - if: github.event_name != 'pull_request' # Github API path filter check=>
+        name: Checkout (if not PR)              #..No need to checkout.
         uses: actions/checkout@v2
-
       - uses: dorny/paths-filter@v2
         id: filter
         with:
@@ -38,16 +31,10 @@ jobs:
               - 'tests/**'
               - '.github/workflows/ci.yml'
   build:
-    # Build if the files we care about are changed.
-    needs: changes
-    # Make sure to always run regardless of whether the filter success or not.
-    # When the filter fails there won't be an output, so checking for `false`
-    # state is better than checking for `true`.
-    #
-    # The always() function here is required for the job to always run despite
-    # what Github docs said, see: https://github.com/actions/runner/issues/491
+    needs: changes                          # Build if cared-about files changed
+    # always() is needed here for the job to always run despite Github docs.
+    # See: https://github.com/actions/runner/issues/491
     if: always() && needs.changes.outputs.src != 'false'
-
     strategy:
       fail-fast: false
       matrix:
@@ -60,20 +47,11 @@ jobs:
         uses: actions/checkout@v2
         with:
           path: ci
-
       - name: Setup Nim
         uses: alaviss/setup-nim@0.1.1
         with:
           path: nim
           version: ${{ matrix.nim }}
-
-      #- name: Run tests
-      #  shell: bash
-      #  run: |
-      #    cd ci
-      #    nimble --accept develop
-      #    nimble test
-
       - name: Build docs
         if: ${{ matrix.docs }} == 'true'
         shell: bash
@@ -86,20 +64,17 @@ jobs:
             '--git.commit:${{ github.sha }}' \
             "--git.devel:$branch" \
             adix.nim
-          # Ignore failures for older Nim
-          cp docs/{the,}index.html || true
+          cp docs/{the,}index.html || true  # Ignore failures for older Nim
       - name: Publish docs
         if: >
           github.event_name == 'push' && github.ref == 'refs/heads/master' &&
-          matrix.os == 'ubuntu-latest' && matrix.nim == 'version-1-6'
+          matrix.os == 'ubuntu-latest' && matrix.nim == 'version-2-0'
         uses: crazy-max/ghaction-github-pages@v2.5.0
         with:
           build_dir: ci/docs
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-  # Set check-required on this
-  success:
+  success:                                  # Set check-required on this
     needs: build
     runs-on: ubuntu-latest
     name: 'All check passes'
