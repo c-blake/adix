@@ -50,6 +50,8 @@ And some utility modules:
   sum using Intel SIMD for nsort
   - [bitop](https://c-blake.github.io/adix/adix/bitop.html): re-impl std/bitops
   things to be more CT friendly
+  - [topk](https://c-blake.github.io/adix/adix/topk.html): spends 2X the (small)
+  space of `std/heapqueue`-based top-k stream algo to scale slightly better.
 
 A Word Of Caution
 =================
