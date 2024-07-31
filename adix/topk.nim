@@ -17,7 +17,8 @@ proc initTopK*[T](k=10, partn=last): TopK[T] =
   ##   var t = initTopK(); for e in 1..99: t.push e
   ##   for e in t: echo e
   result.i = -1; result.k = k; result.partn = partn; result.first = true
-  when supportsCopyMem(T): result.s = newSeqUninit[T](2*k); result.s.setLen 0
+  when supportsCopyMem(T) and declared newSeqUninit:
+    result.s = newSeqUninit[T](2*k); result.s.setLen 0
 
 proc qpLast[T](a: var openArray[T]; L, R: int): int =
   let piv = a[R]                        # QuickPartition about last element
@@ -67,12 +68,12 @@ iterator items*[T](t: var TopK[T]): lent T =
 
 iterator descending*[T](t: var TopK[T]): lent T =
   ## iterate over `t` yielding top items in DESCENDING order.
-  t.s.sort order=algorithm.Descending; t.s.setLen min(t.k, t.saw)
+  t.s.sort(order=SortOrder.Descending); t.s.setLen min(t.k, t.saw)
   for e in t.s: yield e
 
 iterator ascending*[T](t: var TopK[T]): lent T =
   ## iterate over `t` yielding top items in ASCENDING order.
-  t.s.sort order=algorithm.Descending; t.s.setLen min(t.k, t.saw)
+  t.s.sort(order=SortOrder.Descending); t.s.setLen min(t.k, t.saw)
   t.s.reverse
   for e in t.s: yield e
 
@@ -87,7 +88,8 @@ proc clear*[T](t: var TopK[T]) = ## Reset `TopK` accumulator
   t.i = -1; t.s.setLen 0; t.first = true
 
 when isMainModule: # Good check: nim r -d:ck -d:r topk -qk3 -n10 -t3628800 #10!
-  import cligen, std/[times, sugar, syncio, math, sets]
+  when not declared stderr: import std/syncio
+  import cligen, std/[times, sugar, math, sets]
   when defined danger: randomize()
   proc top(k=500, n=50000, trials=50, partn=last, quiet=false) =
     let tScl = 1e12/n.float/log2(k.float) # picosec/work-scale
