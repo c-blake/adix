@@ -21,4 +21,4 @@ const x86features* = static:  #XXX This obviously needs to be fleshed out
   s
 
 # We could potentially do a calculation here to decide what march to pass.
-when x86features.len > 0: {.passC: "-march=native".}
+when x86features.len > 0: {.passc: "-march=native".}

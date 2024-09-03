@@ -42,7 +42,7 @@ proc incFailed(h: var Counts, ms: MSlice): bool =
     h.dat[i].cnt = 1u32
 
 const d = " \t\r,;:.?!'\"()[]{}|<>=+-*/\\0123456789&`~$#%^"
-proc wfr(n=10, count=false,Norm=false, size=9999,dsize=81920, tm=false, Dlm="")=
+proc wfr(n=10, count=false,Norm=false, size=9999,dSize=81920, tm=false, Dlm="")=
   ## Histogram words on `stdin`.  <128 MiB unique data; <32B long; <4 GiCount.
   let sep = initSep(if Dlm.len != 0: Dlm else: d)
   let t0 = if tm: epochTime() else: 0.0
