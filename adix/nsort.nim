@@ -81,6 +81,7 @@ when defined(windows):                          #import alloca
   proc alloca(n:int): pointer{.importc,header:"<malloc.h>".}
 else:
   proc alloca(n:int): pointer{.importc,header:"<alloca.h>",header:"<stddef.h>".}
+  {.emit: "void *alloca(size_t);".}
 
 type XForm* = enum xfNone, xfRev, xfSgn, xfSgnRev, xfFlt, xfFltRev ## Transforms
 type Ui248 = uint16|uint32|uint64                       #2,4,8Byte unsigned nums
@@ -410,7 +411,7 @@ proc msortRec[O, W](obs, tmp: var openArray[O]; left, right: int; off: W;
   let n   = right - left
   let mid = left + n div 2
   if obs[0].sizeof * n < dGiantSort:    #BaseCase: radix sort
-    let r = nsort(obs[left].addr, tmp[left].addr, n, O.sizeof, off, xf, b0)
+    let r = nsort(obs[left].addr, tmp[left].addr, n, O.sizeof, off.uint8, xf, b0)
     if r == cast[pointer](-1):
       obs.reverse left, right - 1
     elif r != obs[left].addr:
