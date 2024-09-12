@@ -220,8 +220,8 @@ proc hashRevFib*(x: int64|uint64): Hash {.inline.} =
 
 import std/sysrand
 proc secureSalt*(x: pointer): Hash {.inline.} =
-  discard urandom(toOpenArray[byte](cast[ptr UncheckedArray[byte]](result.addr),
-                                    0, Hash.sizeof))
+  var buf = urandom(Hash.sizeof.Natural)
+  copyMem result.addr, buf[0].addr, Hash.sizeof
 
 proc vmaddrSalt*(x: pointer): Hash {.inline.} =
   const roMuDuoJr = 15241094284759029579'u64  # selected to pair w/27 bit roll
