@@ -1,5 +1,5 @@
 ## This module provides an (in|un)ordered multiset/multitable representation via
-## Linear Probing with aging friendly Backshift Delete(Knuth TAOCPv3) & optional
+## Linear Probing with aging-friendly Backshift Delete(Knuth TAOCPv3) & optional
 ## Robin Hood re-org (Celis,1986).  Linear probing collision clusters yields "no
 ## tuning needed" locality of reference: 1 DRAM hit per access for large tables
 ## of small items.  RH sorts collision clusters by search depth which adds nice
@@ -7,16 +7,18 @@
 ## data motion) and min depth variance (no unlucky keys).  The latter enables
 ## ~100% table space utilization (we need one empty slot to halt some loops).
 ##
-## Misuse/attack is always possible.  Note that inserting *many* duplicates
-## causes overlong scans as hash collisions can and is thus "misuse".  If this
-## is likely then use `V=seq[T]` instead.  We provide a few mitigations
-## triggered, like table growth, by overlong scans on underfull tables:
+## Misuse/attack is always possible.  Inserting *many* duplicate causes overlong
+## scans just as hash collisions do and is thus misuse/self-attack.  If this is
+## likely then use `V=seq[T]` instead.  We provide a few mitigations triggered,
+## like table growth itself, by overlong scans on underfull tables:
 ##   A) automatic rehash of user `hash` output with a strong integer hash,
 ##   B) overlong scan warnings (disabled in `danger` mode),
 ##   C) automatic Robin Hood re-org activation, and
 ##   D) use `althash.getSalt` to allow hard to predict per-table hash salt.
 ## Program-wide-tunable defaults are to rehash, warn, re-org & salt with vmAddr
-## since this is the safest portable mode, but most can also be set init time.
+## since this is a safe-ish portable mode, but most can also be set via module
+## globals consulted @init time.  `-d:unstableHash` makes the default `getSalt`
+## a secure random number via `std/sysrand`, but debugging may be harder.
 ##
 ## MultiSET personality ensues when the `V` value type generic parameter is
 ## `void`.  Otherwise the style of interface is multiTABLE.  Every attempt is
