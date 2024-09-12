@@ -218,10 +218,10 @@ proc hashRevFib*(x: int32|uint32): Hash {.inline.} =
 proc hashRevFib*(x: int64|uint64): Hash {.inline.} =
   cast[Hash](reverseBits(uint64(x) * 15241094284759029579'u64))
 
+import std/sysrand
 proc secureSalt*(x: pointer): Hash {.inline.} =
-  proc getrandom(buf: pointer, len: uint64, flags: cuint): csize {. importc:
-    "getrandom", header: "sys/random.h" .}
-  discard getrandom(result.addr, uint64(result.sizeof), cuint(0))
+  discard urandom(toOpenArray[byte](cast[ptr UncheckedArray[byte]](result.addr),
+                                    0, Hash.sizeof))
 
 proc vmaddrSalt*(x: pointer): Hash {.inline.} =
   const roMuDuoJr = 15241094284759029579'u64  # selected to pair w/27 bit roll
