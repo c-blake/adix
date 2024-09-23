@@ -1,7 +1,7 @@
 ## This module provides an easy way to do compile-time switched impl swaps for
 ## various table/set reprs with various compile-time switched defaults.  You
 ## should really just learn how to use `LPTabz[..]` directly, though.
-import macros, strformat
+import core/macros, std/strformat
 
 when defined(axRehash):
   let rDefault = true
@@ -46,8 +46,8 @@ proc toSet*[K](keys: openArray[K], dups=false): Set[K] =
   else:
     for k in keys: result.incl k""")
 
-when defined(axStdlib):   #NOTE: stdlib version cannot ctrl, e.g. `initialSize`
-  import tables, sets     #      when client just declares `var x: Tab`.
+when defined(axStdlib):     #NOTE: stdlib version cannot ctrl, eg. `initialSize`
+  import std/[tables, sets] #      when client just declares `var x: Tab`.
   export tables, sets
   type Tab*[K,V] = Table[K,V]
   type Set*[K]   = HashSet[K]

@@ -472,7 +472,7 @@ template nsortBy*(x, field: untyped, b0=0): untyped =
     nsortByTag(x, field, b0)
 
 when isMainModule:
-  import random, times, stats, strutils, cligen
+  import std/[random, times, stats, strutils], cligen
 
   template timeIt(dtMin, norm: float; body: untyped) =
     let t0 = epochTime()

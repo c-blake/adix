@@ -115,7 +115,7 @@ proc cumsum*[T](c: ptr T, n: uint) {.inline.} =
   cumsum(cast[ptr UncheckedArray[T]](c), n)
 
 when isMainModule:
-  import random, times, stats, cligen
+  import std/[random, times, stats], cligen
   when not declared(stderr): import std/[syncio, formatfloat]
 
   proc gen[T](x: var openArray[T]; low, range: int) =

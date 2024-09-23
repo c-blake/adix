@@ -12,8 +12,8 @@
 ## I.e., it can perfectly "forget" a large spike when it leaves a window.
 
 when not declared(addFloat): import std/objectdollar
-from math         import sqrt, sum, `^`
-from strutils     import formatFloat, ffDefault
+from std/math     import sqrt, sum, `^`
+from std/strutils import formatFloat, ffDefault
 when defined(useCligen): from cligen/strUt import fmtUncertainMerged
 else:
   when not declared(addFloat): import std/formatfloat

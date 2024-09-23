@@ -3,7 +3,7 @@
 ## lets us probe a build-time system for all pre-defined C preprocessor macros
 ## in one execution.  We then postprocess these into a set of flags for Nim
 ## compile-time `when` checks to make "fall back" easy/natural.
-from strutils import contains
+from std/strutils import contains
 
 const ccDumpMacro {.used.} = " -dM -E -x c - </dev/null"
 const ccPreDefs* =

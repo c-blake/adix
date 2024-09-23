@@ -28,7 +28,7 @@
 ## decaying memory are not possible since FP arithmetic kind of breaks BISTs.
 
 when not declared(addFloat): import std/formatfloat
-import adix/bist, math
+import adix/bist, std/math
 type
   LgHisto*[C] = object  ## Log-spaced histogram with `Bist[C]` backing
     n: int              # number of bins
@@ -152,7 +152,7 @@ when isMainModule:
       for q in qs: echo "q",q,": ",lh.quantile(q)
     import cligen; dispatch lghist
   else:
-    import random, times; randomize()
+    import std/[random, times]; randomize()
     var data: seq[float32]
     var res = newSeqOfCap[float32](9)
     const N = 750_000

@@ -7,7 +7,7 @@
 ## just *intuit* histo(ln(x)), but that is a more subjective critique. }
 
 when not declared(addFloat): import std/formatfloat
-import math, algorithm
+import std/[math, algorithm]
 type
   Scale* = enum scLog           ## Other scales possible, but unimpl here
 
@@ -238,13 +238,13 @@ func cdf*(s: var DigesT, x: float): float =
 
 when isMainModule:
   when defined(test):
-    import os, strutils # Helpful to run against: -12 -8 -4 -1 0 1 4 8 12
+    import std/[os, strutils] # Helpful to run against: -12 -8 -4 -1 0 1 4 8 12
     var s = initDigesT(a=0.125, b=10.0, n=8)
     for i in 1 .. paramCount(): s.add parseFloat(paramStr(i))
     for q in [0.01, 0.05, 0.25, 0.50, 0.75, 0.95, 0.99]: echo s.quantile(q)
     echo "s: ", s
   else:
-    import random, times; randomize()
+    import std/[random, times]; randomize()
     var data: seq[float]
     var res = newSeqOfCap[float](9)
     const N = 750_000

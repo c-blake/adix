@@ -130,7 +130,7 @@ proc quantile*[T](t: Bist[T], q: float): float {.inline.} =
   fL * iL.float + (1 - fL) * iH.float
 
 when isMainModule:
-  import cligen, strutils
+  import cligen, std/strutils
   when not declared(addFloat): import std/formatfloat
   type ct = uint16
   proc tbist(verb=false, parzen=false, thresh=0.03, num=16, args: seq[int]):int=
