@@ -12,42 +12,40 @@ type
     dat: seq[Count]
     nUsed: int
 
-var a = " "; oatKStack a, Counts, Count, off,uint32, MSlice, MSlice
-#proc key(c: var Counts, i: int, q: MSlice) = c.dat[i]=c.keyR(q) wrong&unneeded
+var s = " "; oatKStack s, Counts, Count, off,uint32, MSlice, MSlice
 proc key(c: Counts, i: int): MSlice = c.dat[i].key
 proc used(c: Counts, i: int): bool = c.dat[i].off!=0
-
 when defined hashCache:                           # def auto-triggers use
   proc hash(ms: MSlice): Hash = mslice.hash(ms).uint32.Hash
   proc hash(c: var Counts, i: int, hc: Hash) {.used.} = c.dat[i].hc = hc.uint32
   proc hash(c: Counts, i: int): Hash = c.dat[i].hc.Hash
-
 oatCounted c,Counts, c.nUsed; oatSeq Counts, dat  # make counted & resizable
 when Counts is ROat[MSlice, MSlice]: {.warning: "Counts is a ROat"}
 
-proc incFailed(h: var Counts, r: MSlice): bool =
-  if r.len + 1 > 1 shl bLen:    # Careful to not overflow
-    erru "skipping too long(", $r.len, ") line: ",$r,"\n"
-    return                      # Cannot go on LOCALLY
-  h.upSert(r, i): discard       # Found key @i: nothing to do
+proc incFailed(h: var Counts, ms: MSlice): bool =
+  var ms = ms
+  if ms.len > (1 shl bLen) - 1: # Careful to not overflow XXX rate limit msgs
+    erru "truncating too long (", $ms.len, ") line: ", ($ms)[0..<256], "...\n"
+    ms.len = (1 shl bLen) - 1   # Truncation makes count potentially off
+  h.upSert(ms, i): discard      # Found key @i: nothing to do
   do:                           # Novel key->i:
-    h.dat[i].off = a.add(r, (1 shl bOff) - 1):
-      erru "unique word data overflow at:",$r,"\n" #XXX rate limit msgs
+    h.dat[i].off = s.add(ms, (1 shl bOff) - 1):
+      erru "unique word data overflow at:",$ms,"\n" #XXX rate limit msgs
       return true               # Cannot go on GLOBALLY
-    h.dat[i].len = r.len.uint32 # Init
+    h.dat[i].len = ms.len.uint32 # Init
 
 proc ucl(size=9999, dSize=81920, tm=false) =
   ## Count unique & total lines on `stdin`. <256B long; <16 MiB unique data.
   let t0 = if tm: epochTime() else: 0.0
-  var h: Counts; h.setCap size  # Pre-size table & data
-  a.setLen dSize; a.setLen 1
+  var h: Counts; h.setCap size  # pre-size table & data
+  s.setLen dSize; s.setLen 1
   var nTot = 0
   block IO:
     for (line, nLine) in stdin.getDelims:
       let ms = MSlice(mem: line, len: nLine - 1)
       inc nTot                  # Always bump `nTotal`
       if h.incFailed(ms): break IO
-  echo h.len," unique ",nTot," total ",a.len," B"
+  echo h.len," unique ",nTot," total ",s.len," B"
   if tm: stderr.write epochTime() - t0, "\n"
 
 when isMainModule: dispatch ucl, help={

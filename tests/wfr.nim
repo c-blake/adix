@@ -27,9 +27,10 @@ oatCounted c,Counts, c.nUsed; oatSeq Counts, dat  # make counted & resizable
 when Counts is VROat[MSlice, MSlice, uint32]: {.warning: "Counts is a VROat"}
 
 proc incFailed(h: var Counts, ms: MSlice): bool =
-  if ms.len > (1 shl bLen) - 1: # Careful to not overflow
-    erru "skipping too long word: ",$ms,"\n"
-    return                      # Cannot go on LOCALLY
+  var ms = ms
+  if ms.len > (1 shl bLen) - 1: # Careful to not overflow XXX rate limit msgs
+    erru "truncating too long (", $ms.len, ") word: ", ($ms)[0..<32], "...\n"
+    ms.len = (1 shl bLen) - 1   # Truncation makes count potentially off
   h.upSert(ms, i):              # Found key @i:
     if h.dat[i].cnt == (1 shl bCnt) - 1:
       erru "counter overflow for: ",$ms,"\n" # no update XXX rate limit
