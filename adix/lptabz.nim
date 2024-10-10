@@ -1039,7 +1039,7 @@ proc hasKeyOrPut*[K,V,Z;z:static int](t: var LPTabz[K,V,Z,z],
   discard t.mgetOrPut(key, val, result)
 
 proc getOrDefault*[K,V,Z;z:static int](t: LPTabz[K,V,Z,z], key: K,
-                                       default=default(V)): V {.inline.} =
+                                       def=default(V)): V {.inline.} =
   mixin rawGet
   let i = t.rawGet(key)
   result = if i >= 0: t.cell(i).val else: default

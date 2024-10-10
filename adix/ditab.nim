@@ -367,7 +367,7 @@ proc hasKey*[K,V](t: DITab[K,V], key: K): bool {.inline.} = key in t
 proc hasKeyOrPut*[K,V](t: var DITab[K,V], key: K, val: V): bool {.inline.} =
   discard t.mgetOrPut(key, val, result)
 
-proc getOrDefault*[K,V](t: DITab[K,V], key: K, default=default(V)): V{.inline.}=
+proc getOrDefault*[K,V](t: DITab[K,V], key: K, def=default(V)): V {.inline.} =
   mixin rawGet
   let i = t.rawGet(key)
   result = if i >= 0: t.data[i].val else: default

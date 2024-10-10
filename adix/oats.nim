@@ -147,7 +147,7 @@ proc mgetOrPut*[K,Q,V](t: var VOat[K,Q,V], q: Q, v: V): var V =
   t.upSert(q, i): t.val i
   do: t.key(i, t.keyR q); t.val i, v
 
-proc getOrDefault*[K,Q,V](t: VOat[K,Q,V], q: Q): V =
+proc getOrDefault*[K,Q,V](t: VOat[K,Q,V], q: Q, def=default(V)): V =
   if (var d: Hash; let i = oatSlot(t, q, q.hash, d); i >= 0): result = t.val i
 
 iterator items*[K,Q](t: Oat[K,Q]): K =
