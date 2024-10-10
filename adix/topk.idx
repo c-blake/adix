@@ -1,0 +1,17 @@
+nimTitle	topk	adix/topk.html	module adix/topk		0
+nim	last	adix/topk.html#last	Partn.last		3
+nim	ran	adix/topk.html#ran	Partn.ran		3
+nim	Partn	adix/topk.html#Partn	enum Partn		3
+nim	TopK	adix/topk.html#TopK	object TopK		4
+nim	Descending	adix/topk.html#Descending	TopKOrder.Descending		10
+nim	Ascending	adix/topk.html#Ascending	TopKOrder.Ascending		10
+nim	Cheap	adix/topk.html#Cheap	TopKOrder.Cheap		10
+nim	TopKOrder	adix/topk.html#TopKOrder	enum TopKOrder		10
+nim	initTopK	adix/topk.html#initTopK,int	proc initTopK[T](k = 10; partn = last): TopK[T]		13
+nim	push	adix/topk.html#push,TopK[T],sinkT	proc push[T](t: var TopK[T]; e: sink T)		48
+nim	saw	adix/topk.html#saw,TopK[T]	proc saw[T](t: TopK[T]): int		59
+nim	items	adix/topk.html#items.i,TopK[T]	iterator items[T](t: var TopK[T]): lent T		61
+nim	descending	adix/topk.html#descending.i,TopK[T]	iterator descending[T](t: var TopK[T]): lent T		69
+nim	ascending	adix/topk.html#ascending.i,TopK[T]	iterator ascending[T](t: var TopK[T]): lent T		74
+nim	maybeOrdered	adix/topk.html#maybeOrdered.i,TopK[T]	iterator maybeOrdered[T](t: var TopK[T]; order = topk.Cheap): lent T		80
+nim	clear	adix/topk.html#clear,TopK[T]	proc clear[T](t: var TopK[T])		87

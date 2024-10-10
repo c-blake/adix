@@ -1,0 +1,24 @@
+nimTitle	oats	adix/oats.html	module adix/oats		0
+nim	pua	adix/oats.html#pua.t,typedesc	template pua(T: typedesc): untyped		2
+nim	Oat	adix/oats.html#Oat	type Oat		13
+nim	VOat	adix/oats.html#VOat	type VOat		25
+nim	ROat	adix/oats.html#ROat	type ROat		39
+nim	VROat	adix/oats.html#VROat	type VROat		54
+nim	len	adix/oats.html#len,SomeOat	proc len(t: SomeOat): int		74
+nim	oatSlots	adix/oats.html#oatSlots,int,int	proc oatSlots(n: int; mnFree = 600): int		80
+nim	oatSlot	adix/oats.html#oatSlot,SomeOat,Q,Hash,Hash	proc oatSlot[Q](t: SomeOat; q: Q; h: Hash; d: var Hash): int		83
+nim	tooFull	adix/oats.html#tooFull,SomeOat,int,int	proc tooFull(t: SomeOat; d: int; newSize: var int): bool		94
+nim	setCap	adix/oats.html#setCap,SomeROat,int	proc setCap(t: var SomeROat; newSize = -1)		105
+nim	upSert	adix/oats.html#upSert.t,SomeOat,,,,	template upSert(t: SomeOat; q, i, UP, SERT)		118
+nim	incl	adix/oats.html#incl,Oat[K,Q],Q	proc incl[K, Q](t: var Oat[K, Q]; q: Q)		134
+nim	`[]`	adix/oats.html#[],VOat[K,Q,V],Q	proc `[]`[K, Q, V](t: VOat[K, Q, V]; q: Q): V		138
+nim	`[]=`	adix/oats.html#[]=,VOat[K,Q,V],Q,V	proc `[]=`[K, Q, V](t: var VOat[K, Q, V]; q: Q; v: V)		142
+nim	mgetOrPut	adix/oats.html#mgetOrPut,VOat[K,Q,V],Q,V	proc mgetOrPut[K, Q, V](t: var VOat[K, Q, V]; q: Q; v: V): var V		146
+nim	getOrDefault	adix/oats.html#getOrDefault,VOat[K,Q,V],Q,typeof(default(V))	proc getOrDefault[K, Q, V](t: VOat[K, Q, V]; q: Q; def = default(V)): V		150
+nim	items	adix/oats.html#items.i,Oat[K,Q]	iterator items[K, Q](t: Oat[K, Q]): K		153
+nim	values	adix/oats.html#values.i,VOat[K,Q,V]	iterator values[K, Q, V](t: VOat[K, Q, V]): V		156
+nim	pairs	adix/oats.html#pairs.i,VOat[K,Q,V]	iterator pairs[K, Q, V](t: VOat[K, Q, V]): (K, V)		159
+nim	topByVal	adix/oats.html#topByVal.i,VOat[K,Q,V],int	iterator topByVal[K, Q, V](s: VOat[K, Q, V]; n = 10; min = V.low; order = topk.Cheap): (\n    K, V)		162
+nim	oatKStack	adix/oats.html#oatKStack.t,,,,,,,	template oatKStack(s, Self, Cell, off, offT, K, Q)		169
+nim	oatSeq	adix/oats.html#oatSeq.t,,	template oatSeq(Self, dat)		185
+nim	oatCounted	adix/oats.html#oatCounted.t,,,	template oatCounted(c, Self, cDotPop)		192
