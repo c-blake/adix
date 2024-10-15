@@ -381,10 +381,11 @@ proc nsort*[W: Ui248](obs, tmp: pointer; n, sz: int; off: W; xf: XForm;
       return cntSort(obs, tmp, n, sz, off.uint16, xf, 1'u32)
     else:               #One pass surely pays off w/>= 4 GiObs even w/512kB hist
       return cntSort(obs, tmp, n, sz, off.uint16, xf, 1'u64)
-  if n < 1 shl  8: return radix(obs, tmp, n, sz, off, xf, 1'u8 , b, b0)
-  if n < 1 shl 16: return radix(obs, tmp, n, sz, off, xf, 1'u16, b, b0)
-  if n < 1 shl 32: return radix(obs, tmp, n, sz, off, xf, 1'u32, b, b0)
-  return radix(obs, tmp, n, sz, off, xf, 1'u64, b, b0)
+  else:
+    if n < 1 shl  8: return radix(obs, tmp, n, sz, off, xf, 1'u8 , b, b0)
+    if n < 1 shl 16: return radix(obs, tmp, n, sz, off, xf, 1'u16, b, b0)
+    if n < 1 shl 32: return radix(obs, tmp, n, sz, off, xf, 1'u32, b, b0)
+    return radix(obs, tmp, n, sz, off, xf, 1'u64, b, b0)
 
 proc merge[O,W](obs,tmp: var openArray[O]; iL0,mid,iR0: int; off:W; xf=xfNone)=
   let n  = iR0 - iL0
