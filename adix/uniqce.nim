@@ -38,12 +38,12 @@ proc push*[F:SomeFloat](uc: var UniqCe[F], h: F) =
     return
   if uc.tail.len < uc.k:                        # BUILD PHASE; always insert
     uc.tail.insert h, i
-    uc.est += 1.0 / float64(1.0 - uc.tail[0])
+    uc.est += 1.0/float64(1.0 - uc.tail[0])
   elif h > uc.tail[0]:                          # RARE: TAIL GETS NEW ELT
     if i > 1:                                   # i >= 1: must make room
       moveMem uc.tail[0].addr, uc.tail[1].addr, (i - 1)*uc.tail[0].sizeof
     uc.tail[i - 1] = h                          # i is pre-downshift spot
-    uc.est += 1.0 / float64(1.0 - uc.tail[0])
+    uc.est += 1.0/float64(1.0 - uc.tail[0])
 
 proc nUnique*[F:SomeFloat](uc: UniqCe[F]): float32 =
   ## Estimate number of unique elements seen so far.
@@ -64,7 +64,7 @@ proc jaccard*[F:SomeFloat](a: UniqCe[F], b: UniqCe[F]): float32 =
   for e in b.tail:
     if e in s: inc i    # e in both a & b
     else: inc u         # OR e in just b
-  float32(i.float / u.float)
+  float32(i.float/u.float)
 
 proc union*[F:SomeFloat](a: var UniqCe[F], b: UniqCe[F]) =
   ## Push all hashes from `b` onto `a` effecting an estimated set union.
@@ -82,7 +82,7 @@ when isMainModule:  # Takes numberOfItems/trial, stateSize, dupMask, numTrials
   let d = if paramCount() > 2: parseInt(paramStr(3)).uint64 else: 0xFFFFFFFF'u64
   let m = if paramCount() > 3: parseInt(paramStr(4)) else: 1000
   let s = paramCount() > 4  # skip tracking HashSet error if present
-  var err, nSt: RunningStat
+  var err, nSt, eer: RunningStat
   for i in 1..m:
     var uc = initUniqCe[float32](k)
     var st = initHashSet[uint64](n)
@@ -91,6 +91,8 @@ when isMainModule:  # Takes numberOfItems/trial, stateSize, dupMask, numTrials
       uc.push float32(cast[uint64](hash(key)))*(1.0/1.8446744073709551615e19)
       if not s: st.incl key
     let est = uc.nUnique
-    err.push abs(est - st.len.float) / st.len.float
+    if not s:
+      let e = abs(est - st.len.float)/st.len.float
+      err.push e; eer.push uc.nUniqueErr/est/e
     nSt.push est
-  echo nSt.mean, " ", err.mean, " ", err.max
+  echo nSt.mean, " ", err.mean*100, " % ", err.max*100, " % ", eer.mean
