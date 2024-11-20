@@ -61,7 +61,7 @@ proc wfr(n=10, count=false,Norm=false, size=9999,dSize=81920, tm=false, Dlm="")=
     if Norm: outu c.float/nTot.float," ",k,"\n" else: outu c," ",k,"\n"
   if   n == 0: (for (k, c) in pairs(h): output())
   elif n > 0 : (for (k, c) in h.topByVal(n): output())
-  elif n < -1: (for (k, c) in h.topByVal(n, order=Descending): output())
+  elif n < -1: (for (k, c) in h.topByVal(-n, order=Descending): output())
   if tm: stderr.write epochTime() - t0, "\n"
 
 when isMainModule: dispatch wfr, help={
