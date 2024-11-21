@@ -24,7 +24,7 @@ when defined hashCache:         # 2nd def triggers saving lpt behavior
   proc hash(c: var Counts, i: int, hc: Hash) {.used.} = c.dat[i].hc = hc.uint32
   proc hash(c: Counts, i: int): Hash = c.dat[i].hc.Hash
 oatCounted c,Counts, c.nUsed; oatSeq Counts, dat  # make counted & resizable
-when Counts is VROat[MSlice, MSlice, uint32]: {.warning: "Counts is a VROat"}
+#when Counts is VROat[MSlice, MSlice, uint32]: {.warning: "Counts is a VROat"}
 
 proc incFailed(h: var Counts, ms: MSlice): bool =
   var ms = ms
@@ -60,8 +60,8 @@ proc wfr(n=10, count=false,Norm=false, size=9999,dSize=81920, tm=false, Dlm="")=
   template output =
     if Norm: outu c.float/nTot.float," ",k,"\n" else: outu c," ",k,"\n"
   if   n == 0: (for (k, c) in pairs(h): output())
-  elif n > 0 : (for (k, c) in h.topByVal(n): output())
-  elif n < -1: (for (k, c) in h.topByVal(-n, order=Descending): output())
+  elif n > 0 : (for (k, c) in topByVal[MSlice, MSlice, uint32](h, n): output())
+  elif n < -1: (for (k, c) in topByVal[MSlice, MSlice, uint32](h, -n, order=Descending): output())
   if tm: stderr.write epochTime() - t0, "\n"
 
 when isMainModule: dispatch wfr, help={

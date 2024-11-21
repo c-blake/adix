@@ -20,7 +20,7 @@ when defined hashCache:         # 2nd def triggers saving lpt behavior
   proc hash(c: var Counts, i: int, hc: Hash) {.used.} = c.dat[i].hc = hc.uint32
   proc hash(c: Counts, i: int): Hash = c.dat[i].hc.Hash
 oatCounted c,Counts, c.nUsed; oatSeq Counts, dat  # make counted & resizable
-when Counts is ROat[MSlice, MSlice]: {.warning: "Counts is a ROat"}
+#when Counts is ROat[MSlice, MSlice]: {.warning: "Counts is a ROat"}
 
 proc incFailed(h: var Counts, ms: MSlice): bool =
   var ms = ms
