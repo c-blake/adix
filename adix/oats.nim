@@ -1,5 +1,4 @@
 import std/hashes, adix/[bitop, topk]; export topk.TopKOrder
-template pua*(T: typedesc): untyped = ptr UncheckedArray[T]
 type    # More adaptable than Nim std/sets|tables (named ROats|VROats here)
   Oat*[K, Q] = concept t        # Base Concept: Open-Addressed Table
     cap(t) is int                   # Query alloc num. of slots
