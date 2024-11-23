@@ -28,22 +28,18 @@ type    # More adaptable than Nim std/sets|tables (named ROats|VROats here)
   VROat*[K,Q,V] = concept t     # V)alued, R)esizable Oat; Needs & adds both
     t is Valued[V]; t is ROat[K,Q]
 
-  # This one is subtle/rare.  If ONLY `upSert` adds keys, tables can do dense
-  # stack arenas w/narrow offset refs.  Other commonly expected routines need
-  # random access poke of new keys => Encode ability as refined concepts.
-  Pokable*[K] = concept t
+  PutKey*[K] = concept t        # incl,mgetOrPut.. `SERT` puts keys as an atom
     key(var t, int, K)              # Set key for slot `i` (upSert can inline)
   POat*[K,Q] = concept t
-    t is Pokable[K]; t is Oat[K,Q]
+    t is PutKey[K]; t is Oat[K,Q]
   VPOat*[K,Q,V] = concept t
-    t is Pokable[K]; t is VOat[K,Q]
+    t is PutKey[K]; t is VOat[K,Q]
 
   Counted* = concept t          # Adds cheap total used slots; else O(N)
     inUse(var t, int)               # Set count of slots in use
     inUse(t) is int                 # Get count of slots in use
 
-  # Can save `Hash` to ease lookup & especially resize. < 64 bits ok (if small).
-  SavedHash* = concept t
+  SavedHash* = concept t        # Speed find&more so resize;<64 bits ok if small
     hash(t, 0, Hash)                # Set hash of slot `i`
     hash(t, 0) is Hash              # Get hash of slot `i`
 
@@ -138,8 +134,7 @@ iterator pairs*[K,Q,V](t: VOat[K,Q,V]): (K, V) =
   for i in 0 ..< t.cap: (if t.used i: yield (t.key i, t.val i))
 
 iterator topByVal*[K,Q,V](s: VOat[K,Q,V], n=10, min=V.low, order=topk.Cheap): (K, V)=
-  ## Iterate from smallest to largest over biggest `n` items by value in `s`.
-  ## If `n==0` this is effectively heapSort of `s` by value `V`.
+  ## Yield biggest `n` items by value in `s` in `order`.
   var t = initTopK[(V,K)](n)
   for k, v in oats.pairs(s): (if v >= min: t.push (v, k))
   for e in topk.maybeOrdered(t, order): yield (e[1], e[0])
@@ -161,14 +156,12 @@ template oatKStack*(s, Self, Cell, off, offT, K, Q) =
       offT(off)                                       # Yield new offset
     else: fail
 
-template oatSeq*(Self, dat) =
-  ## Def routines for `seq`-ish `Self`
+template oatSeq*(Self, dat) = ## Add routines for `seq`-ish `Self`
   proc cap(c: Self): int = c.dat.len
   proc newOfCap(c: Self, n: int): Self = result.dat.setLen n
   proc copy(c: var Self, i: int, d: Self, j: int) = c.dat[i] = d.dat[j]
   proc setNew(c, d: var Self) = swap c.dat, d.dat   # efficient c=d (& d=c)
 
-template oatCounted*(c, Self, cDotPop) =
-  ## Def routines for in-use cells counted by Nim-var maybe-ref'd off of a `c`.
+template oatCounted*(c, Self, cDotPop) = ## Add inUse for var maybe-ref'd off c.
   proc inUse(c: var Self, n: int) = cDotPop = typeof(cDotPop)(n) #TODO user grow policy
   proc inUse(c: Self): int {.used.} = cDotPop.int
