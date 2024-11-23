@@ -10,12 +10,12 @@ type    # More adaptable than Nim std/sets|tables (named ROats|VROats here)
     eq(t, K, K) is bool             # Stored key/ref `a` == stored `b`
     eq(t, K, Q) is bool             # Stored key/ref `a` == Query `b`
 
-  Resizable* = concept t        # Adds auto-grow-ability
+  Resizable* = concept t        # Gives grow/shrink-ability
     newOfCap(t, int) is type(t)     # Get a new `n`-slot instance
     copy(var t, int, t, int)        # Abstract t[i] = u[j]
     setNew(t, var t)                # Efficiently set all t = u
 
-  Valued*[V] = concept t        # Adds dictionary-like interfaces
+  Valued*[V] = concept t        # Gives dictionary-like interfaces
     val(var t, int, V)              # Set val for slot `i`
     val(t, int) is V                # Get val for slot `i`
 
@@ -30,12 +30,12 @@ type    # More adaptable than Nim std/sets|tables (named ROats|VROats here)
 
   PutKey*[K] = concept t        # incl,mgetOrPut.. `SERT` puts keys as an atom
     key(var t, int, K)              # Set key for slot `i` (upSert can inline)
-  POat*[K,Q] = concept t
+  POat*[K,Q] = concept t        # PutKey-Oat
     t is PutKey[K]; t is Oat[K,Q]
-  VPOat*[K,Q,V] = concept t
+  VPOat*[K,Q,V] = concept t     # Valued-PutKey-Oat
     t is PutKey[K]; t is VOat[K,Q]
 
-  Counted* = concept t          # Adds cheap total used slots; else O(N)
+  Counted* = concept t          # Gives cheap total used slots; else O(N)
     inUse(var t, int)               # Set count of slots in use
     inUse(t) is int                 # Get count of slots in use
 
