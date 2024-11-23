@@ -139,9 +139,8 @@ iterator topByVal*[K,Q,V](s: VOat[K,Q,V], n=10, min=V.low, order=topk.Cheap): (K
   for k, v in oats.pairs(s): (if v >= min: t.push (v, k))
   for e in topk.maybeOrdered(t, order): yield (e[1], e[0])
 
-template oatKStack*(s, Self, Cell, off, offT, K, Q) =
-  ## Define routines for back-to-back/stacked var.len, unpadded key data for
-  ## `string`-like `s` & `cligen/mslice.MSlice`-like `Q`.
+template oatKStack*(s, Self, Cell, off, offT, K, Q) = ## Defs for stacked varLen
+  ## `string`-like keys backed by `string`-like `s` w/`cligen/MSlice`-like `Q`.
   proc mem(c: Cell): pointer = s[c.off].addr          # Accessor
   proc key(c: Cell): K = K(mem: c.mem, len: c.len.int) # AccessorForUsr-Accessor
   proc keyQ(t: Self, k: K): Q = k
