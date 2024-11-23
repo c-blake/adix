@@ -40,8 +40,7 @@ type    # More adaptable than Nim std/sets|tables (named ROats|VROats here)
   VPOat*[K,Q,V] = concept t
     t is Pokable[K]; t is VOat[K,Q]
 
-  # `Hash` are stored to speed-up lookups & especially resizes.  It's ok to save
-  # fewer than 64-bits as long as tables are small enough.
+  # Can save `Hash` to ease lookup & especially resize. < 64 bits ok (if small).
   SavedHash* = concept t
     hash(t, 0, Hash)                # Set hash of slot `i`
     hash(t, 0) is Hash              # Get hash of slot `i`
