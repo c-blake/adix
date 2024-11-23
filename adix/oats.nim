@@ -4,13 +4,13 @@ type    # More adaptable than Nim std/sets|tables (named ROats|VROats here)
     cap(t) is int                   # Query alloc num. of slots
     inUse(var t, int)               # Set number of slots in use
     inUse(t) is int                 # Get number of slots in use
-    keyQ(t, K) is Q                 # Make a query from a stored key
+    used(t, int) is bool            # Test if slot `i` is used | free
+    key(t, int) is K                # Get key/key ref for slot `i`
+    keyQ(t, K) is Q                 # Make a Q)uery from a stored K)ey
     keyR(t, Q) is K                 # Convert internal Q to ref type K
     hash(Q) is Hash                 # hash key `k`
     eq(t, K, K) is bool             # Stored key `a` == stored `b`
     eq(t, K, Q) is bool             # Stored key `a` == query `b`
-    key(t, int) is K                # Get key for slot `i`
-    used(t, int) is bool            # Test if slot `i` is used | free
 
   Resizable* = concept t        # Adds auto-grow-ability
     newOfCap(t, int) is type(t)     # Get a new `n`-slot instance
@@ -22,16 +22,13 @@ type    # More adaptable than Nim std/sets|tables (named ROats|VROats here)
     val(t, int) is V                # Get val for slot `i`
 
   VOat*[K,Q,V] = concept t      # Valued-Oat; Needs val; Adds []/{}/.values/etc.
-    t is Valued[V]
-    t is Oat[K,Q]
+    t is Valued[V]; t is Oat[K,Q]
 
   ROat*[K,Q] = concept t        # R)esizable Oat; Needs new/cp/set;Adds setCap..
-    t is Resizable
-    t is Oat[K,Q]
+    t is Resizable; t is Oat[K,Q]
 
   VROat*[K,Q,V] = concept t     # V)alued, R)esizable Oat; Needs & adds both
-    t is Valued[V]
-    t is ROat[K,Q]
+    t is Valued[V]; t is ROat[K,Q]
 
   # This one is subtle/rare.  If ONLY `upSert` adds keys, tables can do dense
   # stack arenas w/narrow offset refs BUT this stops Rand.Acc poke of new keys.
@@ -39,11 +36,9 @@ type    # More adaptable than Nim std/sets|tables (named ROats|VROats here)
   Pokable*[K] = concept t
     key(var t, int, K)              # Set key for slot `i` (upSert can inline)
   POat*[K,Q] = concept t
-    t is Pokable[K]
-    t is Oat[K,Q]
+    t is Pokable[K]; t is Oat[K,Q]
   VPOat*[K,Q,V] = concept t
-    t is Pokable[K]
-    t is VOat[K,Q]
+    t is Pokable[K]; t is VOat[K,Q]
 
   # `Hash` are stored to speed-up lookups & especially resizes.  It's ok to save
   # fewer than 64-bits as long as tables are small enough.
