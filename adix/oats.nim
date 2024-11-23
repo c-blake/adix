@@ -66,7 +66,7 @@ proc oatSlot*[K,Q](t: Oat[K,Q]; q: Q; h: Hash; d: var Hash): int =
   -1 - j                                # <0 =>MISSING&insert idx = -1 - result
 
 proc tooFull*[K,Q](t: Oat[K,Q]; d: int; newSize: var int): bool =
-  #-> user proc w/some deflt but that BREAKS concept match (barely works as-is).
+  #-> user proc w/some provided default BUT there's a circular dep through `len`
   let sLen = t.len              # Could be a cap-long loop
   if sLen + 1 + 1 > t.cap:      # Call setCap pre-put? +1 new, +1 free
     newSize = t.cap shl 1; return true
@@ -95,8 +95,8 @@ template upSert*[K,Q](t: var Oat[K,Q], q, i, UP, SERT) =
   var i = oatSlot(t, q, h, d)
   if i >= 0: UP
   else:
-    if oats.tooFull(t, d, newSize):
-      when t is ROat[K,Q]:
+    if t.tooFull(d, newSize):
+      when t is Resizable:
         oats.setCap t, newSize; d = 0
         i = oatSlot(t, q, h, d)
       else: raise newException(ValueError, "non-resizable table too full")
@@ -106,20 +106,17 @@ template upSert*[K,Q](t: var Oat[K,Q], q, i, UP, SERT) =
     when t is Counted: t.inUse t.len + 1
 
 proc incl*[K,Q](t: var POat[K,Q], q: Q) =
-  t.upSert(q, i): discard
-  do: t.key(i, t.keyR q)
+  t.upSert q, i, UP=(discard), SERT=(t.key(i, t.keyR q))
 
 proc `[]`*[K,Q,V](t: VOat[K,Q,V], q: Q): V =
   if (var d: Hash; let i = oatSlot(t, q, q.hash, d); i >= 0): result = t.val i
   else: raise newException(KeyError, "no such key")
 
 proc `[]=`*[K,Q,V](t: var VPOat[K,Q,V], q: Q, v: V) =
-  t.upSert(q, i): t.val i
-  do: t.key(i, t.keyR q); t.val i, v
+  t.upSert q, i, UP=(t.val i), SERT=(t.key(i, t.keyR q); t.val i, v)
 
 proc mgetOrPut*[K,Q,V](t: var VPOat[K,Q,V], q: Q, v: V): var V =
-  t.upSert(q, i): t.val i
-  do: t.key(i, t.keyR q); t.val i, v
+  t.upSert q, i, UP=(t.val i), SERT=(t.key(i, t.keyR q); t.val i, v)
 
 proc getOrDefault*[K,Q,V](t: VOat[K,Q,V], q: Q, def=default(V)): V =
   if (var d: Hash; let i = oatSlot(t, q, q.hash, d); i >= 0): result = t.val i
@@ -133,8 +130,8 @@ iterator values*[K,Q,V](t: VOat[K,Q,V]): V =
 iterator pairs*[K,Q,V](t: VOat[K,Q,V]): (K, V) =
   for i in 0 ..< t.cap: (if t.used i: yield (t.key i, t.val i))
 
-iterator topByVal*[K,Q,V](s: VOat[K,Q,V], n=10, min=V.low, order=topk.Cheap): (K, V)=
-  ## Yield biggest `n` items by value in `s` in `order`.
+iterator topByVal*[K,Q,V](s:VOat[K,Q,V], n=10,min=V.low,order=topk.Cheap):(K,V)=
+  ## Yield biggest `n` items by value >= `min` in `s` in `order`.
   var t = initTopK[(V,K)](n)
   for k, v in oats.pairs(s): (if v >= min: t.push (v, k))
   for e in topk.maybeOrdered(t, order): yield (e[1], e[0])
@@ -156,11 +153,11 @@ template oatKStack*(s, Self, Cell, off, offT, K, Q) = ## Defs for stacked varLen
     else: fail
 
 template oatSeq*(Self, dat) = ## Add routines for `seq`-ish `Self`
-  proc cap(c: Self): int = c.dat.len
-  proc newOfCap(c: Self, n: int): Self = result.dat.setLen n
-  proc copy(c: var Self, i: int, d: Self, j: int) = c.dat[i] = d.dat[j]
-  proc setNew(c, d: var Self) = swap c.dat, d.dat   # efficient c=d (& d=c)
+  proc cap(t: Self): int = t.dat.len
+  proc newOfCap(t: Self, n: int): Self = result.dat.setLen n
+  proc copy(t: var Self, i: int, d: Self, j: int) = t.dat[i] = d.dat[j]
+  proc setNew(t, d: var Self) = swap t.dat, d.dat   # efficient t=d (& d=t)
 
-template oatCounted*(c, Self, cDotPop) = ## Add inUse for var maybe-ref'd off c.
-  proc inUse(c: var Self, n: int) = cDotPop = typeof(cDotPop)(n) #TODO user grow policy
-  proc inUse(c: Self): int {.used.} = cDotPop.int
+template oatCounted*(t, Self, cDotPop) = ## Add inUse for var maybe-ref'd off t.
+  proc inUse(t: var Self, n: int) = cDotPop = typeof(cDotPop)(n) #TODO user grow policy
+  proc inUse(t: Self): int {.used.} = cDotPop.int
