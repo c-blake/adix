@@ -1,16 +1,14 @@
 import std/hashes, adix/[bitop, topk]; export topk.TopKOrder
 type    # More adaptable than Nim std/sets|tables (named ROats|VROats here)
   Oat*[K, Q] = concept t        # Base Concept: Open-Addressed Table
-    cap(t) is int                   # Query alloc num. of slots
-    inUse(var t, int)               # Set number of slots in use
-    inUse(t) is int                 # Get number of slots in use
+    cap(t) is int                   # Query allocated slot count
     used(t, int) is bool            # Test if slot `i` is used | free
     key(t, int) is K                # Get key/key ref for slot `i`
     keyQ(t, K) is Q                 # Make a Q)uery from a stored K)ey
     keyR(t, Q) is K                 # Convert internal Q to ref type K
     hash(Q) is Hash                 # hash key `k`
-    eq(t, K, K) is bool             # Stored key `a` == stored `b`
-    eq(t, K, Q) is bool             # Stored key `a` == query `b`
+    eq(t, K, K) is bool             # Stored key/ref `a` == stored `b`
+    eq(t, K, Q) is bool             # Stored key/ref `a` == Query `b`
 
   Resizable* = concept t        # Adds auto-grow-ability
     newOfCap(t, int) is type(t)     # Get a new `n`-slot instance
@@ -31,8 +29,8 @@ type    # More adaptable than Nim std/sets|tables (named ROats|VROats here)
     t is Valued[V]; t is ROat[K,Q]
 
   # This one is subtle/rare.  If ONLY `upSert` adds keys, tables can do dense
-  # stack arenas w/narrow offset refs BUT this stops Rand.Acc poke of new keys.
-  # Commonly expected routines need it => Encode ability as refined concepts.
+  # stack arenas w/narrow offset refs.  Other commonly expected routines need
+  # random access poke of new keys => Encode ability as refined concepts.
   Pokable*[K] = concept t
     key(var t, int, K)              # Set key for slot `i` (upSert can inline)
   POat*[K,Q] = concept t
@@ -40,12 +38,18 @@ type    # More adaptable than Nim std/sets|tables (named ROats|VROats here)
   VPOat*[K,Q,V] = concept t
     t is Pokable[K]; t is VOat[K,Q]
 
+  Counted* = concept t          # Adds cheap total used slots; else O(N)
+    inUse(var t, int)               # Set count of slots in use
+    inUse(t) is int                 # Get count of slots in use
+
   # Can save `Hash` to ease lookup & especially resize. < 64 bits ok (if small).
   SavedHash* = concept t
     hash(t, 0, Hash)                # Set hash of slot `i`
     hash(t, 0) is Hash              # Get hash of slot `i`
 
-proc len*[K,Q](t: Oat[K,Q]): int = t.inUse ## stdlib-style slots in-use
+proc len*[K,Q](t: Oat[K,Q]): int = ## stdlib-style slots in-use; Uncounted=>O(N)
+  when t is Counted: t.inUse
+  else: (for i in 0 ..< t.cap: (if t.used i: inc result))
 
 iterator probeSeq(h, mask: Hash): int =
   var i: Hash = h and mask                # Start w/home address
@@ -89,7 +93,7 @@ proc setCap*[K,Q](t: var ROat[K,Q]; newSize = -1) =
       ns.copy -1 - ns.oatSlot(q, h, d), t, i
   t.setNew ns
 
-template upSert*[K,Q](t: Oat[K,Q], q, i, UP, SERT) =
+template upSert*[K,Q](t: var Oat[K,Q], q, i, UP, SERT) =
   var d, newSize: Hash
   let h = q.hash
   var i = oatSlot(t, q, h, d)
@@ -103,7 +107,7 @@ template upSert*[K,Q](t: Oat[K,Q], q, i, UP, SERT) =
     i = -1 - i
     SERT
     when t is SavedHash: t.hash i, h    # Late in case `SERT` aborts insert
-    t.inUse t.len + 1
+    when t is Counted: t.inUse t.len + 1
 
 proc incl*[K,Q](t: var POat[K,Q], q: Q) =
   t.upSert(q, i): discard
