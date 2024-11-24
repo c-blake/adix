@@ -1042,7 +1042,7 @@ proc getOrDefault*[K,V,Z;z:static int](t: LPTabz[K,V,Z,z], key: K,
                                        def=default(V)): V {.inline.} =
   mixin rawGet
   let i = t.rawGet(key)
-  result = if i >= 0: t.cell(i).val else: default
+  result = if i >= 0: t.cell(i).val else: def
 
 proc del*[K,V,Z;z:static int](t: var LPTabz[K,V,Z,z], key: K) {.inline.} =
   ## delete one key `key` from `t`; If you want to know if it was present then

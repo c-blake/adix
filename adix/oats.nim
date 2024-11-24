@@ -67,7 +67,7 @@ proc oatSlot*[K,Q](t: Oat[K,Q]; q: Q; h: Hash; d: var Hash): int =
 
 proc tooFull*[K,Q](t: Oat[K,Q]; d: int; newSize: var int): bool =
   #-> user proc w/some provided default BUT there's a circular dep through `len`
-  let sLen = t.len              # Could be a cap-long loop
+  let sLen=t.len                # Could be a cap-long loop
   if sLen + 1 + 1 > t.cap:      # Call setCap pre-put? +1 new, +1 free
     newSize = t.cap shl 1; return true
   let p2 = lgCeil(t.cap)        # NOT an over-deep search; Would like to test
@@ -119,7 +119,7 @@ proc mgetOrPut*[K,Q,V](t: var VPOat[K,Q,V], q: Q, v: V): var V =
   t.upSert q, i, UP=(t.val i), SERT=(t.key(i, t.keyR q); t.val i, v)
 
 proc getOrDefault*[K,Q,V](t: VOat[K,Q,V], q: Q, def=default(V)): V =
-  if (var d: Hash; let i = oatSlot(t, q, q.hash, d); i >= 0): result = t.val i
+  if (var d: Hash; let i = oatSlot(t, q, q.hash, d); i >= 0): t.val i else: def
 
 iterator items*[K,Q](t: Oat[K,Q]): K =
   for i in 0 ..< t.cap: (if t.used i: yield t.key i)
