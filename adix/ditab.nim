@@ -370,7 +370,7 @@ proc hasKeyOrPut*[K,V](t: var DITab[K,V], key: K, val: V): bool {.inline.} =
 proc getOrDefault*[K,V](t: DITab[K,V], key: K, def=default(V)): V {.inline.} =
   mixin rawGet
   let i = t.rawGet(key)
-  result = if i >= 0: t.data[i].val else: default
+  result = if i >= 0: t.data[i].val else: def
 
 proc del*[K,V](t: var DITab[K,V], key: K) {.inline.} =
   ## delete one key `key` from `t`; If you want to know if it was present then
