@@ -113,7 +113,7 @@ func mergeNew*(s: var DigesT, force=false, cpr = -1.0) =
     s.wBuf = 0
 
 func add*(s: var DigesT, x: float, w=1) = ## Main update API
-  if isnan(x): raise newException(ValueError, "cannot add NaN")
+  if isNaN(x): raise newException(ValueError, "cannot add NaN")
   if s.nT >= s.buf.len - s.nM - 1:
     s.mergeNew
   let i = s.nT; inc s.nT
@@ -183,7 +183,7 @@ func quantile*(s: var DigesT, q: float): float =
   return weightedAverage(s.mrg[n-1].m, z1, s.max, z2)
 
 func cdf*(s: var DigesT, x: float): float =
-  if x.isnan: return NaN
+  if x.isNaN: return NaN
   s.mergeNew
   if s.nM == 0: return NaN      # no data to examine
   if x < s.min: return 0.0      # -inf works fine
