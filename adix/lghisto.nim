@@ -27,6 +27,7 @@
 ## Bollinger Band style smooths.  Second, floating point weights for EWMA-like
 ## decaying memory are not possible since FP arithmetic kind of breaks BISTs.
 
+{.warning[Uninit]:off, warning[ProveInit]:off.} # Should be verbosity:2, not 1
 when not declared(addFloat): import std/formatfloat
 import adix/bist, std/math
 type

@@ -54,6 +54,7 @@
 ## also needs inverse transforms on the final pass & current xforms are already
 ## cheap compared to L2 or worse bandwidth costs.  So, 5-20% boost, I'd guess.)
 
+{.warning[Uninit]:off, warning[ProveInit]:off.} # Should be verbosity:2, not 1
 when not declared(stdout): import std/syncio
 import adix/[cpuCT, cumsum], std/[bitops, math, algorithm]
 when defined(cpuPrefetch): import cligen/prefetch # Keep cligen a soft-dep

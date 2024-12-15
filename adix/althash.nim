@@ -52,6 +52,7 @@
 ## hashes or `a` alone can similarly mislead.  TLDR, want >=2 "summary numbers"
 ## not one & whole curves are best.
 
+{.warning[Uninit]:off, warning[ProveInit]:off.} # Should be verbosity:2, not 1
 import std/hashes, bitop    # For the Hash type and system `hash()`es
 export Hash, `!$`, hash
 

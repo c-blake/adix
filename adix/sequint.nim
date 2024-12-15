@@ -28,6 +28,7 @@
 # few use (since impls are just not handy or may be slow).  Thus it is not a bad
 # choice for Nim stdlib inclusion, especially with per CPU speed forks.
 
+{.warning[Uninit]:off, warning[ProveInit]:off.} # Should be verbosity:2, not 1
 import bitop
 const iBit = 8 * sizeof(int)
 const iShf = lgPow2(iBit)

@@ -1,3 +1,4 @@
+{.warning[Uninit]:off, warning[ProveInit]:off.} # Should be verbosity:2, not 1
 import adix/cpuCT
 
 proc `[]`[C, W](h: ptr UncheckedArray[C], i: W): var C {.inline.} =

@@ -39,7 +39,7 @@ proc wu(size=9999,dSize=81920, tm=false, Dlm="") =
   ## Count unique & total words on `stdin`. <32B long; <128 MiB unique data.
   let sep = initSep(if Dlm.len != 0: Dlm else: d)
   let t0 = if tm: epochTime() else: 0.0
-  var h: Counts; h.setCap size  # pre-size table & data
+  var h=Counts(); h.setCap size # pre-size table & data
   s.setLen dSize; s.setLen 0
   var nTot = 0
   block IO:
