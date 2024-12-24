@@ -56,29 +56,28 @@ when isMainModule:
       sum += l
     echo "sum: ", sum, " in ", epochTime() - t0, " seconds; n: ", n
   else:
-   func lnaT*(x: float32): float32 {.inline.} =
-    var x = x
-    let p = cast[ptr f4s](x.addr)
-    p.sign = 0                                    # force x to be positive
-    let e = (p.expo.cint - 127).float*LN2         # ln(x*2^y) == ln(x) + y*ln2
-    p.expo = 127                                  # force x to [1, 2)
-    if x > 1.88f32:
-      let y = x.float*0.5 - 1.0
-      {.cast(noSideEffect).}: echo "x: ",x," e: ",e," y: ",y
-      e + LN2 + y*(1.0 + y*(-0.5 + y*(1.0/3.0 + y*(-0.25 + y*(0.2 - y/6.0)))))
-    elif x < 1.06f32:
-      let y = x.float - 1.0
-      {.cast(noSideEffect).}: echo "X: ",x," E: ",e," Y: ",y
-      e       + y*(1.0 + y*(-0.5 + y*(1.0/3.0 + y*(-0.25 + y*(0.2 - y/6.0)))))
-    else:
-      let d = x.float * r1_2                      # x -> dbl [sqrt(1/2), sqrt2)
-      let r = (d.float - 1.0)/(d.float + 1.0)     # r for r)atio of -1/+1
-      let s = r*r                                 # s for s)quare
-      {.cast(noSideEffect).}: echo "x: ",x," d: ",d," e: ",e," r: ",r," s: ",s,
-                                   " iM: ",s.lnaSeries
-    float32(e + LNr2 + r*s.lnaSeries) # (1.37288 +- 0.00003)X faster on SkyLake
     when not declared(stdout): import std/[syncio, formatFloat]
     import std/[math, heapqueue]
+    proc lnaT*(x: float32): float32 {.inline.} =
+      var x = x
+      let p = cast[ptr f4s](x.addr)
+      p.sign = 0                                  # force x to be positive
+      let e = (p.expo.cint - 127).float*LN2       # ln(x*2^y) == ln(x) + y*ln2
+      p.expo = 127                                # force x to [1, 2)
+      if x > 1.88f32:
+        let y = x.float*0.5 - 1.0
+        echo "x: ",x," e: ",e," y: ",y
+        result = e + LN2 + y*(1.0 + y*(-0.5 + y*(1.0/3.0 + y*(-0.25 + y*(0.2 - y/6.0)))))
+      elif x < 1.06f32:
+        let y = x.float - 1.0
+        echo "X: ",x," E: ",e," Y: ",y
+        result = e       + y*(1.0 + y*(-0.5 + y*(1.0/3.0 + y*(-0.25 + y*(0.2 - y/6.0)))))
+      else:
+        let d = x.float * r1_2                    # x -> dbl [sqrt(1/2), sqrt2)
+        let r = (d.float - 1.0)/(d.float + 1.0)   # r for r)atio of -1/+1
+        let s = r*r                               # s for s)quare
+        echo "x: ",x," d: ",d," e: ",e," r: ",r," s: ",s," iM: ",s.lnaSeries
+        result = float32(e + LNr2 + r*s.lnaSeries)
     const n = 15  # echo top <ThisMany> absolute & relative errors
     var abErr, rlErr: HeapQueue[(float, float32, float32, float32)]
     for i in 0 .. (1u64 shl 32) - 1:
