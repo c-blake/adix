@@ -29,7 +29,7 @@
 
 {.warning[Uninit]:off, warning[ProveInit]:off.} # Should be verbosity:2, not 1
 when not declared(addFloat): import std/formatfloat
-import adix/bist, std/math
+import adix/[bist, lna]; from std/math import exp, isNaN
 type
   LgHisto*[C] = object  ## Log-spaced histogram with `Bist[C]` backing
     n: int              # number of bins
@@ -54,8 +54,8 @@ func init*[C](s: var LgHisto[C], a=1e-16, b=1e20, n=8300) =
   s.n    = n
   s.a    = a
   s.b    = b
-  s.aLn  = ln(a)
-  s.h    = (ln(b) - ln(a))/float(n - 1)
+  s.aLn  = lna(a)
+  s.h    = (lna(b) - lna(a))/float(n - 1)
   s.hInv = 1.0/s.h
   s.bist = initBist[C](2*n + 1)
 
@@ -68,10 +68,10 @@ func space*[C](s: LgHisto[C]): int = s.sizeof + s.bist.space
 func toIx*[F,C](s: LgHisto[C], x: F): int =
   ## Find bin index for value `x`; underflows get `[0]` & overflows get `[2*n]`.
   if   x <= -s.a:
-    if x >= -s.b: result = s.n - 1 - int( (ln(-x) - s.aLn)*s.hInv)
+    if x >= -s.b: result = s.n - 1 - int( (lna(-x) - s.aLn)*s.hInv)
     else        : result = 0
   elif x >= +s.a:
-    if x <= +s.b: result = s.n + 1 + int( (ln(+x) - s.aLn)*s.hInv)
+    if x <= +s.b: result = s.n + 1 + int( (lna(+x) - s.aLn)*s.hInv)
     else        : result = 2*s.n
   else: result = s.n
 
