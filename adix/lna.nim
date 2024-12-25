@@ -1,5 +1,5 @@
 ## FastIEEESinglePrecNaturalLogAbs; Just arctanh Taylor@1. Was 5X fastr'n mid00s
-## x87. On SkyLake/glibc2.40/gcc14 ~1.1-1.4X faster; ARM64glibc somehow(fastHW?)
+## x87. On SkyLake/glibc2.40/gcc14 ~1.2-2X faster; ARM64glibc somehow(fastHW?)
 ## ~4X faster.  Unsure about Win/OSX. See news.ycombinator.com/item?id=40758562
 type f4s {.packed.} = object            # De-structuring object for IEEE-single
   frac1 {.bitsize: 16}: cuint           # Little-Endian format only right now
@@ -65,7 +65,7 @@ when isMainModule:
       inc n
       if not (l.isNaN or 2*x==x): sum += l
     let dt = epochTime() - t0 - dt0
-    echo &"sum0: {sum0:.0f} sum: {sum} in {dt:.6f} second; n: {n}; {dt/n.float*1e9:.2f} ns/eval"
+    echo &"S0:{sum0:.2g} sL:{sum} in {dt:.6f} second;n: {n}; {dt/n.float*1e9:.2f} ns/eval"
   else:
     when not declared(stdout): import std/[syncio, formatFloat]
     import std/[math, heapqueue]
@@ -117,42 +117,45 @@ when isMainModule:
     echo "abs: ";(while abErr.len>0:(let e=abErr.pop;echo " ",e,lnaT(e[1])))
     echo "rel: ";(while rlErr.len>0:(let e=rlErr.pop;echo " ",e,lnaT(e[1])))
 #[ b=(chrt 99 taskset -c 2-3 env -i HOME=/u/cb PATH=/u/cb/bin:/usr/local/bin:/usr/bin)
-for p in *Fast *Std *FastFIM *StdFIM *FastFM *StdFM;{ec $p;repeat 2 nor 0 $b ./$p}
-AlderLake (i7-1370P @5.2 GHz); frq v
-  lnaFast - 1.194x faster
-  sum: 1652640836.519009 in 10.62613010406494 seconds; n: 4278190080
-  sum: 1652640836.519009 in 10.62076020240784 seconds; n: 4278190080
-  lnaStd
-  sum: inf in 12.71785449981689 seconds; n: 4278190080
-  sum: inf in 12.68324708938599 seconds; n: 4278190080
-  lnaFastFIM - 1.174x faster
-  sum: 1652640836.519009 in 10.93485021591187 seconds; n: 4278190080
-  sum: 1652640836.519009 in 11.22672414779663 seconds; n: 4278190080
-  lnaStdFIM
-  sum: inf in 12.90901017189026 seconds; n: 4278190080
-  sum: inf in 12.83666086196899 seconds; n: 4278190080
-  lnaFastFM - 1.104x faster
-  sum: 1652640836.519009 in 9.682320833206177 seconds; n: 4278190080
-  sum: 1652640836.519009 in 9.732645034790039 seconds; n: 4278190080
-  lnaStdFM
-  sum: inf in 10.70303058624268 seconds; n: 4278190080
-  sum: inf in 10.68658685684204 seconds; n: 4278190080
-SkyLake (i7-6700k@4.0GHz): frq f
-  lnaFast - 1.373x faster
-  sum: 1652640836.519009 in 19.2596070766449 seconds; n: 4278190080
-  sum: 1652640836.519009 in 19.25886845588684 seconds; n: 4278190080
-  lnaStd
-  sum: inf in 26.43976330757141 seconds; n: 4278190080
-  sum: inf in 26.44279456138611 seconds; n: 4278190080
-  lnaFastFIM - 1.138x faster
-  sum: 1652640836.519009 in 19.66579365730286 seconds; n: 4278190080
-  sum: 1652640836.519009 in 19.66761422157288 seconds; n: 4278190080
-  lnaStdFIM
-  sum: inf in 22.48359608650208 seconds; n: 4278190080
-  sum: inf in 22.38936853408813 seconds; n: 4278190080
-  lnaFastFM - 1.388x faster
-  sum: 1652640836.519009 in 15.90760946273804 seconds; n: 4278190080
-  sum: 1652640836.519009 in 15.90723752975464 seconds; n: 4278190080
-  lnaStdFM
-  sum: inf in 22.09396910667419 seconds; n: 4278190080
-  sum: inf in 22.07609820365906 seconds; n: 4278190080 ]#
+i7_6700k$ for mode in '' -d:fm -d:fim -d:stdlib;{nim c -d:r -d:bench $mode lna>&/n;repeat 3 nor 0 $b ./lna}
+S0:5.3e+36 sL:1652640659.073322 in 13.312009 second;n: 8556380160; 1.56 ns/eval
+S0:5.3e+36 sL:1652640659.073322 in 13.285249 second;n: 8556380160; 1.55 ns/eval
+S0:5.3e+36 sL:1652640659.073322 in 13.296462 second;n: 8556380160; 1.55 ns/eval
+                                                                   1.55 +- 0.003
+S0:5.3e+36 sL:1652640659.073322 in 10.756718 second;n: 8556380160; 1.26 ns/eval
+S0:5.3e+36 sL:1652640659.073322 in 10.712787 second;n: 8556380160; 1.25 ns/eval
+S0:5.3e+36 sL:1652640659.073322 in 10.718144 second;n: 8556380160; 1.25 ns/eval
+                                                                   1.25 +- 0.003
+S0:5.3e+36 sL:1652640659.073322 in 11.040576 second;n: 8556380160; 1.29 ns/eval
+S0:5.3e+36 sL:1652640659.073322 in 11.030243 second;n: 8556380160; 1.29 ns/eval
+S0:5.3e+36 sL:1652640659.073322 in 10.904071 second;n: 8556380160; 1.27 ns/eval
+                                                                   1.27 +- 0.006
+S0:5.3e+36 sL:1641011596.122295 in 20.227257 second;n: 8556380160; 2.36 ns/eval
+S0:5.3e+36 sL:1641011596.122295 in 20.227509 second;n: 8556380160; 2.36 ns/eval
+S0:5.3e+36 sL:1641011596.122295 in 20.231506 second;n: 8556380160; 2.36 ns/eval
+                                                                   2.36 +- 0.003
+i7_1370P$ for mode in '' -d:fm -d:fim -d:stdlib;{nim c -d:r -d:bench $mode lna>&/n;repeat 3 nor 0 $b ./lna}
+S0:5.3e+36 sL:1652640659.073322 in 6.615819 second;n: 8556380160; 0.77 ns/eval
+S0:5.3e+36 sL:1652640659.073322 in 6.980933 second;n: 8556380160; 0.82 ns/eval
+S0:5.3e+36 sL:1652640659.073322 in 7.320486 second;n: 8556380160; 0.86 ns/eval
+                                                                  0.773 +- 0.017
+S0:5.3e+36 sL:1652640659.073322 in 7.609612 second;n: 8556380160; 0.89 ns/eval
+S0:5.3e+36 sL:1652640659.073322 in 7.661034 second;n: 8556380160; 0.90 ns/eval
+S0:5.3e+36 sL:1652640659.073322 in 8.191683 second;n: 8556380160; 0.96 ns/eval
+                                                                  0.889 +- 0.003
+S0:5.3e+36 sL:1652640659.073322 in 8.293185 second;n: 8556380160; 0.97 ns/eval
+S0:5.3e+36 sL:1652640659.073322 in 8.342474 second;n: 8556380160; 0.98 ns/eval
+S0:5.3e+36 sL:1652640659.073322 in 8.330391 second;n: 8556380160; 0.97 ns/eval
+                                                                  0.969 +- 0.003
+S0:5.3e+36 sL:1641011596.122295 in 7.963845 second;n: 8556380160; 0.93 ns/eval
+S0:5.3e+36 sL:1641011596.122295 in 8.605017 second;n: 8556380160; 1.01 ns/eval
+S0:5.3e+36 sL:1641011596.122295 in 9.766621 second;n: 8556380160; 1.14 ns/eval
+                                                                  0.931 +- 0.027
+In Summary: Skylake(4.7GHz)      AlderLake (5.2GHzPcore)
+            1.55 +- 0.003        0.773 +- 0.017
+            1.25 +- 0.003        0.889 +- 0.003
+            1.27 +- 0.006        0.969 +- 0.003
+ 1.89x      2.36 +- 0.003 1.20x  0.931 +- 0.027
+Note that assessing CPU superscalar pipeline util is much more subtle than raw
+wall clock time.  These "speed-ups" are really ratios of "incremental wall time
+per loop per lna() eval" in best possible, hot-everything cases. ]#
