@@ -43,7 +43,7 @@ func lna*(x: float32): float32 {.inline.} =
 
 when isMainModule:
   when defined(bench):
-    import std/[times, math, formatFloat, strformat]
+    import std/[times, math, strformat]
     var sum0 = 0.0; var sum = 0.0; var n = 0
     let t00 = epochTime()
     for i in 0 .. (1u64 shl 32) - 1:
@@ -65,7 +65,7 @@ when isMainModule:
       inc n
       if not (l.isNaN or 2*x==x): sum += l
     let dt = epochTime() - t0 - dt0
-    echo &"S0:{sum0:.2g} sL:{sum} in {dt:.6f} second;n: {n}; {dt/n.float*1e9:.2f} ns/eval"
+    echo &"sX:{sum0:.2g} sL:{sum:.0f} in {dt0:.5f} + {dt:.5f} s;n: {n}; {dt/n.float*1e9:.3f} ns/eval"
   else:
     when not declared(stdout): import std/[syncio, formatFloat]
     import std/[math, heapqueue]
@@ -151,11 +151,12 @@ S0:5.3e+36 sL:1641011596.122295 in 7.963845 second;n: 8556380160; 0.93 ns/eval
 S0:5.3e+36 sL:1641011596.122295 in 8.605017 second;n: 8556380160; 1.01 ns/eval
 S0:5.3e+36 sL:1641011596.122295 in 9.766621 second;n: 8556380160; 1.14 ns/eval
                                                                   0.931 +- 0.027
-In Summary: Skylake(4.7GHz)      AlderLake (5.2GHzPcore)
-            1.55 +- 0.003        0.773 +- 0.017
-            1.25 +- 0.003        0.889 +- 0.003
-            1.27 +- 0.006        0.969 +- 0.003
- 1.89x      2.36 +- 0.003 1.20x  0.931 +- 0.027
+In Summary: Skylake(4.7GHz)      AlderLake (5.2GHzPcore) 2ndBatch           δ
+            1.55 +- 0.003        0.773 +- 0.017          (0.773 +- 0.016)  0.0σ
+            1.25 +- 0.003        0.889 +- 0.003          (0.881 +- 0.0013) 2.5σ
+            1.27 +- 0.006        0.969 +- 0.003          (0.893 +- 0.034)  2.2σ
+ 1.89x      2.36 +- 0.003 1.20x  0.931 +- 0.027          (0.980 +- 0.01)   1.7σ
 Note that assessing CPU superscalar pipeline util is much more subtle than raw
 wall clock time.  These "speed-ups" are really ratios of "incremental wall time
-per loop per lna() eval" in best possible, hot-everything cases. ]#
+per loop per lna() eval" in best possible, hot-everything cases.  Min estimate
+here is simply min3 +- (med-min3)/3 which works ok-ish as per final δ. ]#
