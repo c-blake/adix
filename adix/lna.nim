@@ -21,26 +21,29 @@ func lnaSeries(s: float): float {.inline.} =          # Worst case accuracies:
 
 func lna*(x: float32): float32 {.inline.} =
   ## Return fast,approx Natural Log(Abs(x)) { 'a' for a)bs | a)pprox } by ATanH
+  ## 82% of the time & by std ln(1+x) series 12+6=18%. { BUT 0.lna=-88,not -Inf|
+  ## +Inf@Inf; Not fixed inline here since outer caller should block|handle 0. }
   var x = x
   let p = cast[ptr f4s](x.addr)
-  p.sign = 0                                    # force x to be positive
+  p.sign = 0                                    # abs(); Force x to be positive
   let e = (p.expo.cint - 127).float*LN2         # ln(x*2^y) == ln(x) + y*ln2
   p.expo = 127                                  # force x to [1, 2)
-  if x > 1.88f32:
-    let y = x.float*0.5 - 1.0
+  if x > 1.88f32:   # Small y in x=2-y: 6 terms of ln(1+y)=Σy^i/i BUT ..
+    let y = x.float*0.5 - 1.0                   #..adjusted for NEXT octave.
     e + LN2 + y*(1.0 + y*(-0.5 + y*(1.0/3.0 + y*(-0.25 + y*(0.2 - y/6.0)))))
-  elif x < 1.06f32:
+  elif x < 1.06f32: # Small y in x=1+y: 6 terms of ln(1+y)=Σy^i/i
     let y = x.float - 1.0
     e       + y*(1.0 + y*(-0.5 + y*(1.0/3.0 + y*(-0.25 + y*(0.2 - y/6.0)))))
-  else:
+  else:             # 2*atanh(x) = ln((1+x)/(1-x)) = 2*Σx^o/o for odd 'o'
     let d = x.float * r1_2                      # x -> dbl [sqrt(1/2), sqrt2)
+    # d=(1+r)/(1-r); (1+r)=(1-r)*d=d-rd; d-rd-r-1; r*(d+1)=d-1; r=(d-1)/(d+1)
     let r = (d.float - 1.0)/(d.float + 1.0)     # r for r)atio of -1/+1
     let s = r*r                                 # s for s)quare
-    float32(e + LNr2 + r*s.lnaSeries) # (1.37288 +- 0.00003)X faster on SkyLake
+    e + LNr2 + r*s.lnaSeries    # (1.37288 +- 0.00003)X faster on SkyLake
 
 when isMainModule:
   when defined(bench):
-    import std/[times, math, formatFloat]
+    import std/[times, math, formatFloat, strformat]
     var sum = 0.0; var n = 0
     let t0 = epochTime()
     for i in 0 .. (1u64 shl 32) - 1:
@@ -52,9 +55,9 @@ when isMainModule:
       else                : (let l = lna(x))
       inc n
       if l.isNaN: continue
-      if l == Inf: echo "Inf@x: ", x
       sum += l
-    echo "sum: ", sum, " in ", epochTime() - t0, " seconds; n: ", n
+    let dt = epochTime() - t0
+    echo &"sum: {sum} in {dt:.6f} second; n: {n}; {dt/n.float*1e9:.2f} ns/eval"
   else:
     when not declared(stdout): import std/[syncio, formatFloat]
     import std/[math, heapqueue]
