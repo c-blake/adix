@@ -54,8 +54,7 @@ when isMainModule:
       when defined(stdlib): (let l = ln(abs(x)))
       else                : (let l = lna(x))
       inc n
-      if l.isNaN: continue
-      sum += l
+      if not (l.isNaN or 2*x==x): sum += l
     let dt = epochTime() - t0
     echo &"sum: {sum} in {dt:.6f} second; n: {n}; {dt/n.float*1e9:.2f} ns/eval"
   else:
