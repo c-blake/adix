@@ -1,0 +1,14 @@
+nimTitle	bitop	adix/bitop.html	module adix/bitop		0
+nim	ceilPow2	adix/bitop.html#ceilPow2,int	proc ceilPow2(x: int): int		5
+nim	floorPow2	adix/bitop.html#floorPow2,int	proc floorPow2(x: int): int		18
+nim	lgPow2	adix/bitop.html#lgPow2,int	proc lgPow2(x: int): int		41
+nim	lgCeil	adix/bitop.html#lgCeil,int	proc lgCeil(x: int): int		47
+nim	lgFloor	adix/bitop.html#lgFloor,int	proc lgFloor(x: int): int		51
+nim	lg	adix/bitop.html#lg,int	proc lg(x: int): int		55
+nim	rotateLeftBits	adix/bitop.html#rotateLeftBits,uint64,int	proc rotateLeftBits(a: uint64; numBits: int): uint64		59
+nim	rotateRightBits	adix/bitop.html#rotateRightBits,uint64,int	proc rotateRightBits(a: uint64; numBits: int): uint64		63
+nim	reverseBitsByte	adix/bitop.html#reverseBitsByte,uint8	proc reverseBitsByte(x: uint8): uint8		67
+nim	reverseBits	adix/bitop.html#reverseBits,uint32	proc reverseBits(x: uint32): uint32		80
+nim	reverseBits	adix/bitop.html#reverseBits,uint64	proc reverseBits(x: uint64): uint64		86
+nim	isPow2	adix/bitop.html#isPow2,int	proc isPow2(x: int): bool		96
+nimgrp	reversebits	adix/bitop.html#reverseBits-procs-all	proc		80
