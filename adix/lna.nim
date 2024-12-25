@@ -4,7 +4,7 @@
 type f4s {.packed.} = object            # De-structuring object for IEEE-single
   frac1 {.bitsize: 16}: cuint           # Little-Endian format only right now
   frac0 {.bitsize:  7}: cuint           # `cuint` should make Nim use `unsigned`
-  expo  {.bitsize:  8}: cuint           #..for expressions like `expo-126`. Not
+  expo  {.bitsize:  8}: cuint           #..for expressions like `expo-127`. Not
   sign  {.bitsize:  1}: cuint           #..sure where this is documented.
 
 const r1_2 = 0.70710678118654752440f64
