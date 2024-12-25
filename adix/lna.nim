@@ -44,7 +44,16 @@ func lna*(x: float32): float32 {.inline.} =
 when isMainModule:
   when defined(bench):
     import std/[times, math, formatFloat, strformat]
-    var sum = 0.0; var n = 0
+    var sum0 = 0.0; var sum = 0.0; var n = 0
+    let t00 = epochTime()
+    for i in 0 .. (1u64 shl 32) - 1:
+      var i = uint32(i)
+      let x = cast[ptr float32](i.addr)[]
+      if x.isNaN: continue
+      if x == 0.0f32: continue            # -inf
+      inc n
+      if not (x.isNaN or 2*x==x): sum0 += x
+    let dt0 = epochTime() - t00
     let t0 = epochTime()
     for i in 0 .. (1u64 shl 32) - 1:
       var i = uint32(i)
@@ -55,8 +64,8 @@ when isMainModule:
       else                : (let l = lna(x))
       inc n
       if not (l.isNaN or 2*x==x): sum += l
-    let dt = epochTime() - t0
-    echo &"sum: {sum} in {dt:.6f} second; n: {n}; {dt/n.float*1e9:.2f} ns/eval"
+    let dt = epochTime() - t0 - dt0
+    echo &"sum0: {sum0:.0f} sum: {sum} in {dt:.6f} second; n: {n}; {dt/n.float*1e9:.2f} ns/eval"
   else:
     when not declared(stdout): import std/[syncio, formatFloat]
     import std/[math, heapqueue]
