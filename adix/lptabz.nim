@@ -35,7 +35,6 @@
 ## `seq[(K,V)]`.  6..8 bits avoids most "double cache misses" for miss
 ## lookups/inserts. `z=0` works if space matters more than time.
 
-{.warning[Uninit]:off, warning[ProveInit]:off.} # Should be verbosity:2, not 1
 import althash, memutil, bitop, topk, sequint, std/[strutils, memfiles]
 export Hash, sequint, topk.TopKOrder
 when not declared(assert): import std/[assertions, objectdollar]
@@ -480,7 +479,7 @@ proc setCap*[K,V,Z;z:static int](t: var LPTabz[K,V,Z,z]; newSize = -1) =
     if t.rehash: t.salt = getSalt(old[0].addr)
     swap(t.data, old)
     when Z is K:
-      var hc = 0.Hash
+      var hc: Hash
       if K(z) != K(0):
         for i in 0 ..< t.getCap: t.unUse(i, false)
     for cell in old.mitems:
@@ -505,7 +504,7 @@ proc setCap*[K,V,Z;z:static int](t: var LPTabz[K,V,Z,z]; newSize = -1) =
 template getPut(t, i, key, present, missing: untyped): untyped =
   mixin rawPut1, rawPut2, tooFull, getCap, init, setCap
   if t.getCap == 0: t.init
-  var hc, d, newSize: Hash = 0
+  var hc, d, newSize: Hash
   var i = t.rawGet(key, hc, d)
   if i < 0:
     var j = t.rawPut1(-1 - i, d)
@@ -702,7 +701,7 @@ proc editKey*[K,V,Z;z:static int](t: var LPTabz[K,V,Z,z]; old, new: K) =
     t.data[k].key = new
     var hc, d: Hash
     let j = t.rawGetDeep(new, hc, d)  #Allow `new` to be a dup key
-    var newSize = 0
+    var newSize: int
     if t.tooFull(d, newSize):
       t.setCap newSize                #`new` already in `data`; setCap does rest
     else:                             #else point-edit new key index into table

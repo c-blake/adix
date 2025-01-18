@@ -46,7 +46,7 @@ proc lfreq(n=10, count=false, size=9999, dSize=81920, recTerm='\n',
   ## Histogram `stdin` lines (read w/non-memory mapped IO to be pipe friendly).
   ## Limits: <4 GiB unique data; <16 KiB lines; <4 GiCount.
   let t0 = if tm: epochTime() else: 0.0
-  var h=Counts(); h.setCap size # pre-size table & data
+  var h: Counts; h.setCap size  # pre-size table & data
   s.setLen dSize; s.setLen 0
   var nTot = 0
   block IO:

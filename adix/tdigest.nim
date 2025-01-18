@@ -6,7 +6,6 @@
 ## adapt my B-Tree to speed up the idea. { tDig is also very involved - folks
 ## just *intuit* histo(ln(x)), but that is a more subjective critique. }
 
-{.warning[Uninit]:off, warning[ProveInit]:off.} # Should be verbosity:2, not 1
 when not declared(addFloat): import std/formatfloat
 import std/[math, algorithm]
 type

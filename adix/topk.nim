@@ -1,4 +1,3 @@
-{.warning[Uninit]:off, warning[ProveInit]:off.} # Should be verbosity:2, not 1
 import std/[random, algorithm]  # quickwit.io/blog/top-k-complexity explains BUT
 type                            #..NOTE heap [θO](n*lg k) &this θ(n),O(n*lg k).
   Partn* = enum last, ran       #XXX Tukey's 9th | median-of-medians | PDQ?
@@ -17,7 +16,7 @@ proc initTopK*[T](k=10, partn=last): TopK[T] =
   ## .. code-block:: nim
   ##   var t = initTopK(); for e in 1..99: t.push e
   ##   for e in t: echo e
-  result = TopK[T](i: -1, k: k, partn: partn, first: true)
+  result.i = -1; result.k = k; result.partn = partn; result.first = true
   when supportsCopyMem(T) and declared newSeqUninit:
     result.s = newSeqUninit[T](2*k); result.s.setLen 0
 

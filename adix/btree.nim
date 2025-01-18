@@ -69,7 +69,6 @@
 ## Nim TODOs incl: make easy to include inside other generic types, add easy
 ## HashSet & Table use in terms of this lower-level core, run-tm ->CT errs, do
 ## GC'd&memfiles Ln variants, do distinct int `Ln` for ovrld/figure out exports.
-{.warning[Uninit]:off, warning[ProveInit]:off.} # Should be verbosity:2, not 1
 when not declared(stderr): import std/syncio
 
 proc orderFit*(target, wtSz, ixSz, obSz, lnSz: int): int =

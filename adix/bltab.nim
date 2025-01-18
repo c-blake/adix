@@ -5,7 +5,6 @@
 ## Bits for values and the sentinel key default to 0. `BLTab` otherwise tries to
 ## be similar to hash variants of multisets.
 
-{.warning[Uninit]:off, warning[ProveInit]:off.} # Should be verbosity:2, not 1
 import althash, sequint
 when not declared(stderr): import std/assertions
 type

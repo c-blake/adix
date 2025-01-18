@@ -11,7 +11,6 @@
 ## equivalents but has precise rather than infinite memory which can be nice.
 ## I.e., it can perfectly "forget" a large spike when it leaves a window.
 
-{.warning[Uninit]:off, warning[ProveInit]:off.} # Should be verbosity:2, not 1
 when not declared(addFloat): import std/objectdollar
 from std/math     import sqrt, sum, `^`
 from std/strutils import formatFloat, ffDefault

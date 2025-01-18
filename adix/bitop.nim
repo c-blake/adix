@@ -1,6 +1,5 @@
 ## This is a reimplementation of some things we need from bitops which has CT
 ## trouble due to importc's.  (I feel it's a better naming/factoring, too).
-{.warning[Uninit]:off, warning[ProveInit]:off.} # Should be verbosity:2, not 1
 
 proc ceilPow2*(x: int): int {.noSideEffect, inline.} =
   ## Returns ``x`` rounded up to the nearest power of two.  <= 0 get 1.

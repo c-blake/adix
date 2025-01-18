@@ -8,7 +8,6 @@
 ##   for i in 0..<500: amo.inc i, i # Not v.skewed => not v.accurate
 ##   for (i, c) in amo.mostCommon(5): echo i, " ", c
 
-{.warning[Uninit]:off, warning[ProveInit]:off.} # Should be verbosity:2, not 1
 import std/[hashes, heapqueue, tables, algorithm]
 type
   CtMnSketch*[K,C] = object ## CountMinSketch over hashable `K` & counters `C`.

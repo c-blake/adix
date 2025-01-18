@@ -37,7 +37,7 @@ proc incFailed(h: var Counts, ms: MSlice): bool =
 proc ucl(size=9999, dSize=81920, tm=false) =
   ## Count unique & total lines on `stdin`. <256B long; <16 MiB unique data.
   let t0 = if tm: epochTime() else: 0.0
-  var h=Counts(); h.setCap size # pre-size table & data
+  var h: Counts; h.setCap size  # pre-size table & data
   s.setLen dSize; s.setLen 1
   var nTot = 0
   block IO:

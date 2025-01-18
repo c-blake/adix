@@ -21,7 +21,6 @@
 ## under another term like "direct indexing".  `K` below must have an available
 ## conversion to ``int``.  Duplicate keys cannot be allowed for this one.
 
-{.warning[Uninit]:off, warning[ProveInit]:off.} # Should be verbosity:2, not 1
 import althash, sequint, topk; export topk.TopKOrder
 when not declared(assert): import std/assertions
 type

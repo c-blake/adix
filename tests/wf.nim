@@ -41,12 +41,12 @@ proc `<`(a, b: Word): bool {.inline.} = # for topk.push
   if c == 0: a.len < b.len else: c < 0
 
 proc `$`(w: Word): string =             # for output
-  result = newString(w.len)
-  copyMem result.cstring, w.mem, w.len
+  result.setLen w.len
+  copyMem result[0].addr, w.mem, w.len
 
 when defined(benhoyt): # Ben Hoyt definition of "words"
  iterator lowCaseWords(ms: MSlice): Word =
-  var wd, n: int = 0
+  var wd, n: int
   for i, ch in ms:
     if ch in {'A'..'Z'}:                # `tr A-Z a-z` preprocess to avoid
       ms[i] = char(ord(ch) + 32)        # needs MAP_PRIVATE
@@ -60,7 +60,7 @@ when defined(benhoyt): # Ben Hoyt definition of "words"
   if n > 0: yield initWord(wd, n)       # any final word
 else: # Knuth-McIlroy definition of "words"
  iterator lowCaseWords(ms: MSlice): Word =
-  var wd, n: int = 0
+  var wd, n: int
   for i, ch in ms:
     if ch in {'a'..'z'}:                # in-word ch
       if n == 0: wd = (ms.mem +! i) -! mf.mem

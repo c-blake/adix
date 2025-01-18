@@ -1,4 +1,3 @@
-{.warning[Uninit]:off, warning[ProveInit]:off.} # Should be verbosity:2, not 1
 import std/hashes, adix/[bitop, topk]; export topk.TopKOrder
 type    # More adaptable than Nim std/sets|tables (named ROats|VROats here)
   Oat*[K, Q] = concept t        # Base Concept: Open-Addressed Table
@@ -68,7 +67,6 @@ proc oatSlot*[K,Q](t: Oat[K,Q]; q: Q; h: Hash; d: var Hash): int =
 
 proc tooFull*[K,Q](t: Oat[K,Q]; d: int; newSize: var int): bool =
   #-> user proc w/some provided default BUT there's a circular dep through `len`
-  newSize = 0
   let sLen=t.len                # Could be a cap-long loop
   if sLen + 1 + 1 > t.cap:      # Call setCap pre-put? +1 new, +1 free
     newSize = t.cap shl 1; return true
@@ -83,7 +81,7 @@ proc setCap*[K,Q](t: var ROat[K,Q]; newSize = -1) =
               else: oatSlots(max(newSize, t.len), 1)  # max blocks over-shrink
   if newSz == t.cap and newSize == -1: return
   var ns = t.newOfCap newSz
-  var d = 0
+  var d: int
   for i in 0 ..< t.cap:
     if t.used i:
       let q = t.key i
@@ -92,7 +90,7 @@ proc setCap*[K,Q](t: var ROat[K,Q]; newSize = -1) =
   t.setNew ns
 
 template upSert*[K,Q](t: var Oat[K,Q], q, i, UP, SERT) =
-  var newSize {.noinit.}, d: Hash
+  var d, newSize: Hash
   let h = q.hash
   var i = oatSlot(t, q, h, d)
   if i >= 0: UP
