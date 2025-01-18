@@ -16,7 +16,7 @@ proc initTopK*[T](k=10, partn=last): TopK[T] =
   ## .. code-block:: nim
   ##   var t = initTopK(); for e in 1..99: t.push e
   ##   for e in t: echo e
-  result.i = -1; result.k = k; result.partn = partn; result.first = true
+  result = TopK[T](i: -1, k: k, partn: partn, first: true)
   when supportsCopyMem(T) and declared newSeqUninit:
     result.s = newSeqUninit[T](2*k); result.s.setLen 0
 
