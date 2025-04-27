@@ -24,9 +24,10 @@ import xlang, bitop # cfor, `>>=`, `&=`; `ceilPow2`
 when not declared(assert): import std/assertions
 
 type Bist*[T: SomeInteger] = object ## A razor thin wrapper around `seq[T]`
-  data: seq[T]        # The Fenwick array/BIST; Relevant seq ops pass through
-  tot: int            # total counted population, via history of inc(i, d)
+  tot*: int           # total counted population, via history of inc(i, d)
+  data*: seq[T]       # The Fenwick array/BIST; Relevant seq ops pass through
 
+proc `$`*[T](t: Bist[T]): string = "tot: " & $t.tot & " data: " & $t.data
 proc initBist*[T](len: int): Bist[T] = result.data = newSeq[T](len)
 proc len*[T](t: Bist[T]): int = t.data.len
 func space*[T](t: Bist[T]): int = t.sizeof + t.data.len*T.sizeof
@@ -105,8 +106,7 @@ proc quantile*[T](t: Bist[T], q: float; iL, iH: var int): float =
   ## with ties, corresponding to age-old "tie mid-ranking" recommendations.
   assert t.tot > 0, "quantile(Bist[T]) requires non-empty bist."
   var sL0, sL1, sH0, sH1: T                 #You probably want to draw a CDF to
-  let ni = t.tot                            #..fully understand this code.
-  let n  = ni.float
+  let n  = t.tot.float                      #..fully understand this code.
   let qN = q*n
   if qN <= 0.5:                             #Early returns for tails are pure iL
     iL = t.min; iH = 0; return 1.0          #..while early for body are pure iH.
@@ -115,7 +115,7 @@ proc quantile*[T](t: Bist[T], q: float; iL, iH: var int): float =
   iH = t.invCDF(T(qN + 1.5), sH0, sH1)      #This guess works 90+% of the time..
   var sMidH = 0.5*(sH0 + sH1).float
   if sMidH < qN:                            #..but can fail for large sH1 - sH0.
-    if int(sH1) < ni:                       #When it fails, want next higher bin
+    if int(sH1) < t.tot:                    #When it fails, want next higher bin
       iH    = t.invCDF(sH1 + 1, sH0, sH1)
       sMidH = 0.5*(sH0 + sH1).float
     else: return 0.0                        #..unless @HIGHEST already=>all iH
