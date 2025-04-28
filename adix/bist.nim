@@ -27,7 +27,6 @@ type Bist*[T: SomeInteger] = object ## A razor thin wrapper around `seq[T]`
   tot*: int           # total counted population, via history of inc(i, d)
   data*: seq[T]       # The Fenwick array/BIST; Relevant seq ops pass through
 
-proc `$`*[T](t: Bist[T]): string = "tot: " & $t.tot & " data: " & $t.data
 proc initBist*[T](len: int): Bist[T] = result.data = newSeq[T](len)
 proc len*[T](t: Bist[T]): int = t.data.len
 func space*[T](t: Bist[T]): int = t.sizeof + t.data.len*T.sizeof
@@ -70,6 +69,13 @@ proc toCnts*[T](t: var Bist[T]) =
   cfor (var i = t.len), i != 0, i >>= 1:      #Long strides give ~n inner loops.
     cfor (var j = 2*i - 1), j < t.len, j += 2*i:  #*Might* be slower than just
       t[j] -= t[j - i]                            #..looping & calling `pmf`.
+
+proc counts*[T](t: Bist[T]): seq[T] =
+  ## Create classic PMF `t[]` from read-only BIST; Time ~2*n
+  result.setLen t.len
+  cfor (var i = 0), i < t.len, inc i: result[i] = t.pmf(i)
+
+proc `$`*[T](t: Bist[T]): string = "tot: " & $t.count & " pmf: " & $t.counts
 
 proc invCDF*[T](t: Bist[T], s: T; s0: var T): int =
   ## For `0 < s <= tot`, bracket ECDF jump `>= s`.  I.e. find `i0, s0` so `s0 =
