@@ -1,0 +1,27 @@
+nimTitle	bist	adix/bist.html	module adix/bist		0
+nim	Bist	adix/bist.html#Bist	object Bist		26
+nim	initBist	adix/bist.html#initBist,int	proc initBist[T](len: int): Bist[T]		30
+nim	len	adix/bist.html#len,Bist[T]	proc len[T](t: Bist[T]): int		31
+nim	space	adix/bist.html#space,Bist[T]	proc space[T](t: Bist[T]): int		32
+nim	count	adix/bist.html#count,Bist[T]	proc count[T](t: Bist[T]): int		33
+nim	`[]`	adix/bist.html#[],Bist[T],int	proc `[]`[T](t: Bist[T]; i: int): T		34
+nim	`[]`	adix/bist.html#[],Bist[T],int_2	proc `[]`[T](t: var Bist[T]; i: int): var T		35
+nim	`[]=`	adix/bist.html#[]=,Bist[T],int,T	proc `[]=`[T](t: var Bist[T]; i: int; x: T)		36
+nim	clear	adix/bist.html#clear,Bist[T]	proc clear[T](t: var Bist[T])		37
+nim	inc	adix/bist.html#inc,Bist[T],SomeInteger,SomeInteger	proc inc[T](t: var Bist[T]; i, d: SomeInteger)		40
+nim	cdf	adix/bist.html#cdf,Bist[T],int	proc cdf[T](t: Bist[T]; i: int): T		46
+nim	pmf	adix/bist.html#pmf,Bist[T],int	proc pmf[T](t: Bist[T]; i: int): T		51
+nim	fromCnts	adix/bist.html#fromCnts,Bist[T]	proc fromCnts[T](t: var Bist[T])		57
+nim	toCnts	adix/bist.html#toCnts,Bist[T]	proc toCnts[T](t: var Bist[T])		66
+nim	counts	adix/bist.html#counts,Bist[T]	proc counts[T](t: Bist[T]): seq[T]		73
+nim	`$`	adix/bist.html#$,Bist[T]	proc `$`[T](t: Bist[T]): string		78
+nim	invCDF	adix/bist.html#invCDF,Bist[T],T,T	proc invCDF[T](t: Bist[T]; s: T; s0: var T): int		80
+nim	invCDF	adix/bist.html#invCDF,Bist[T],T	proc invCDF[T](t: Bist[T]; s: T): (int, T)		92
+nim	invCDF	adix/bist.html#invCDF,Bist[T],T,T,T	proc invCDF[T](t: Bist[T]; s: T; s0, s1: var T): int		95
+nim	min	adix/bist.html#min,Bist[T]	proc min[T](t: Bist[T]): int		100
+nim	max	adix/bist.html#max,Bist[T]	proc max[T](t: Bist[T]): int		103
+nim	quantile	adix/bist.html#quantile,Bist[T],float,int,int	proc quantile[T](t: Bist[T]; q: float; iL, iH: var int): float		106
+nim	quantile	adix/bist.html#quantile,Bist[T],float	proc quantile[T](t: Bist[T]; q: float): float		133
+nimgrp	quantile	adix/bist.html#quantile-procs-all	proc		106
+nimgrp	invcdf	adix/bist.html#invCDF-procs-all	proc		80
+nimgrp	[]	adix/bist.html#[]-procs-all	proc		34

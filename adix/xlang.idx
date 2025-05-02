@@ -1,0 +1,7 @@
+nimTitle	xlang	adix/xlang.html	module adix/xlang		0
+nim	cfor	adix/xlang.html#cfor.t,untyped,untyped,untyped,untyped	template cfor(init, test, update, body: untyped)		1
+nim	`&=`	adix/xlang.html#&=,T,U	proc `&=`[T, U](a: var T; b: U)		13
+nim	`|=`	adix/xlang.html#|=,T,U	proc `|=`[T, U](a: var T; b: U)		17
+nim	`^=`	adix/xlang.html#^=,T,U	proc `^=`[T, U](a: var T; b: U)		21
+nim	`<<=`	adix/xlang.html#<<=,T,U	proc `<<=`[T, U](a: var T; b: U)		25
+nim	`>>=`	adix/xlang.html#>>=,T,U	proc `>>=`[T, U](a: var T; b: U)		29
