@@ -20,14 +20,15 @@
 ## up to 2X further with `adix/sequint` specialized to store an array of B-bit
 ## counters.  Ranked B-trees are faster for >24..28-bit index spaces as L3 CPU
 ## caching fails, but needing >7..8 decimal dynamic ranges is also rare.
+when not declared assert: import std/assertions
 import xlang, bitop # cfor, `>>=`, `&=`; `ceilPow2`
-when not declared(assert): import std/assertions
 
 type Bist*[T: SomeInteger] = object ## A razor thin wrapper around `seq[T]`
   tot*: int           # total counted population, via history of inc(i, d)
   data*: seq[T]       # The Fenwick array/BIST; Relevant seq ops pass through
 
-proc initBist*[T](len: int): Bist[T] = result.data = newSeq[T](len)
+proc init*[T](t: var Bist[T], len: int) = t.data.setLen len
+proc initBist*[T](len: int): Bist[T] = result.init len
 proc len*[T](t: Bist[T]): int = t.data.len
 func space*[T](t: Bist[T]): int = t.sizeof + t.data.len*T.sizeof
 proc count*[T](t: Bist[T]): int = t.tot
@@ -71,9 +72,14 @@ proc toCnts*[T](t: var Bist[T]) =
       t[j] -= t[j - i]                            #..looping & calling `pmf`.
 
 proc counts*[T](t: Bist[T]): seq[T] =
-  ## Create classic PMF `t[]` from read-only BIST; Time ~2*n
+  ## Return classic PMF from read-only BIST; Time ~2*n
   result.setLen t.len
   cfor (var i = 0), i < t.len, inc i: result[i] = t.pmf(i)
+
+proc cumuls*[T](t: Bist[T]): seq[T] =
+  ## Return classic CDF from read-only BIST; Time ~n
+  result.setLen t.len
+  cfor (var i = 0), i < t.len, inc i: result[i] = t.cdf(i)
 
 proc `$`*[T](t: Bist[T]): string = "tot: " & $t.count & " pmf: " & $t.counts
 
@@ -103,7 +109,7 @@ proc min*[T](t: Bist[T]): int = ## Simple wrapper: invCDF(t, 1)
 proc max*[T](t: Bist[T]): int = ## Simple wrapper: invCDF(t,t.count).
   var s0: T; t.invCDF(t.tot.T, s0)
 
-proc quantile*[T](t: Bist[T], q: float; iL, iH: var int): float =
+proc quantile*[T](t: Bist[T]; q: float; iL,iH: var int): float =
   ## Parzen-interpolated quantile; E.g., q=0.9 => 90th percentile.  ``answer =
   ## result*iL + (1-result)*iH``, but is left to caller to do { in case it is
   ## mapping larger numeric ranges to/from iL,iH }.  Tm ~ ``2*lg(addrSpace)``.
@@ -114,21 +120,19 @@ proc quantile*[T](t: Bist[T], q: float; iL, iH: var int): float =
   var sL0, sL1, sH0, sH1: T                 #You probably want to draw a CDF to
   let n  = t.tot.float                      #..fully understand this code.
   let qN = q*n
-  if qN <= 0.5:                             #Early returns for tails are pure iL
-    iL = t.min; iH = 0; return 1.0          #..while early for body are pure iH.
-  if qN >= n - 0.5:
-    iL = t.max; iH = 0; return 1.0
-  iH = t.invCDF(T(qN + 1.5), sH0, sH1)      #This guess works 90+% of the time..
-  var sMidH = 0.5*(sH0 + sH1).float
+  if qN <= 0.5    : iL = t.min; iH = 0; return 1 #Early rets for tails; Pure iL
+  if qN >= n - 0.5: iL = t.max; iH = 0; return 1 #{Early for body are pure iH.}
+  iH = t.invCDF(T(qN + 1.5), sH0, sH1)
+  var sMidH = 0.5*float(sH0 + sH1)          #This guess works 90+% of the time..
   if sMidH < qN:                            #..but can fail for large sH1 - sH0.
-    if int(sH1) < t.tot:                    #When it fails, want next higher bin
+    if sH1.int < t.tot:                     #When it fails, want next higher bin
       iH    = t.invCDF(sH1 + 1, sH0, sH1)
-      sMidH = 0.5*(sH0 + sH1).float
-    else: return 0.0                        #..unless @HIGHEST already=>all iH
-  if sH0 == 0: return 0.0                   #For qN this small, iH = iL = min.
+      sMidH = 0.5*float(sH0 + sH1)
+    else: return 0                          #..unless @HIGHEST already=>all iH
+  if sH0 == 0: return 0                     #For qN this small, iH = iL = min.
   iL = t.invCDF(sH0, sL0, sL1)              #..Also, cannot call invCDF(0).
-  let sMidL = 0.5*(sL0 + sL1).float         #Mid-vertJump(nxtLwrBin) gives line
-  result = (sMidH - qN)/(sMidH - sMidL)
+  let sMidL = 0.5*float(sL0 + sL1)          #Mid-vertJump(nxtLwrBin) gives line
+  (sMidH - qN)/(sMidH - sMidL)
 
 proc quantile*[T](t: Bist[T], q: float): float =
   ## Parzen-interpolated quantile when no caller index mapping is needed
