@@ -71,15 +71,11 @@ proc toCnts*[T](t: var Bist[T]) =
     cfor (var j = 2*i - 1), j < t.len, j += 2*i:  #*Might* be slower than just
       t[j] -= t[j - i]                            #..looping & calling `pmf`.
 
-proc counts*[T](t: Bist[T]): seq[T] =
-  ## Return classic PMF from read-only BIST; Time ~2*n
-  result.setLen t.len
-  cfor (var i = 0), i < t.len, inc i: result[i] = t.pmf(i)
+proc counts*[T](t: Bist[T]): seq[T] = ## Return classic PMF from read-only BIST
+  result.setLen t.len; for i in 0 ..< t.len: result[i] = t.pmf(i)
 
-proc cumuls*[T](t: Bist[T]): seq[T] =
-  ## Return classic CDF from read-only BIST; Time ~n
-  result.setLen t.len
-  cfor (var i = 0), i < t.len, inc i: result[i] = t.cdf(i)
+proc cumuls*[T](t: Bist[T]): seq[T] = ## Return classic CDF from read-only BIST
+  result = t.counts; for i in 1 ..< t.len: result[i] += result[i - 1] # .cumsum?
 
 proc `$`*[T](t: Bist[T]): string = "tot: " & $t.count & " pmf: " & $t.counts
 
