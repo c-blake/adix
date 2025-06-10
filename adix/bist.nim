@@ -1,25 +1,23 @@
-## Binary Indexed Sum Tree (BIST); Invented by P.Fenwick in 1994. { Fenwick
-## proposed "BIT" but that A) collides with many uses, B) takes partial (S)ums
-## as implied, but explicit is better (though products can work), and C) does
-## not rhyme with "dist" (for distribution, which is what it is mostly about). }
-## While the Internet has many tutorials, to my knowledge, no one (yet) collects
-## these algorithms all in one place.  Fenwick1994 itself messed up on what we
-## here call `invCDF`, correcting with a tech report a year later.  This code
-## only allocates needed space & uses 0-based indexing.
-##
-## The idea of a standard binary heap with `kids(k)@[2k],[2k+1]` for dynamic
-## distributions goes back to Wong&Easton 1980 (or earlier?).  Fenwick's clever
-## index encoding/overlaid trees trick allows using 1/4 to 1/2 that space (only
-## max index+1 array elements vs `2*lgCeil(n)`), a constant factor improvement.
-## Meaningful explanations truly need figures as in the original Fenwick paper &
-## higher dimensional problems may benefit from Fibonacci trees.
-##
-## The `Bist[T]` type in this module is generic over the type of counters used
-## for partial sums|counts.  For few total items, you can use a `Bist[uint8]`
-## while for many you want to use `Bist[uint32]`.  This can be space-optimized
-## up to 2X further with `adix/sequint` specialized to store an array of B-bit
-## counters.  Ranked B-trees are faster for >24..28-bit index spaces as L3 CPU
-## caching fails, but needing >7..8 decimal dynamic ranges is also rare.
+##[ Binary Indexed Sum Tree (BIST); Fenwick proposed "BIT" but that A) collides
+w/many uses B) takes partial (S)ums as implied, but explicit is better (though
+products can work) and C) does not rhyme with "dist" (for distribution - what it
+is mostly about).  While Inet has tutorials, to my knowledge no one (yet)
+collects all these algos in one place.  Fenwick1994 itself messed up `invCDF`,
+correcting w/a tech report a year later.  This code only allocates needed space
+& uses 0-based array indexing.  See https://en.wikipedia.org/wiki/Fenwick_tree
+
+The idea of a standard binary heap with `kids(k)@[2k],[2k+1]` for dynamic
+distributions goes back to Wong&Easton 1980 (or earlier?).  Fenwick's clever
+index encoding/overlaid trees idea allows using 1/4 to 1/2 that space (only max
+index+1 array elements vs `2*lgCeil(n)`), a constant factor improvement.  Good
+explanations truly need figures, as in the original Fenwick paper | Wikipedia.
+  
+The `Bist[T]` type in this module is generic over the type of counters used for
+partial sums|counts.  For few total items, you can use a `Bist[uint8]` while for
+many you want to use `Bist[uint32]`.  This can be space-optimized up to 2X
+further with `adix/sequint` specialized to store an array of B-bit counters.
+Ranked B-trees are faster for >24..28-bit index spaces as L3 CPU caching fails,
+but needing >7..8 decimal dynamic ranges is also rare. ]##
 when not declared assert: import std/assertions
 import xlang, bitop # cfor, `>>=`, `&=`; `ceilPow2`
 
