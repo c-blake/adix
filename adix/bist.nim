@@ -41,6 +41,8 @@ proc inc*[T](t: var Bist[T]; i, d: SomeInteger) =
   t.tot += int(d)                                 #Likely T unsigned, d signed
   cfor (var i = i.int), i < t.len, i |= i + 1:    #Go down update tree
     t[i] = T(int(t[i]) + d.int)                   #Likely T unsigned, d signed
+proc dec*[T](t: var Bist[T]; i, d: SomeInteger) = t.inc i, -d
+  ## Convenience call to `inc i, -d`.
 
 proc cdf*[T](t: Bist[T], i: int): T =
   ## INCLUSIVE `sum(pmf[0..i])`, (rank,EDF,prefix sum,scan,..); Tm~1 bits in `i`
