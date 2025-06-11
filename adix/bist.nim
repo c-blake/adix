@@ -53,6 +53,18 @@ proc pmf*[T](t: Bist[T], i: int): T =
   cfor (var mask = 1), (i and mask) == mask, mask <<= 1:
     result -= t[i - mask]           #while LSB==1: subtract & mv up tree
 
+proc invCDF*[T](t: Bist[T], s: T; s0: var T): int =
+  ## For `0 < s <= tot`, bracket ECDF jump `>= s`.  I.e. find `i0, s0` so `s0 =
+  ## sum(..< i0) < s yet sum(..i0) >= s` in `lgCeil n` array probes.
+  assert 0<s.int and s.int<=t.tot,"invCDF(Bist[T]) called with out of range sum"
+  var c = s - 1                         #NOTE: s==0 | s > tot are invalid inputs
+  cfor (var half = t.data.len.ceilPow2 shr 1), half != 0, half >>= 1:
+    var mid = result + half - 1
+    if mid < t.data.len and t[mid] <= c:
+      c -= t[mid]
+      result = mid + 1
+  s0 = s - c - 1
+
 proc fromCnts*[T](t: var Bist[T]) =
   ## In-place bulk convert/reformat `t[]` from counts to BIST; Max time `~1*n`.
   t.tot = 0
@@ -76,18 +88,6 @@ proc cumuls*[T](t: Bist[T]): seq[T] = ## Return classic CDF from read-only BIST
   result = t.counts; for i in 1 ..< t.len: result[i] += result[i - 1] # .cumsum?
 
 proc `$`*[T](t: Bist[T]): string = "tot: " & $t.count & " pmf: " & $t.counts
-
-proc invCDF*[T](t: Bist[T], s: T; s0: var T): int =
-  ## For `0 < s <= tot`, bracket ECDF jump `>= s`.  I.e. find `i0, s0` so `s0 =
-  ## sum(..< i0) < s yet sum(..i0) >= s` in `lgCeil n` array probes.
-  assert 0<s.int and s.int<=t.tot,"invCDF(Bist[T]) called with out of range sum"
-  var c = s - 1                         #NOTE: s==0 | s > tot are invalid inputs
-  cfor (var half = t.len.ceilPow2 shr 1), half != 0, half >>= 1:
-    var mid = result + half - 1
-    if mid < t.data.len and t[mid] <= c:
-      c -= t[mid]
-      result = mid + 1
-  s0 = s - c - 1
 
 proc invCDF*[T](t: Bist[T], s: T): (int, T) = result[0] = t.invCDF(s, result[1])
   ## For `0 < s <= tot` return `(i0,s0)` so `sum(..<i0)=s0 < s and sum(..i0)>=s`
