@@ -77,5 +77,5 @@ when isMainModule: dispatch lfreq, help={
   "dSize": "pre-size str data area to this many bytes",
   "recTerm": "input record terminator",
   "RecTerm": "output record terminator",
-  "format" : "output format: $k=key $c=count $f=fraction",
+  "format" : "output format: @k=key @c=count @f=fraction",
   "tm"   : "emit wall time of counting to stderr & quit"}
