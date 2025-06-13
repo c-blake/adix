@@ -1,0 +1,62 @@
+nimTitle	mvstat	adix/mvstat.html	module adix/mvstat		0
+nim	OrderStats	adix/mvstat.html#OrderStats	Option.OrderStats		24
+nim	Option	adix/mvstat.html#Option	enum Option		24
+nim	MovingStat	adix/mvstat.html#MovingStat	object MovingStat		25
+nim	BasicStats	adix/mvstat.html#BasicStats	object BasicStats		31
+nim	init	adix/mvstat.html#init,MovingStat[F: SomeFloat,C: SomeInteger],float,float,int,set[Option]	proc init[F: SomeFloat; C: SomeInteger](s: var MovingStat[F, C]; a = 1e-16;\n                                   b = 1e+20; n = 8300;\n                                   options: set[Option] = {})		35
+nim	initMovingStat	adix/mvstat.html#initMovingStat,float,float,int,set[Option]	proc initMovingStat[F: SomeFloat; C: SomeInteger](a = 1e-16; b = 1e+20; n = 8300;\n    options: set[Option] = {}): MovingStat[F, C]		41
+nim	nInv	adix/mvstat.html#nInv,MovingStat[F: SomeFloat,C: SomeInteger]	proc nInv[F: SomeFloat; C: SomeInteger](s: var MovingStat[F, C]): F		46
+nim	nInv	adix/mvstat.html#nInv,MovingStat[F: SomeFloat,C: SomeInteger]_2	proc nInv[F: SomeFloat; C: SomeInteger](s: MovingStat[F, C]): F		53
+nim	clear	adix/mvstat.html#clear,MovingStat[F: SomeFloat,C: SomeInteger]	proc clear[F: SomeFloat; C: SomeInteger](s: var MovingStat[F, C])		57
+nim	push	adix/mvstat.html#push,MovingStat[F: SomeFloat,C: SomeInteger],SomeNumber	proc push[F: SomeFloat; C: SomeInteger](s: var MovingStat[F, C]; x: SomeNumber)		61
+nim	pop	adix/mvstat.html#pop,MovingStat[F: SomeFloat,C: SomeInteger],SomeNumber	proc pop[F: SomeFloat; C: SomeInteger](s: var MovingStat[F, C]; x: SomeNumber)		75
+nim	quantile	adix/mvstat.html#quantile,MovingStat[F: SomeFloat,C: SomeInteger],float	proc quantile[F: SomeFloat; C: SomeInteger](s: MovingStat[F, C]; q: float): float		86
+nim	cdf	adix/mvstat.html#cdf,MovingStat[F: SomeFloat,C: SomeInteger],float	proc cdf[F: SomeFloat; C: SomeInteger](s: MovingStat[F, C]; x: float): float		92
+nim	sum	adix/mvstat.html#sum,MovingStat[F: SomeFloat,C: SomeInteger]	proc sum[F: SomeFloat; C: SomeInteger](s: MovingStat[F, C]): float		98
+nim	mean	adix/mvstat.html#mean,MovingStat[F: SomeFloat,C: SomeInteger]	proc mean[F: SomeFloat; C: SomeInteger](s: MovingStat[F, C]): float		102
+nim	mean	adix/mvstat.html#mean,MovingStat[F: SomeFloat,C: SomeInteger]_2	proc mean[F: SomeFloat; C: SomeInteger](s: var MovingStat[F, C]): float		105
+nim	variance	adix/mvstat.html#variance,MovingStat[F: SomeFloat,C: SomeInteger]	proc variance[F: SomeFloat; C: SomeInteger](s: MovingStat[F, C]): float		109
+nim	variance	adix/mvstat.html#variance,MovingStat[F: SomeFloat,C: SomeInteger]_2	proc variance[F: SomeFloat; C: SomeInteger](s: var MovingStat[F, C]): float		112
+nim	standardDeviation	adix/mvstat.html#standardDeviation,MovingStat[F: SomeFloat,C: SomeInteger]	proc standardDeviation[F: SomeFloat; C: SomeInteger](s: MovingStat[F, C]): float		117
+nim	standardDeviation	adix/mvstat.html#standardDeviation,MovingStat[F: SomeFloat,C: SomeInteger]_2	proc standardDeviation[F: SomeFloat; C: SomeInteger](s: var MovingStat[F, C]): float		120
+nim	stderror	adix/mvstat.html#stderror,MovingStat[F: SomeFloat,C: SomeInteger]	proc stderror[F: SomeFloat; C: SomeInteger](s: MovingStat[F, C]): float		125
+nim	stderror	adix/mvstat.html#stderror,MovingStat[F: SomeFloat,C: SomeInteger]_2	proc stderror[F: SomeFloat; C: SomeInteger](s: var MovingStat[F, C]): float		128
+nim	skewness	adix/mvstat.html#skewness,MovingStat[F: SomeFloat,C: SomeInteger]	proc skewness[F: SomeFloat; C: SomeInteger](s: MovingStat[F, C]): float		137
+nim	skewness	adix/mvstat.html#skewness,MovingStat[F: SomeFloat,C: SomeInteger]_2	proc skewness[F: SomeFloat; C: SomeInteger](s: var MovingStat[F, C]): float		140
+nim	kurtosis	adix/mvstat.html#kurtosis,MovingStat[F: SomeFloat,C: SomeInteger]	proc kurtosis[F: SomeFloat; C: SomeInteger](s: MovingStat[F, C]): float		151
+nim	kurtosis	adix/mvstat.html#kurtosis,MovingStat[F: SomeFloat,C: SomeInteger]_2	proc kurtosis[F: SomeFloat; C: SomeInteger](s: var MovingStat[F, C]): float		154
+nim	`$`	adix/mvstat.html#$,MovingStat[F: SomeFloat,C: SomeInteger]	proc `$`[F: SomeFloat; C: SomeInteger](s: MovingStat[F, C]): string		158
+nim	add	adix/mvstat.html#add,BasicStats[F],BasicStats[F]	proc add[F](a: var BasicStats[F]; b: BasicStats[F])		168
+nim	`+=`	adix/mvstat.html#+=,BasicStats[F],BasicStats[F]	proc `+=`[F](a: var BasicStats[F]; b: BasicStats[F])		179
+nim	`+`	adix/mvstat.html#+,BasicStats[F],BasicStats[F]	proc `+`[F](a, b: BasicStats[F]): BasicStats[F]		181
+nim	mean	adix/mvstat.html#mean,openArray[T]	proc mean[T: SomeNumber](xs: openArray[T]): float		189
+nim	variance	adix/mvstat.html#variance,openArray[T],int	proc variance[T: SomeNumber](xs: openArray[T]; accum = 32): float		193
+nim	range	adix/mvstat.html#range,openArray[F]	proc range[F: SomeFloat](xs: openArray[F]): (F, F)		206
+nim	basicStats	adix/mvstat.html#basicStats,openArray[F]	proc basicStats[F: SomeFloat](xs: openArray[F]): BasicStats[F]		218
+nim	standardDeviation	adix/mvstat.html#standardDeviation,openArray[T],int	proc standardDeviation[T: SomeNumber](xs: openArray[T]; accum = 32): float		243
+nim	stderror	adix/mvstat.html#stderror,openArray[T],int	proc stderror[T: SomeNumber](xs: openArray[T]; accum = 32): float		247
+nim	skewness	adix/mvstat.html#skewness,openArray[T],int	proc skewness[T: SomeNumber](xs: openArray[T]; accum = 32): float		251
+nim	kurtosis	adix/mvstat.html#kurtosis,openArray[T],int	proc kurtosis[T: SomeNumber](xs: openArray[T]; accum = 32): float		267
+nim	varianceS	adix/mvstat.html#varianceS	proc varianceS[F: SomeFloat; C: SomeInteger](s`gensym21: MovingStat[F, C]): float		295
+nim	varianceS	adix/mvstat.html#varianceS_2	proc varianceS[F: SomeFloat; C: SomeInteger](s`gensym21: var MovingStat[F, C]): float		297
+nim	varianceS	adix/mvstat.html#varianceS,,int	proc varianceS[T: SomeNumber](xs`gensym21: openArray[T]; accum`gensym21 = 32): float		301
+nim	skewnessS	adix/mvstat.html#skewnessS	proc skewnessS[F: SomeFloat; C: SomeInteger](s`gensym28: MovingStat[F, C]): float		295
+nim	skewnessS	adix/mvstat.html#skewnessS_2	proc skewnessS[F: SomeFloat; C: SomeInteger](s`gensym28: var MovingStat[F, C]): float		297
+nim	skewnessS	adix/mvstat.html#skewnessS,,int	proc skewnessS[T: SomeNumber](xs`gensym28: openArray[T]; accum`gensym28 = 32): float		301
+nim	kurtosisS	adix/mvstat.html#kurtosisS	proc kurtosisS[F: SomeFloat; C: SomeInteger](s`gensym35: MovingStat[F, C]): float		295
+nim	kurtosisS	adix/mvstat.html#kurtosisS_2	proc kurtosisS[F: SomeFloat; C: SomeInteger](s`gensym35: var MovingStat[F, C]): float		297
+nim	kurtosisS	adix/mvstat.html#kurtosisS,,int	proc kurtosisS[T: SomeNumber](xs`gensym35: openArray[T]; accum`gensym35 = 32): float		301
+nim	standardDeviationS	adix/mvstat.html#standardDeviationS,MovingStat[F: SomeFloat,C: SomeInteger]	proc standardDeviationS[F: SomeFloat; C: SomeInteger](s: MovingStat[F, C]): float		302
+nim	standardDeviationS	adix/mvstat.html#standardDeviationS,MovingStat[F: SomeFloat,C: SomeInteger]_2	proc standardDeviationS[F: SomeFloat; C: SomeInteger](s: var MovingStat[F, C]): float		304
+nim	standardDeviationS	adix/mvstat.html#standardDeviationS,openArray[T],int	proc standardDeviationS[T: SomeNumber](xs: openArray[T]; accum = 32): float		306
+nimgrp	skewnesss	adix/mvstat.html#skewnessS-procs-all	proc		295
+nimgrp	stderror	adix/mvstat.html#stderror-procs-all	proc		125
+nimgrp	kurtosis	adix/mvstat.html#kurtosis-procs-all	proc		151
+nimgrp	mean	adix/mvstat.html#mean-procs-all	proc		102
+nimgrp	skewness	adix/mvstat.html#skewness-procs-all	proc		137
+nimgrp	standarddeviations	adix/mvstat.html#standardDeviationS-procs-all	proc		302
+nimgrp	standarddeviation	adix/mvstat.html#standardDeviation-procs-all	proc		117
+nimgrp	ninv	adix/mvstat.html#nInv-procs-all	proc		46
+nimgrp	kurtosiss	adix/mvstat.html#kurtosisS-procs-all	proc		295
+nimgrp	variances	adix/mvstat.html#varianceS-procs-all	proc		295
+nimgrp	variance	adix/mvstat.html#variance-procs-all	proc		109
