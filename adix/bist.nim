@@ -141,8 +141,8 @@ when isMainModule:
   when not declared(addFloat): import std/formatfloat
   type ct = uint16
   proc tbist(num=9, verb=false, parzen=false, thresh=0.03, args: seq[int]): int=
-    ## E.g. `tbist $(echo 0 2 4 4 4 6 6 6 6 8 | tr \  \\n | shuf)`.  Exit status
-    ## is bitmask of PMF|CDF|invCDF|Extremes|discontinuousQtls|badFrom|badToCnts.
+    ##[Eg `tbist $(echo 0 2 4 4 4 6 6 6 6 8 | tr \  \\n | shuf)`. Exit status is
+    bitmask of PMF|CDF|invCDF|Extremes|discontinuousQtls|badFrom|badToCnts. ]##
     result = 0    #Set to non-zero on failure for easy halt of randomized tests.
     var cntR = newSeq[ct](num)                        #Reference count/PMF/histo
     var sumR = newSeq[ct](num)                        #Reference prefix sum/CDF

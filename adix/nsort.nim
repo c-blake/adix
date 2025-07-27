@@ -56,7 +56,7 @@
 
 when not declared(stdout): import std/syncio
 import adix/[cpuCT, cumsum], std/[bitops, math, algorithm]
-when defined(cpuPrefetch): import cligen/prefetch # Keep cligen a soft-dep
+when defined cpuPrefetch: import cligen/prefetch # Keep cligen a soft-dep
 const nTinySort{.intdefine.} = 24         # Usually 16-32 is good
 const hMaxBits{.intdefine.} = 15          #2*counter-size*2**hMaxBits =~ L2 here
 const dGiantSort{.intdefine.} = 15 shl 30 #~50% of uncontended DIMM storage
@@ -198,7 +198,7 @@ proc cntSort[W: Ui12; C](obs, tmp: pointer; n, sz: int; off: W; xf: XForm;
   for i in 0 ..< n:
     let key = gKey(A(i), off, xf)
     let outAddr = B(h[key])
-    when defined(cpuPrefetch): prefetch cast[pointer](outAddr+2*sz.uint),pfWrite
+    when defined cpuPrefetch: prefetch cast[pointer](outAddr+2*sz.uint),pfWrite
     copyMem cast[pointer](outAddr), cast[pointer](A(i)), sz
     h[key].inc                                  #Advance output pointer
   return cast[pointer](B(0))
@@ -236,7 +236,7 @@ proc radix2[C](obs, tmp: pointer; n, sz: int; off: uint16; xf: XForm;
     for i in 0 ..< n:                           #Poke each A-record into its..
       let b = dig(gKey(A(i).uint, off, xf))     #..appropriate spot in B()
       let outAddr = B(h[p][b])
-      when defined(cpuPrefetch):prefetch cast[pointer](outAddr+2*sz.uint),pfWrite
+      when defined cpuPrefetch:prefetch cast[pointer](outAddr+2*sz.uint),pfWrite
       copyMem cast[pointer](outAddr), cast[pointer](A(i)), sz
       h[p][b].inc                               #Advance B/output pointer
   if need0:                                     #Only if necessary..
@@ -300,7 +300,8 @@ proc digitPlan[W: Ui248](digit, nH: var array[11, W]; mask: W; b,n,sz,cz: int):
     digit[1] = mask                             #Can fit h[], but not data in L1
     nH[1] = nLeft               #Initially nH is the number of bits NOT entries.
     return 2
-  if verb > 1: stdout.write " nLeft: ",nLeft," b: ",b," 2go: ",max(2.W, W(nLeft.float/b.float))
+  if verb > 1:
+    stdout.write " nL: ",nLeft," b: ",b," 2go: ",max(2.W,W(nLeft.float/b.float))
   return nDigits(digit, nH, mask, nLeft, max(2.W, W(nLeft.float / b.float)))
 
 proc radix[W: Ui248; C](obs, tmp: pointer; n, sz: int; off: W; xf: XForm;
@@ -348,7 +349,7 @@ proc radix[W: Ui248; C](obs, tmp: pointer; n, sz: int; off: W; xf: XForm;
         h[j + 1][dNx + 1].inc                       #Count digit
       if j > 0 or need0wr:                      #Poke ob into correct out slot
         let outAddr = B(h[j][dig])
-        when defined(cpuPrefetch): prefetch(cast[pointer](outAddr + (2 * sz).uint), pfWrite)
+        when defined cpuPrefetch:prefetch cast[pointer](outAddr+uint(2*sz)),pfWrite
         copyMem cast[pointer](outAddr), cast[pointer](A(i)), sz
         h[j][dig].inc                           #Advance output pointer
     if j > 0 or need0wr: swap tmp, obs          #Swap [AB] buffer pointers
@@ -412,7 +413,7 @@ proc msortRec[O, W](obs, tmp: var openArray[O]; left, right: int; off: W;
   let n   = right - left
   let mid = left + n div 2
   if obs[0].sizeof * n < dGiantSort:    #BaseCase: radix sort
-    let r = nsort(obs[left].addr, tmp[left].addr, n, O.sizeof, off.uint8, xf, b0)
+    let r = nsort(obs[left].addr, tmp[left].addr, n, O.sizeof,off.uint8, xf, b0)
     if r == cast[pointer](-1):
       obs.reverse left, right - 1
     elif r != obs[left].addr:
