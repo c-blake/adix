@@ -1,6 +1,5 @@
 #!/bin/awk -f
-{ cnt[$0]++ }
-END { for(k in cnt) print cnt[k], k }
+{c[$0]++}END{for(k in c)print c[k],k}
 
 # As has surely been noted about a gajillion times by now, an improvement on
 # Doug McIlroy's solution in Knuth-McIlroy is (probably):
