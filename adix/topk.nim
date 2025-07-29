@@ -1,3 +1,5 @@
+##[ Top-k of n using "Buffered QuickSelect" for θ(n) scaling in large `k` cases
+rather than `std/heapqueue` { which has [O|θ](n*lg k) }. ]##
 import std/[random, algorithm]  # quickwit.io/blog/top-k-complexity explains BUT
 type                            #..NOTE heap [θO](n*lg k) &this θ(n),O(n*lg k).
   Partn* = enum last, ran       #XXX Tukey's 9th | median-of-medians | PDQ?
