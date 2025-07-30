@@ -1,6 +1,6 @@
-##[ `LgHisto` is an application of BISTs to log-spaced histograms that gives
-efficient, dynamic quantiles.  log-spacing gives high dynamic range with low
-cost while Fenwick/BIST supports dynamic membership w/operation-balanced perf.
+##[ `LgHisto` is an application of BISTs to histograms of logs giving efficient,
+dynamic quantiles.  logs yield high dynamic range at low cost while Fenwick/BIST
+supports dynamic membership w/operation-balanced perf.
 
 Quantile error is absolute { not relative to `q*(1-q)` like t-Digests } & easily
 bounded as <~ 1/2 bin width { about 10^(lg(b/a)/n/2) }.  If you need 3 places or
@@ -9,21 +9,19 @@ use 1e4 bins & counters will remain L1 cache resident, depending on resource
 competition.  Cache is the main cost Re: speed.  Re: space, since 99% of bins
 are 0 in many cases, simple run-length encoding can improve net/disk transfers.
 
-The way Fenwick BISTs work, the generic parameter `C` must be a wide enough
-integer type to hold both elemental bin counts AND grand totals.  uint32 is
-likely enough for many applications, though some might sneak by with uint16 and
-a few might need uint64.  This scales bin size/space cost.
+The way Fenwick BISTs work, the generic parameter `C` must be a wide enough int
+type to hold both elemental bin counts AND grand totals.  uint32 is likely
+enough for many applications, though some might sneak by with uint16 and a few
+might need uint64.  This scales bin size/space cost.
 
 t-Digests are a well marketed competitor using ~10X less space BUT with >>5X
-slower quantiles of similar accuracy.  Actual cost is sensitive to operation
+slower quantiles of similar accuracy.  Actual costs are sensitive to operation
 mixes. { This may change, but present t-Digest impls, even with trees, linear
 scan for quantile/CDFs.  None even offer "batch" APIs to do N quantiles in one
 such scan.  "Histo B-trees" should allow better scaling for such. } A BIST basis
-differs from t-Digests in other important ways.  First, BISTs are well suited
-for `pop` or moving data window operations with *strict* finite memory, for e.g.
-translation of full streams to moving quantiles as in Bollinger Band-style
-smooths.  Second, floating point weights for EWMA-like decaying memory are not
-possible since FP arithmetic kind of breaks BISTs.]##
+differs from t-Digests in other important ways.  E.g., BISTs are well suited for
+`pop` (or moving data window ops) with *strict* finite memory to, e.g. translate
+full streams to moving quantiles as in Bollinger Band-style smooths.]##
 
 when not declared(addFloat): import std/formatfloat
 import adix/[bist, lna]; from std/math import exp, isNaN
