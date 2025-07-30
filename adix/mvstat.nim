@@ -7,9 +7,12 @@
 ## caching 1.0/n which may be identical-but-expensive (eg. reporting at each
 ## cycle of a 1 pop per push (so fixed `n`) window over data).
 ##
-## Note: this all costs more in both time & space than exponentially weighted
+## Note: this all costs *more* in both time & space than exponentially weighted
 ## equivalents but has precise rather than infinite memory which can be nice.
-## I.e., it can perfectly "forget" a large spike when it leaves a window.
+## I.e., it can perfectly "forget" a large spike when it leaves a window, and
+## space usage is bounded by window size while time is generally ~O(lg nBins),
+## both of which seem to be at their respective efficiency limits.  Anyway,
+## by default `options` does not include `OrderStats`.
 
 when not declared(addFloat): import std/objectdollar
 from std/math     import sqrt, sum, `^`
