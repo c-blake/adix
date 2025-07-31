@@ -60,6 +60,8 @@ func initLgHisto*[C](a=1e-16, b=1e20, n=8300): LgHisto[C] = result.init a, b, n
 func space*[C](s: LgHisto[C]): int = s.sizeof + s.bist.space
   ## Estimate space taken up by data structure in bytes
 
+func tot*[C](s: LgHisto[C]): C = s.bist.tot.C ## Give total count weight
+
 func toIx*[F,C](s: LgHisto[C], x: F): int =
   ## Find bin index for value `x`; underflows get `[0]` & overflows get `[2*n]`.
   if   x <= -s.a:
@@ -117,7 +119,7 @@ proc `$`*[C](s: LgHisto[C], nonZero=true): string =
       if c != 0: result.add "  [ " & $a & " , " & $b & " ): " & $c & "\n"; inc n
     else       : result.add "  [ " & $a & " , " & $b & " ): " & $c & "\n"
   result[^1] = '\n'
-  result.add "totalCount: " & $tot & " nonZeroBins: " & $n
+  result.add "totalCount: " & $tot & (if nonZero: " non0Bins: " & $n else: "")
 
 func quantile*[F,C](s: LgHisto[C], q: F): F =
   ## Basic quantile; XXX Can log-spacing savvy interpolation be more accurate?
@@ -145,16 +147,15 @@ when isMainModule:
       for (a, b, c) in lh.bins:
         if (a,b) != lh.binAB((a+b)/2) or a >= b:
           echo "a: ",a," b: ",b," c: ",c," ab(mid(a,b)): ",lh.binAB((a+b)/2)
-      for q in qs: echo "q",q,": ",lh.quantile(q)
+      if lh.tot > 0: (for q in qs: echo "q",q,": ",lh.quantile(q))
     import cligen; dispatch lghist
   else:
-    import std/[random, times]; randomize()
+    import std/[random, times, strformat]; randomize()
     var data: seq[float32]
-    var res = newSeqOfCap[float32](9)
     const N = 750_000
-#   for i in 1 .. N: data.add rand(0.0 .. 1.0)
-    for i in 1 .. N: data.add gauss().float32
-    var s = initLgHisto[uint32]()
+    var res = newSeqOfCap[float32](N)
+    for i in 1 .. N: data.add gauss().float32 # rand(0.0 .. 1.0)
+    var s = initLgHisto[uint32](b=10, n=128)
     let t0 = epochTime()
     for x in data: s.add x
     let t1 = epochTime()
@@ -162,5 +163,5 @@ when isMainModule:
       res.add s.quantile(q)
     let t2 = epochTime()
     for r in res: echo r  # do not time the formatting/echo part
-    echo "ns/add: ", (t1-t0)*1e9/N.float, " ns/9qs: ", (t2-t1)*1e9
+    echo &"ns/add: {(t1-t0)*1e9/N.float:.1f}  ns/q: {(t2-t1)*1e9/9:.1f}"
     echo "space: ", s.space, " bytes"
