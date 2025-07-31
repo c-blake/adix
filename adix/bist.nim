@@ -21,28 +21,30 @@ but needing >7..8 decimal dynamic ranges is also rare. ]##
 when not declared assert: import std/assertions
 import xlang, bitop # cfor, `>>=`, `&=`; `ceilPow2`
 
-type Bist*[T: SomeInteger] = object ## A razor thin wrapper around `seq[T]`
-  tot*: int           # total counted population, via history of inc(i, d)
+type Bist*[T: SomeNumber] = object ## A razor thin wrapper around `seq[T]`
+  tot*: T             # total counted population, via history of inc(i, d)
   data*: seq[T]       # The Fenwick array/BIST; Relevant seq ops pass through
 
 proc init*[T](t: var Bist[T], len: int) = t.data.setLen len
 proc initBist*[T](len: int): Bist[T] = result.init len
 proc len*[T](t: Bist[T]): int = t.data.len
 func space*[T](t: Bist[T]): int = t.sizeof + t.data.len*T.sizeof
-proc count*[T](t: Bist[T]): int = t.tot
+proc count*[T](t: Bist[T]): T = t.tot
 proc `[]`*[T](t: Bist[T], i: int): T = t.data[i]
 proc `[]`*[T](t: var Bist[T], i: int): var T = t.data[i]
 proc `[]=`*[T](t: var Bist[T], i: int, x: T) = t.data[i] = x
 proc clear*[T](t: var Bist[T]) =
   t.tot = 0; zeroMem t.data[0].addr, t.len*T.sizeof
 
-proc inc*[T](t: var Bist[T]; i, d: SomeInteger) =
-  ## Adjust for count update; Eg. inc(T,i,-1) decs count@i; Tm ~ 1/2..3/4 lg n
-  t.tot += int(d)                                 #Likely T unsigned, d signed
-  cfor (var i = i.int), i < t.len, i |= i + 1:    #Go down update tree
-    t[i] = T(int(t[i]) + d.int)                   #Likely T unsigned, d signed
-proc dec*[T](t: var Bist[T]; i, d: SomeInteger) = t.inc i, -d
-  ## Convenience call to `inc i, -d`.
+proc inc*[T](t: var Bist[T]; i: int; d: T) =
+  ## Adjust for count increment by `d`; Tm ~ 1/2..3/4 lg n
+  t.tot += d
+  cfor (var i = i.int), i < t.len, i |= i + 1: t[i] += d    #Go down update tree
+
+proc dec*[T](t: var Bist[T]; i: int; d: T) =
+  ## Adjust for count decrement by `d`; Tm ~ 1/2..3/4 lg n
+  t.tot -= d
+  cfor (var i = i.int), i < t.len, i |= i + 1: t[i] -= d    #Go down update tree
 
 proc cdf*[T](t: Bist[T], i: int): T =
   ## INCLUSIVE `sum(pmf[0..i])`, (rank,EDF,prefix sum,scan,..); Tm~1 bits in `i`
@@ -71,7 +73,7 @@ proc fromCnts*[T](t: var Bist[T]) =
   ## In-place bulk convert/reformat `t[]` from counts to BIST; Max time `~1*n`.
   t.tot = 0
   for i in 0 ..< t.len:
-    t.tot += int(t[i])
+    t.tot += t[i]
     let j = i or (i + 1)
     if j < t.len:
       t[j] += t[i]
@@ -121,7 +123,7 @@ proc quantile*[T](t: Bist[T]; q: float; iL,iH: var int): float =
   iH = t.invCDF(T(qN + 1.5), sH0, sH1)
   var sMidH = 0.5*float(sH0 + sH1)          #This guess works 90+% of the time..
   if sMidH < qN:                            #..but can fail for large sH1 - sH0.
-    if sH1.int < t.tot:                     #When it fails, want next higher bin
+    if sH1 < t.tot:                         #When it fails, want next higher bin
       iH    = t.invCDF(sH1 + 1, sH0, sH1)
       sMidH = 0.5*float(sH0 + sH1)
     else: return 0                          #..unless @HIGHEST already=>all iH
