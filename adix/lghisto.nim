@@ -1,5 +1,5 @@
 ##[ `LgHisto` is an application of BISTs to histograms of logs giving efficient,
-dynamic quantiles.  logs yield high dynamic range at low cost while Fenwick/BIST
+dynamic quantiles.  Logs give high dynamic range at low cost while Fenwick/BIST
 supports dynamic membership w/operation-balanced perf.
 
 Quantile error is absolute { not relative to `q*(1-q)` like t-Digests } & easily
