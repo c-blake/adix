@@ -60,7 +60,7 @@ proc pmf*[T](t: Bist[T], i: int): T =
 proc invCDF*[T](t: Bist[T], s: T; s0: var T): int =
   ## For `0 < s <= tot`, bracket ECDF jump `>= s`.  I.e. find `i0, s0` so `s0 =
   ## sum(..< i0) < s yet sum(..i0) >= s` in `lgCeil n` array probes.
-  assert 0<s.int and s.int<=t.tot,"invCDF(Bist[T]) called with out of range sum"
+  assert 0<s.int and s<=t.tot,"Bist.invCDF OORange sum " & $s & " of " & $t.tot
   var c = s - 1                         #NOTE: s==0 | s > tot are invalid inputs
   cfor (var half = t.data.len.ceilPow2 shr 1), half != 0, half >>= 1:
     var mid = result + half - 1
@@ -146,6 +146,7 @@ when isMainModule:
     ##[Eg `tbist $(echo 0 2 4 4 4 6 6 6 6 8 | tr \  \\n | shuf)`. Exit status is
     bitmask of PMF|CDF|invCDF|Extremes|discontinuousQtls|badFrom|badToCnts. ]##
     result = 0    #Set to non-zero on failure for easy halt of randomized tests.
+    if args.len == 0: quit "Called with no args; --help explains more", 1
     var cntR = newSeq[ct](num)                        #Reference count/PMF/histo
     var sumR = newSeq[ct](num)                        #Reference prefix sum/CDF
     var minR = int.high
