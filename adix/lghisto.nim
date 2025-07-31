@@ -89,11 +89,11 @@ func binAB*[F,C](s: LgHisto[C], x: F): (float, float) =
 
 func add*[F,C](s: var LgHisto[C], x: F, w=1.C) =
   ## Increment bin for value `x` by weight `w`
-  if not isNaN(x): s.bist.inc(s.toIx(x), int(w))
+  if not isNaN(x): s.bist.inc(s.toIx(x), w)
 
 func pop*[F,C](s: var LgHisto[C], x: F, w=1.C) =
   ## Alias for `add` with a negative weight argument
-  if not isNaN(x): s.bist.dec(s.toIx(x), int(w))
+  if not isNaN(x): s.bist.dec(s.toIx(x), w)
 
 iterator bins*[C](s: LgHisto[C]): (float, float, C) =
   ## Yield `(lo, hi, count)` for each bin covered
