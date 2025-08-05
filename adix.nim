@@ -8,6 +8,7 @@ when defined(nimdoc):
   import adix/cpuCT
   import adix/cumsum
   import adix/ditab
+  import adix/embist
   import adix/lghisto
   import adix/lmbist
   import adix/lna
