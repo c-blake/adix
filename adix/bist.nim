@@ -61,13 +61,13 @@ proc invCDF*[T](t: Bist[T], s: T; s0: var T): int =
   ## For `0 < s <= tot`, bracket ECDF jump `>= s`.  I.e. find `i0, s0` so `s0 =
   ## sum(..< i0) < s yet sum(..i0) >= s` in `lgCeil n` array probes.
   assert 0<s.int and s<=t.tot,"Bist.invCDF OORange sum " & $s & " of " & $t.tot
-  var c = s - 1                         #NOTE: s==0 | s > tot are invalid inputs
+  var c = s                             #NOTE: s==0 | s > tot are invalid inputs
   cfor (var half = t.data.len.ceilPow2 shr 1), half != 0, half >>= 1:
     var mid = result + half - 1
-    if mid < t.data.len and t[mid] <= c:
+    if mid < t.data.len and t[mid] < c:
       c -= t[mid]
       result = mid + 1
-  s0 = s - c - 1
+  s0 = s - c
 
 proc fromCnts*[T](t: var Bist[T]) =
   ## In-place bulk convert/reformat `t[]` from counts to BIST; Max time `~1*n`.
@@ -85,10 +85,10 @@ proc toCnts*[T](t: var Bist[T]) =
     cfor (var j = 2*i - 1), j < t.len, j += 2*i:  #*Might* be slower than just
       t[j] -= t[j - i]                            #..looping & calling `pmf`.
 
-proc counts*[T](t: Bist[T]): seq[T] = ## Return classic PMF from read-only BIST
-  result.setLen t.len; for i in 0 ..< t.len: result[i] = t.pmf(i)
+proc counts*[T](t: Bist[T]): seq[float32] = ## Return classic PMF from read-only BIST
+  result.setLen t.len; let s=1/t.tot.float32; for i in 0..<t.len: result[i] = t.pmf(i).float32*s
 
-proc cumuls*[T](t: Bist[T]): seq[T] = ## Return classic CDF from read-only BIST
+proc cumuls*[T](t: Bist[T]): seq[float32] = ## Return classic CDF from read-only BIST
   result = t.counts; for i in 1 ..< t.len: result[i] += result[i - 1] # .cumsum?
 
 proc `$`*[T](t: Bist[T]): string = "tot: " & $t.count & " pmf: " & $t.counts
@@ -117,7 +117,7 @@ proc quantile*[T](t: Bist[T]; q: float; iL,iH: var int): float =
   assert t.tot > 0, "quantile(Bist[T]) requires non-empty bist."
   var sL0, sL1, sH0, sH1: T                 #You probably want to draw a CDF to
   let n  = t.tot.float                      #..fully understand this code.
-  let qN = q*n
+  let qN = q*n          #XXX Below assumes "quantum of counter weight" == 1.0.
   if qN <= 0.5    : iL = t.min; iH = 0; return 1 #Early rets for tails; Pure iL
   if qN >= n - 0.5: iL = t.max; iH = 0; return 1 #{Early for body are pure iH.}
   iH = t.invCDF(T(qN + 1.5), sH0, sH1)
