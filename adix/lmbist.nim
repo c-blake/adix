@@ -136,8 +136,8 @@ when isMainModule:
         if time: tQ += d.quantile(q)    # `formatFloat` slow=>just total
         else: echo d.quantile(q)        # Report inverseCDF(q)
     if time:
-      let n = xs.len.float; let dt = (epochTime() - t0)/n*1e6
-      stderr.write &"n: {xs.len} us/no: {dt:4f} w: {win} <mQ>: {tQ/n}\n"
+      let n = xs.len.float; let dt = (epochTime() - t0)*1e9/n
+      stderr.write &"n: {xs.len} ns/no: {dt:.1f} w: {win} <mQ>: {tQ/n}\n"
 
   dispatch lmbist, short={"xMn":'a', "xMx":'b'}, help={"xs": "x values",
  "win" : "moving data window in points","q"  : "quantile to report; 0.5=median",

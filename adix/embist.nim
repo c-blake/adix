@@ -116,8 +116,8 @@ when isMainModule:
         if time: tQ += d.invCDF(q*d.tot,gS).F   # `formatFloat` slow=>just total
         else: echo d.invCDF(q*d.tot,gS)         # Report inverseCDF(q)
     if time:
-      let n = xs.len.float; let dt = (epochTime() - t0)/n*1e6
-      stderr.write &"n: {xs.len} us/no: {dt:4f} w: {wOld} <mQ>: {tQ/n}\n"
+      let n = xs.len.float; let dt = (epochTime() - t0)*1e9/n
+      stderr.write &"n: {xs.len} ns/no: {dt:.1f} w: {wOld} <mQ>: {tQ/n}\n"
 
   dispatch embist, short={"xMn":'a', "xMx":'b'}, help={"xs": "x values",
  "wOld": "per-update decay factor" , "q"  : "quantile to report; 0.5=median",
