@@ -9,6 +9,7 @@ when defined(nimdoc):
   import adix/cumsum
   import adix/ditab
   import adix/lghisto
+  import adix/lna
   import adix/lptabz
   import adix/memutil
   import adix/metab
