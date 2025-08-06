@@ -107,6 +107,7 @@ proc min*[T](t: Bist[T]): int = ## Simple wrapper: invCDF(t, 1)
 proc max*[T](t: Bist[T]): int = ## Simple wrapper: invCDF(t,t.count).
   var s0: T; t.invCDF(t.tot.T, s0)
 
+from std/fenv import epsilon
 proc quantile*[T](t: Bist[T]; q: float; iL,iH: var int): float =
   ## Parzen-interpolated quantile; E.g., q=0.9 => 90th percentile.  ``answer =
   ## result*iL + (1-result)*iH``, but is left to caller to do { in case it is
@@ -117,20 +118,25 @@ proc quantile*[T](t: Bist[T]; q: float; iL,iH: var int): float =
   assert t.tot > 0, "quantile(Bist[T]) requires non-empty bist."
   var sL0, sL1, sH0, sH1: T                 #You probably want to draw a CDF to
   let n  = t.tot.float                      #..fully understand this code.
-  let qN = q*n          #XXX Below assumes "quantum of counter weight" == 1.0.
-  if qN <= 0.5    : iL = t.min; iH = 0; return 1 #Early rets for tails; Pure iL
-  if qN >= n - 0.5: iL = t.max; iH = 0; return 1 #{Early for body are pure iH.}
-  iH = t.invCDF(T(qN + 1.5), sH0, sH1)
-  var sMidH = 0.5*float(sH0 + sH1)          #This guess works 90+% of the time..
-  if sMidH < qN:                            #..but can fail for large sH1 - sH0.
-    if sH1 < t.tot:                         #When it fails, want next higher bin
-      iH    = t.invCDF(sH1 + 1, sH0, sH1)
+  let qN = q*n
+  let wq = when T is SomeFloat: T.epsilon*n else: 1.T # A Quantum Of Ctr Wgt
+  if qN <= 0.5*wq.float    : iL = t.min;iH=0;return 1 #Early tails rets; Pure iL
+  if qN >= n - 0.5*wq.float: iL = t.max;iH=0;return 1 #{Early body are pure iH.}
+  let dqN=when T is SomeFloat: wq else: 1.5 # Min round-off + max odds high side
+  iH = t.invCDF(T(qN + dqN), sH0, sH1)      # sH0<qN<=sH1 BUT can be ABOVE|
+  var sMidH = 0.5*float(sH0 + sH1)          #..BELOW sMidH.  So, test & move as
+  if sMidH < qN:                            #..needed.  When it does fail..,
+    if sH1 < t.tot:                         #..we want the next higher bin.
+      iH    = t.invCDF(sH1 + wq, sH0, sH1)
       sMidH = 0.5*float(sH0 + sH1)
     else: return 0                          #..unless @HIGHEST already=>all iH
-  if sH0 == 0: return 0                     #For qN this small, iH = iL = min.
+  if sH0 < wq: return 0                     #For qN this small, iH = iL = min.
   iL = t.invCDF(sH0, sL0, sL1)              #..Also, cannot call invCDF(0).
+  when T is SomeFloat:                      # Should be impossible,but round-off
+    if sL1 > sH0 + wq:                      #..makes it happen sometimes & when
+      iL = t.invCDF(sH0 - wq, sL0, sL1)     #..it does, we want next lower bin.
   let sMidL = 0.5*float(sL0 + sL1)          #Mid-vertJump(nxtLwrBin) gives line
-  (sMidH - qN)/(sMidH - sMidL)
+  min (sMidH - qN)/(sMidH - sMidL), 1.0     #Runs of T.eps-sized bins=>anomalies
 
 proc quantile*[T](t: Bist[T], q: float): float =
   ## Parzen-interpolated quantile when no caller index mapping is needed

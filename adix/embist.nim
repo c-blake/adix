@@ -88,7 +88,7 @@ proc cumuls*[F](d: EMDist[F]): seq[F] =
   result.setLen d.cnt.len; for i, r in mpairs result: r = d.cdf(i).F
 
 when isMainModule:
-  type F = float32
+  type F = float64
   const slow {.booldefine.} = false     # VERY limited differences below
   when not declared addFloat: import std/[syncio, formatFloat]
   import std/[times, strformat], cligen
@@ -101,7 +101,6 @@ when isMainModule:
     else     : (var d = initEMDist[F](xMx - xMn + 1, wOld))
     let t0 = epochTime()
     var tQ = 0.0            # Report avg qtl to ensure compiler cannot elide
-    var gS=0.F#XXX Bist.quantile Parzen interpolate still needs weight quantum=1
     for t, x in xs:
       let x = x.toI                     # xOld frm Deque=moreGeneral
       when slow:                        # On full data win, decay ALL old weight
@@ -113,8 +112,8 @@ when isMainModule:
       if pdf: echo t," b: tot: ",d.tot," ewmPMF: ",d.counts
       if cdf: echo t," b: tot: ",d.tot," ewmCDF: ",d.cumuls
       if q > -2.0:
-        if time: tQ += d.invCDF(q*d.tot,gS).F   # `formatFloat` slow=>just total
-        else: echo d.invCDF(q*d.tot,gS)         # Report inverseCDF(q)
+        if time: tQ += d.quantile(q)    # `formatFloat` slow=>just total
+        else: echo d.quantile(q)        # Report inverseCDF(q)
     if time:
       let n = xs.len.float; let dt = (epochTime() - t0)*1e9/n
       stderr.write &"n: {xs.len} ns/no: {dt:.1f} w: {wOld} <mQ>: {tQ/n}\n"
