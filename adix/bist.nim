@@ -60,7 +60,7 @@ proc pmf*[T](t: Bist[T], i: int): T =
 proc invCDF*[T](t: Bist[T], s: T; s0: var T): int =
   ## For `0 < s <= tot`, bracket ECDF jump `>= s`.  I.e. find `i0, s0` so `s0 =
   ## sum(..< i0) < s yet sum(..i0) >= s` in `lgCeil n` array probes.
-  assert 0<s and s<=t.tot,"Bist.invCDF OORange sum " & $s & " of " & $t.tot
+  assert 0<=s and s<=t.tot, "Bist.invCDF OORange sum " & $s & " of " & $t.tot
   var c = s                             #NOTE: s==0 | s > tot are invalid inputs
   cfor (var half = t.data.len.ceilPow2 shr 1), half != 0, half >>= 1:
     var mid = result + half - 1
@@ -112,8 +112,8 @@ proc quantile*[T](t: Bist[T]; q: float; iL,iH: var int): float =
   ## result*iL + (1-result)*iH``, but is left to caller to do { in case it is
   ## mapping larger numeric ranges to/from iL,iH }.  Tm ~ ``2*lg(addrSpace)``.
   ## Unlike other (broken!) quantile-interpolation methods, Parzen's connects
-  ## midpoints of vertical CDF jumps, not horizontal.  This makes far more sense
-  ## with ties, corresponding to age-old "tie mid-ranking" recommendations.
+  ## midpoints of vertical CDF jumps, not horizontal.  This makes more sense,
+  ## corresponding to Wilcoxon 1945 & later tie mid-ranking recommendations.
   assert t.tot > 0, "quantile(Bist[T]) requires non-empty bist."
   var sL0, sL1, sH0, sH1: T                 #You probably want to draw a CDF to
   let n  = t.tot.float                      #..fully understand this code.
