@@ -60,7 +60,7 @@ proc pmf*[T](t: Bist[T], i: int): T =
 proc invCDF*[T](t: Bist[T], s: T; s0: var T): int =
   ## For `0 < s <= tot`, bracket ECDF jump `>= s`.  I.e. find `i0, s0` so `s0 =
   ## sum(..< i0) < s yet sum(..i0) >= s` in `lgCeil n` array probes.
-  assert 0<s.int and s<=t.tot,"Bist.invCDF OORange sum " & $s & " of " & $t.tot
+  assert 0<s and s<=t.tot,"Bist.invCDF OORange sum " & $s & " of " & $t.tot
   var c = s                             #NOTE: s==0 | s > tot are invalid inputs
   cfor (var half = t.data.len.ceilPow2 shr 1), half != 0, half >>= 1:
     var mid = result + half - 1
