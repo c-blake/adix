@@ -26,9 +26,9 @@ program showing the differences.
 Happy to cite someone, but as far as I can tell, this is a novel (though fairly
 obvious) application of Fenwick BISTs for a fast EWMMedian transform.  Luxenberg
 & Boyd (2024) "Exponentially Weighted Moving Models" does something ~100X more
-complex & surely slower than the one-pass O(n*lg nBin) (20 ns/number!) way done
+complex & surely slower than the one-pass O(n\*lg nBin) (20 ns/item!) way done
 here.  https://randorithms.com/2022/01/31/streaming-histograms.html has some
-nice animations, but it has poorly scaling O(n*nBin) code.  It seems likely
+nice animations, but it has poorly scaling O(n\*nBin) code.  It seems likely
 someone doing big data analytics has this somewhere, though and I am happy to
 give credit when due.  Similarly, please cite this github repo if this code
 inspires your work. ]##
