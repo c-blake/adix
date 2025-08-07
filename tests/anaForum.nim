@@ -24,7 +24,7 @@ proc main =
       anagrams[signature].add(word)
     else:
       anagrams[signature] = @[word]
-  
+
   if anagrams[lookup_signature].len == 1:
     echo "'", lookup_word, "' has no anagrams"
   else:
