@@ -105,7 +105,7 @@ percolated into commonly available runtime libs.  (Depth-based growth trigger is
 likely the simplest example of Profile-Guided Optimization for data structures.
 A.Dain Samples 1993 PhD thesis has some more.)
 
-[^1] The basic issue seems to be a need for apparent novelty over practicality
+[^1]: The basic issue seems to be a need for apparent novelty over practicality
 to interest peer reviewers.  Besides weak motivation, "expert" committees only
 have whatever narrow exposure they have to various domains of ideas/assumption
 frameworks.  With human psychology & incentives this leads to research fads/gobs
@@ -114,7 +114,7 @@ hoped search engines/LLMs might have eased such sifting, but it seems harder,
 perhaps because [synonym density](https://github.com/c-blake/thes) is simply too
 great and more folks are at work.
 
-[^2] Note that hardware memory systems got more sophisticated about speculative
+[^2]: Note that hardware memory systems got more sophisticated about speculative
 workahead execution and parallel fetch which can mask most or all of the extra
 latency in a hot loop benchmark, but this is still "more work/mem bandwidth"
 competing with other work you *might* want a CPU to be doing instead and The
