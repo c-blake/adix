@@ -59,7 +59,7 @@ jobs:
           cd ci
           branch=${{ github.ref }}
           branch=${branch##*/}
-          nim doc --project --outdir:docs --path="." \
+          nimble doc --project --outdir:docs --path="." \
             '--git.url:https://github.com/${{ github.repository }}' \
             '--git.commit:${{ github.sha }}' \
             "--git.devel:$branch" \
