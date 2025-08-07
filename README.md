@@ -21,9 +21,9 @@ to the point.  In particular, as an overview/index, here be:
      Very few have it). (Could buffer writes to ensure full cache-line pokes.)
 
  - Basic Sketches (abbreviated/approximate stores; aka "Digests") for:
-   - Membership: [bltab](https://c-blake.github.io/adix/adix/bltab.html) (bit-
-   level table; Like more successfully marketed Bloom|Cuckoo filters, but lower
-   latency & slightly bigger)
+   - Membership: [bltab](https://c-blake.github.io/adix/adix/bltab.html)
+   (bit-level table; Like more successfully marketed Bloom|Cuckoo filters,
+   but lower latency[^1] & ~2X bigger)
    - Count Distinct: [uniqce](https://c-blake.github.io/adix/adix/uniqce.html)
    aka count unique or cardinality estimation
    - Approx Most Often: [amoft](https://c-blake.github.io/adix/adix/amoft.html)
@@ -80,14 +80,14 @@ results in an odd state of affairs where I can say here "spending *a bit* more
 space can yield major speed-ups", and it sounds blatantly obvious to even the
 most casual observer.  *Yet* such is also neglected in context countless times.
 The academic literature does not help, often being "blood sport" for more
-compressed data | accuracy with no regard to speed.[^1]
+compressed data | accuracy with no regard to speed.[^2]
 
 So, e.g., on my primary 32 GiB RAM dev box with `bu/zipf`, I cannot make exact
 `lfreq` slower than Approximately Most Often sketches(`bu/oft`).  `tests/bl.nim`
 shows another example (also written up
 [here](https://blog.cloudflare.com/when-bloom-filters-dont-bloom/) in a Bloom
 filter / membership approximation context where spending 2-4X what a Bloom takes
-space-wise can buy a 7-10X latency shrink.[^2] (Histograms & UCE are both pretty
+space-wise can buy a 7-10X latency shrink.[^1] (Histograms & UCE are both pretty
 good deals, though, if errors are acceptable, and `adix/bltab` with fingerprint
 keys is arguably just "a better 'sketch' ").
 
@@ -105,7 +105,15 @@ percolated into commonly available runtime libs.  (Depth-based growth trigger is
 likely the simplest example of Profile-Guided Optimization for data structures.
 A.Dain Samples 1993 PhD thesis has some more.)
 
-[^1]: The basic issue seems to be a need for apparent novelty over practicality
+[^1]: Note that hardware memory systems got more sophisticated about speculative
+workahead execution and parallel fetch which can mask most or all of the extra
+latency in a hot loop benchmark, but this is still "more work/mem bandwidth"
+competing with other work you *might* want a CPU to be doing instead and The
+Memory Wall has been around for like 30 years now.  Also, the bonus Robin-Hood
+Linear Probing adds over Cuckoo is graceful degradation with weak hashes - a
+real risk whenever you let users pick `hash` -- which you kind of _must_.
+
+[^2]: The basic issue seems to be a need for apparent novelty over practicality
 to interest peer reviewers.  Besides weak motivation, "expert" committees only
 have whatever narrow exposure they have to various domains of ideas/assumption
 frameworks.  With human psychology & incentives this leads to research fads/gobs
@@ -113,9 +121,3 @@ of work & "many new names for old ideas" to sift through in deep dives.  One
 hoped search engines/LLMs might have eased such sifting, but it seems harder,
 perhaps because [synonym density](https://github.com/c-blake/thes) is simply too
 great and more folks are at work.
-
-[^2]: Note that hardware memory systems got more sophisticated about speculative
-workahead execution and parallel fetch which can mask most or all of the extra
-latency in a hot loop benchmark, but this is still "more work/mem bandwidth"
-competing with other work you *might* want a CPU to be doing instead and The
-Memory Wall has been around for like 30 years now.
