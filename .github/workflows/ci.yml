@@ -39,7 +39,7 @@ jobs:
       fail-fast: false
       matrix:
         os: ['ubuntu-latest']
-        nim: ['version-2-0-8']
+        nim: ['version-2-0']
     name: '${{ matrix.os }} (${{ matrix.nim }})'
     runs-on: ${{ matrix.os }}
     steps:
@@ -68,7 +68,7 @@ jobs:
       - name: Publish docs
         if: >
           github.event_name == 'push' && github.ref == 'refs/heads/master' &&
-          matrix.os == 'ubuntu-latest' && matrix.nim == 'version-2-0-8'
+          matrix.os == 'ubuntu-latest' && matrix.nim == 'version-2-0'
         uses: crazy-max/ghaction-github-pages@v2.5.0
         with:
           build_dir: ci/docs
