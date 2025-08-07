@@ -93,17 +93,18 @@ keys is arguably just "a better 'sketch' ").
 
 A little more on LPTabz & friends
 =================================
-As a brief guide I would start with `NOTES.md` and then look at the top part of
-`lptabz.nim`.  `TODO.md` also has a lot of notes in it.  My overarching vision
-is to allow "the fast way" most of the time, especially for developers that know
-how to provide a good `hash`, but to also have auto fall backs to "safer ways"
-with optional messages to let devs know they may need to intervene by changing
-some defaults at table construction time (or else let users/sysadmins know that
-some input may be violating the assumptions of some code sensitive to inputs).
-Commercial database systems may have done this for decades, but hasn't really
-percolated into commonly available runtime libs.  (Depth-based growth trigger is
-likely the simplest example of Profile-Guided Optimization for data structures.
-A.Dain Samples 1993 PhD thesis has some more.)
+As a brief guide I would start with [`NOTES.md`](NOTES.md) and then look at the
+top part of [`lptabz.nim`](adix/lptabz.nim).  [`TODO.md`](TODO.md) also has a
+lot of notes in it.  My overarching vision is to allow "the fast way" most of
+the time, especially for developers that know how to provide a good `hash`, but
+to also have auto fall backs to "safer ways" with optional messages to let devs
+know they may need to intervene by changing some defaults at table construction
+time (or else let users/sysadmins know that some input may be violating the
+assumptions of some code sensitive to inputs).  Commercial database systems may
+have done this for decades, but hasn't really percolated into commonly available
+runtime libs.  (Depth-based growth trigger is likely the simplest example of
+Profile-Guided Optimization for data structures.  A.Dain Samples 1993 PhD thesis
+has some more.)
 
 [^1]: Note that hardware memory systems got more sophisticated about speculative
 workahead execution and parallel fetch which can mask most or all of the extra
