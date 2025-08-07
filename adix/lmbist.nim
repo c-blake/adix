@@ -40,7 +40,7 @@ quantile settings.  It is only fairly extreme scenarios where just one window
 exceeds CPU L3 cache, let alone DRAM, though.  Please cite this github repo if
 this code inspires your work. ]##
 when not declared assert: import std/assertions # debugging
-import adix/[bist, xlang, bitop]
+import adix/[bist, bitop], cligen/sysUt
 
 type LMBist*[T: SomeNumber] = object
   cnt, nLag: Bist[T]    # Raw count, number of Lags in-window@`i`
@@ -117,7 +117,7 @@ when isMainModule:
   proc lmbist(xs: seq[int], win=3, q = -2.0, pdf=false,cdf=false,time=false,
               xMn=0,xMx=7) =
     template toI(x): untyped = max(xMn, min(xMx, x)) - xMn   # Clip & shift
-    if win < 2: raise newException(ValueError, "win " & $win & " too small")
+    if win < 2: Value !! "win " & $win & " too small"
     when slow: (var d = initBist[uint32](xMx - xMn + 1))
     else     : (var d = initLMBist[uint32](xMx - xMn + 1))
     let t0 = epochTime()

@@ -19,7 +19,7 @@ further with `adix/sequint` specialized to store an array of B-bit counters.
 Ranked B-trees are faster for >24..28-bit index spaces as L3 CPU caching fails,
 but needing >7..8 decimal dynamic ranges is also rare. ]##
 when not declared assert: import std/assertions
-import xlang, bitop # cfor, `>>=`, `&=`; `ceilPow2`
+import cligen/sysUt, bitop # cfor, `>>=`, `&=`; `ceilPow2`
 
 type Bist*[T: SomeNumber] = object ## A razor thin wrapper around `seq[T]`
   tot*: T             # total counted population, via history of inc(i, d)

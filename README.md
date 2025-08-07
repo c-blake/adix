@@ -40,7 +40,9 @@ to the point.  In particular, as an overview/index, here be:
         or [exponential](https://c-blake.github.io/adix/adix/embist.html).
       * Optional discretizing for binning via logs/sqrt/whatever values gives
         [lghisto](https://c-blake.github.io/adix/adix/lghisto.html), a high
-        dynamic range (HDR) module that handles that one-stop shopping style.
+        dynamic range (HDR) module that handles that one-stop shopping style or
+        [xhist1](https://c-blake.github.io/adix/adix/xhist1.html), its
+        generalization to any transform|time kernel.
    - An amalgam: [`mvstat`](https://c-blake.github.io/adix/adix/mvstat.html)
    that works like `std/stats` but supports `del`, i.e. sliding/moving windows
    over data streams (like a moving average) as well as running|moving quantiles
@@ -50,8 +52,6 @@ to the point.  In particular, as an overview/index, here be:
 And some utility modules:
   - [althash](https://c-blake.github.io/adix/adix/althash.html): salt-able
   alternate hash functions for lptabz
-  - [xlang](https://c-blake.github.io/adix/adix/xlang.html): Definitions for C
-  refugees for bist
   - [sequint](https://c-blake.github.io/adix/adix/sequint.html): a fixed stride
   "bit matrix" using "batch"/number ops.
   - [memutil](https://c-blake.github.io/adix/adix/memutil.html): memory shifting
@@ -59,7 +59,7 @@ And some utility modules:
   - [cumsum](https://c-blake.github.io/adix/adix/cumsum.html): parallel prefix
   sum using Intel SIMD for nsort
   - [bitop](https://c-blake.github.io/adix/adix/bitop.html): re-impl std/bitops
-  things to be more CT friendly
+  things to be more CT friendly / provide bitwise updating operators
   - [topk](https://c-blake.github.io/adix/adix/topk.html): spends 2X the (small)
   space of `std/heapqueue`-based top-k stream algo to scale O(lg k) better via
   what one might call "buffered quickselect".

@@ -1,30 +1,36 @@
 ## This is a reimplementation of some things we need from bitops which has CT
 ## trouble due to importc's.  (I feel it's a better naming/factoring, too).
 
+proc `&=`*[T,U](a: var T, b: U) = a = a and b ## Updating bit-wise `and`
+proc `|=`*[T,U](a: var T, b: U) = a = a or b ## Updating bit-wise `or`
+proc `^=`*[T,U](a: var T, b: U) = a = a xor b ## Updating bit-wise `xor`
+proc `<<=`*[T,U](a: var T, b: U) = a = a shl b ## Updating bit-wise `shl`
+proc `>>=`*[T,U](a: var T, b: U) = a = a shr b ## Updating bit-wise `shr`
+
 proc ceilPow2*(x: int): int {.noSideEffect, inline.} =
   ## Returns ``x`` rounded up to the nearest power of two.  <= 0 get 1.
   result = x - 1
   when defined(cpu64):
-    result = result or (result shr 32)
+    result |= result shr 32
   when sizeof(int) > 2:
-    result = result or (result shr 16)
-  result = result or (result shr 8)
-  result = result or (result shr 4)
-  result = result or (result shr 2)
-  result = result or (result shr 1)
+    result |= result shr 16
+  result |= result shr 8
+  result |= result shr 4
+  result |= result shr 2
+  result |= result shr 1
   result += 1 + ord(x <= 0)
 
 proc floorPow2*(x: int): int {.noSideEffect, inline.} =
   ## Returns ``x`` rounded down to the nearest power of two.
-  result = result or (result shr 1)
-  result = result or (result shr 2)
-  result = result or (result shr 4)
-  result = result or (result shr 8)
+  result |= result shr 1
+  result |= result shr 2
+  result |= result shr 4
+  result |= result shr 8
   when sizeof(int) > 2:
-    result = result or (result shr 16)
+    result |= result shr 16
   when defined(cpu64):
-    result = result or (result shr 32)
-  result = result - (result shr 1)
+    result |= result shr 32
+  result -= result shr 1
 
 # https://stackoverflow.com/questions/3465098/bit-twiddling-which-bit-is-set/
 # This is essentially just a perfect hash a la Leiserson98-UsingDeBruijnSeqs.
@@ -43,25 +49,19 @@ proc lgPow2*(x: int): int {.inline.} =
   else:
     deBruijn4[(uint32(x) * 0x077CB531'u32) shr 27]
 
-proc lgCeil*(x: int): int {.inline.} =
+proc lgCeil*(x: int): int {.inline.} = lgPow2(ceilPow2(x))
   ## integer-math only impl of ceil(log2(x))
-  lgPow2(ceilPow2(x))
 
-proc lgFloor*(x: int): int {.inline.} =
+proc lgFloor*(x: int): int {.inline.} = lgPow2(floorPow2(x))
   ## integer-math only impl of floor(log2(x))
-  lgPow2(floorPow2(x))
 
-proc lg*(x: int): int {.inline.} =
-  ## short alias for lgCeil
-  lgCeil(x)
+proc lg*(x: int): int {.inline.} = lgCeil(x) ## short alias for lgCeil
 
-proc rotateLeftBits*(a: uint64, numBits: int): uint64 {.inline.} =
-  ## like bitops
-  result = (a shl numBits) or (a shr (uint64.sizeof * 8 - numBits))
+proc rotateLeftBits*(a: uint64, numBits: int): uint64 {.inline.} = ## like bitops
+  (a shl numBits) or (a shr (uint64.sizeof * 8 - numBits))
 
-proc rotateRightBits*(a: uint64, numBits: int): uint64 {.inline.} =
-  ## like bitops
-  result = (a shr numBits) or (a shl (uint.sizeof * 8 - numBits))
+proc rotateRightBits*(a: uint64, numBits: int): uint64 {.inline.} = ## like bitops
+  (a shr numBits) or (a shl (uint.sizeof * 8 - numBits))
 
 proc reverseBitsByte*(x: uint8): uint8 {.inline.} =
   const reversed = [ 0b0000'u8, 0b1000, 0b0100, 0b1100,
@@ -77,20 +77,20 @@ proc reverseBitsMakeTable(): array[256, uint8] =
 const revByte = reverseBitsMakeTable()
 
 proc reverseBits*(x: uint32): uint32 =
-  result = (uint32(revByte[int((x and 0x000000FF'u32)       )]) shl 24) or
-           (uint32(revByte[int((x and 0x0000FF00'u32) shr  8)]) shl 16) or
-           (uint32(revByte[int((x and 0x00FF0000'u32) shr 16)]) shl  8) or
-            uint32(revByte[int( x                             shr 24)])
+  (uint32(revByte[int((x and 0x000000FF'u32)       )]) shl 24) or
+  (uint32(revByte[int((x and 0x0000FF00'u32) shr  8)]) shl 16) or
+  (uint32(revByte[int((x and 0x00FF0000'u32) shr 16)]) shl  8) or
+   uint32(revByte[int( x                               shr 24)])
 
 proc reverseBits*(x: uint64): uint64 =
-  result = (uint64(revByte[int((x and 0x00000000000000FF'u64)      )]) shl 56)or
-           (uint64(revByte[int((x and 0x000000000000FF00'u64)shr  8)]) shl 48)or
-           (uint64(revByte[int((x and 0x0000000000FF0000'u64)shr 16)]) shl 40)or
-           (uint64(revByte[int((x and 0x00000000FF000000'u64)shr 24)]) shl 32)or
-           (uint64(revByte[int((x and 0x000000FF00000000'u64)shr 32)]) shl 24)or
-           (uint64(revByte[int((x and 0x0000FF0000000000'u64)shr 40)]) shl 16)or
-           (uint64(revByte[int((x and 0x00FF000000000000'u64)shr 48)]) shl  8)or
-            uint64(revByte[int( x                            shr 56)])
+  (uint64(revByte[int((x and 0x00000000000000FF'u64)       )]) shl 56) or
+  (uint64(revByte[int((x and 0x000000000000FF00'u64) shr  8)]) shl 48) or
+  (uint64(revByte[int((x and 0x0000000000FF0000'u64) shr 16)]) shl 40) or
+  (uint64(revByte[int((x and 0x00000000FF000000'u64) shr 24)]) shl 32) or
+  (uint64(revByte[int((x and 0x000000FF00000000'u64) shr 32)]) shl 24) or
+  (uint64(revByte[int((x and 0x0000FF0000000000'u64) shr 40)]) shl 16) or
+  (uint64(revByte[int((x and 0x00FF000000000000'u64) shr 48)]) shl  8) or
+   uint64(revByte[int( x                             shr 56)])
 
 proc isPow2*(x: int): bool =
   if x == 0: return false
