@@ -49,14 +49,14 @@ template def*(T, H, X, X⁻¹) =
     hist*: H              ## actual smart array of counters: [0, 2*n] -> PMF/CDF
 #2DO^ Faster flat array option w/cumsum for "final" qtls; LowPrec `ln`=>DataDog.
 #Could also take option like `noNegative`, but untouched cache matters little.
-  
+
   func underflows*(s: `T`): type(s.hist.cdf 0) = s.hist.pmf 0
   func overflows*(s: `T`) : type(s.hist.cdf 0) = s.hist.pmf 2*s.n
   func low*(s: `T`): float      = s.a
   func high*(s: `T`): float     = s.b
   func nBin*(s: `T`): int       = s.n
   func hist*(s: `T`): H         = s.hist
-  
+
   func init*(s: var `T`, a=1e-16, b=1e20, n=8300) =
     ## Init histo w/2n+1 X-spaced bins: `[-∞..-b; -b..-a; 0; a..<b; b..∞]`.
     if b <= a: Value !! "inverted: [" & $a & "," & $b & "]"
@@ -69,15 +69,15 @@ template def*(T, H, X, X⁻¹) =
     s.h    = (b.X - s.aX)/float(n - 1)
     s.hInv = 1.0/s.h
     s.hist.init 2*n + 1
-  
+
   func `init T`*(a=1e-16, b=1e20, n=8300): `T` = result.init a, b, n
     ## Get Histo w/2n+1 X-spaced bins: `[-inf..<-b; -b..<-a; 0; a..<b; b..inf]`.
-  
+
   func space*(s: `T`): int = s.sizeof + s.hist.space
     ## Estimate space taken up by data structure in bytes
-  
+
   func tot*(s: `T`): auto = s.hist.tot ## Give total count weight
-  
+
   func toIx*[F](s: `T`, x: F): int =
     ##Find bin index for value `x`; Underflows get `[0]`, Overflows get `[2*n]`.
     if   x <= -s.a:
@@ -87,13 +87,13 @@ template def*(T, H, X, X⁻¹) =
       if x <= +s.b: result = s.n + 1 + int( (X(+x) - s.aX)*s.hInv)
       else        : result = 2*s.n
     else: result = s.n
-  
+
   func fromIx*[F](s: `T`, i: int, offset: F=0.5): F =
     ## X⁻¹-mean of left&right edge X-shifted `offset` fraction into bin
     if   i < s.n: -X⁻¹(s.aX + s.h*(F(s.n - i - 1) + F(1) - offset))
     elif i > s.n: +X⁻¹(s.aX + s.h*(F(i - s.n - 1) + offset))
     else: 0.0 # Bin containing x=zero cannot really be offset in the same way
-  
+
   func binAB*[F](s: `T`, x: F): (float, float) =
     ## Range in data space of the bin containing `x`; Costs 2 `fromIx`s.
     let i = s.toIx(x)
@@ -104,15 +104,15 @@ template def*(T, H, X, X⁻¹) =
     elif x <  -s.a   : result[0] = s.fromIx(i,0.0); result[1] = s.fromIx(i,1.0)
     elif x >= +s.a   : result[0] = s.fromIx(i,0.0); result[1] = s.fromIx(i,1.0)
     else             : result[0] = -s.a           ; result[1] = +s.a
-  
+
   func add*[F](s: var `T`, x: F, w: type(s.hist.cdf 0) = 1) =
     ## Increment bin for value `x` by weight `w`
     if not isNaN(x): s.hist.inc s.toIx(x), w
-  
+
   func pop*[F](s: var `T`, x: F, w: type(s.hist.cdf 0) = 1) =
     ## Alias for `add` with a negative weight argument
     if not isNaN(x): s.hist.dec s.toIx(x), w
-  
+
   iterator bins*(s: `T`): (float, float, type(s.hist.cdf 0)) =
    ## Yield `(lo, hi, count)` for each bin covered
    yield (-Inf, -s.b, s.hist.pmf 0)
@@ -122,7 +122,7 @@ template def*(T, H, X, X⁻¹) =
    for i in s.n+1..<2*s.n-1:yield (s.fromIx(i,0.0),s.fromIx(i,1.0),s.hist.pmf i)
    yield (s.fromIx(2*s.n-1,0.0), +s.b, s.hist.pmf 1)
    yield (+s.b, +Inf, s.hist.pmf 2*s.n)
-  
+
   proc `$`*(s: `T`, nonZero=true): string =
     ## Formatting operator; Warning: output can be large, esp. if nonZero=false
     result.add "n: "  & $s.n  & "\ta: " & $s.a & "\tb: "    & $s.b    & "\n"
@@ -136,18 +136,18 @@ template def*(T, H, X, X⁻¹) =
       else      : result.add "  [ " & $a & " , " & $b & " ): " & $c & "\n"
     result[^1] = '\n'
     result.add "totalCount: " & $tot & (if nonZero: " non0Bins: " & $n else: "")
-  
+
   func quantile*[F](s: `T`, q: F): F =
     ## Basic quantile; XXX More accurate X-spacing-savvy interpolation?
     if q < 0.0 or q > 1.0: return NaN
     var iL, iH: int
     let fL = s.hist.quantile(q, iL, iH)
     fL*s.fromIx(iL) + (1 - fL)*s.fromIx(iH)
-  
+
   func cdf*[F](s: `T`, x: F): type(s.hist.cdf 0) =
     ## Raw count; Leave to caller to multiply by 1/s.hist.count;XXX Interpolate?
     if x.isNaN: NaN else: s.hist.cdf(s.toIx(x))
-  
+
   func merge*(dst: var `T`, src: `T`) =
     ## Merge counts from src into dst.
     if src.n != dst.n or src.a != dst.a or src.b != dst.b:

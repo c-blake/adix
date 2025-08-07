@@ -64,8 +64,8 @@ echo paramCount()-2-s.len, '/', paramCount()-2, ". false pos. (if all +)"
 #     hashLd: 0.476837158203125 2 depths: @[801457, 198543]
 #     0/1000000. false pos. (if all +)
 #   That will take 22*(1<<21) bits or a 5.7 MiB `seq`.
-# 
-# 
+#
+#
 # This is all amenable to more formal analysis for those so inclined.  Here is
 # an excerpt of an e-mail I wrote in Summer 2001 (unadjusted for slightly better
 # Robin Hood Linear Probing):
@@ -73,19 +73,19 @@ echo paramCount()-2-s.len, '/', paramCount()-2, ". false pos. (if all +)"
 # A few nights ago David M raised some nice specific doubts and prompted me
 # to do some simple calculations.  The compellingness of Bloom filters seems
 # limited, but very well defined.
-# 
+#
 # The executive summary is just this: for small false positive probabilities
 # Bloom filters help if you're trading memory against disk accesses, but
 # probably not for fast vs. slow memory where "slow" is only 5..8 times higher
 # latency.  Some basic math will perhaps clarify the issue.
-# 
+#
 # The short of it is just this:
 #   { ^ -> exponentiation[not xor], lg=log base 2 }
-# 
+#
 #   Consider N objects/packet-types/whatever and an M-bit table.
 #   Then let a = N / M be the "load".  We have (see, e.g. Knuth)
 #     P(false positive) = p = (1 - exp(-k*a))^k
-# 
+#
 #   Solve for a(k,p)=-log(1-p^(1/k))/k, differentiate with respect to k, set
 #   it equal to zero, and solve to get k = lg(1/p) as the maximizer of a, or
 #   the *minimizer of M*.  I.e., a Bloom filter with either ceil(-lg p) or
@@ -93,7 +93,7 @@ echo paramCount()-2-s.len, '/', paramCount()-2, ". false pos. (if all +)"
 #   What is the memory usage?  Substituting back in notice p^(1/k)=1/2 and:
 #     a = -log(1-1/2)/lg(1/p) = log 2 / lg(1/p), or
 #     M = -lg e * N * lg p = 1.44*N*lg(1/p)
-# 
+#
 # Compare this with recording "existence" in a hash table of B-bit values.
 # Suppose we manage collisions with open-addressed linear probing (a cache
 # friendly thing).  To achieve 2 table accesses/query (probably 1 slow memory
@@ -101,7 +101,7 @@ echo paramCount()-2-s.len, '/', paramCount()-2, ". false pos. (if all +)"
 # M' = 1.44*N slots = 1.44*N*B bits.  Anything in the address space does get
 # stored in the table.  So the false positive rate we expect is the collision
 # rate in the B-bit address space for N objects.
-# 
+#
 # Standard binomial birthday simplification of multinomial collision analysis is
 #     p = 1 − (1 − 1/M')^(N-1), or as M,N get big
 #     p = 1 - exp(N*log(1 - 1/M')) =~ 1 - exp(-N/M') = 1 - exp(-N/2^B) or
@@ -109,13 +109,13 @@ echo paramCount()-2-s.len, '/', paramCount()-2, ". false pos. (if all +)"
 #     M' = 1.44*N*lg(-N/log(1-p)) bits.
 # Now if p << 1, again using log(1-p) =~ -p { err =~ .5*p^2 < 5% for p < .1 }
 #     M' = 1.44*N*lg(N/p).
-# 
+#
 # So there you have it.  The ratio of storage needed for M' (hash table) over
 # M (Bloom filter) simplifies for "small" p to (with log_1/p == log base 1/p):
-# 
+#
 #     M'/M = lg(N/p) / lg(1/p) = (lg(1/p) + lg N)/log(1/p) =
 #          = 1 + lg N/lg(1/p) = 1 + log_1/p (N) = 1 + lg N/-lg p
-# 
+#
 # This tells you exactly what you need to know -- Bloom filters save space only
 # when N is very large relative to 1/p.  E.g., N=1e6 and p=1% give M' = 4M.
 # This may surprise as a naive perception may be that you want to Bloom when you

@@ -11,7 +11,7 @@ distributions goes back to Wong&Easton 1980 (or earlier?).  Fenwick's clever
 index encoding/overlaid trees idea allows using 1/4 to 1/2 that space (only max
 index+1 array elements vs `2*lgCeil(n)`), a constant factor improvement.  Good
 explanations truly need figures, as in the original Fenwick paper | Wikipedia.
-  
+
 The `Bist[T]` type in this module is generic over the type of counters used for
 partial sums|counts.  For few total items, you can use a `Bist[uint8]` while for
 many you want to use `Bist[uint32]`.  This can be space-optimized up to 2X
