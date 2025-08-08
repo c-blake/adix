@@ -47,7 +47,7 @@ func space*[F](d: EMBist[F]): int = d.sizeof + d.cnt.space
 proc tot*[F](d: EMBist[F]): F = d.cnt.tot ## Raw total
 proc count*[F](d: EMBist[F]): F = d.tot   ## Total Weight
 
-proc init*[F](d: var EMBist[F]; len: int, wOld: float=0.96875) =
+proc init*[F](d: var EMBist[F]; len: int, wOld: float=0.9375) =
   d.cnt.init len; d.w = 1.0; d.grow = F(1/wOld)  # start w at 1/thresh?
 proc initEMBist*[F](len: int, wOld: float): EMBist[F] = result.init len, wOld
 proc clear*[F](d: var EMBist[F]) = d.cnt.clear; d.tot = 0.0
