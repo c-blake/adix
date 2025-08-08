@@ -38,21 +38,21 @@ template maxFinite(T: typedesc[SomeFloat]): T = # Should be in std/math, IMO
   when T is float32: 3.4028235e+38'f32
   elif T is float64 or T is float: 1.7976931348623157e+308'f64
 
-type EMDist*[F: SomeFloat] = object ## Exponentially weighted moving distrib.
+type EMBist*[F: SomeFloat] = object ## Exponentially weighted moving distrib.
   cnt: Bist[F]     # Raw count;  This F *could* become its own generic param.
   w, grow: float64 # Running weight next data point will add, growth factor.
 
-proc len*[F](d: EMDist[F]): int = d.cnt.data.len ## Number of bins & bytes
-func space*[F](d: EMDist[F]): int = d.sizeof + d.cnt.space
-proc tot*[F](d: EMDist[F]): F = d.cnt.tot ## Raw total
-proc count*[F](d: EMDist[F]): F = d.tot   ## Total Weight
+proc len*[F](d: EMBist[F]): int = d.cnt.data.len ## Number of bins & bytes
+func space*[F](d: EMBist[F]): int = d.sizeof + d.cnt.space
+proc tot*[F](d: EMBist[F]): F = d.cnt.tot ## Raw total
+proc count*[F](d: EMBist[F]): F = d.tot   ## Total Weight
 
-proc init*[F](d: var EMDist[F]; len: int, wOld: float) =
+proc init*[F](d: var EMBist[F]; len: int, wOld: float=0.96875) =
   d.cnt.init len; d.w = 1.0; d.grow = F(1/wOld)  # start w at 1/thresh?
-proc initEMDist*[F](len: int, wOld: float): EMDist[F] = result.init len, wOld
-proc clear*[F](d: var EMDist[F]) = d.cnt.clear; d.tot = 0.0
+proc initEMBist*[F](len: int, wOld: float): EMBist[F] = result.init len, wOld
+proc clear*[F](d: var EMBist[F]) = d.cnt.clear; d.tot = 0.0
 
-proc inc*[F](d: var EMDist[F]; i: int, w: F=1) = ## Add weight `w` to bin `i`
+proc inc*[F](d: var EMBist[F]; i: int, w: F=1) = ## Add weight `w` to bin `i`
   const lim = F.maxFinite/1e9   # 1e9 just to leave some room for `w` variation
   const scl = 1/lim
   # Can pair up *= scl (ensuring multiplier stays FP representable), but this is
@@ -64,27 +64,27 @@ proc inc*[F](d: var EMDist[F]; i: int, w: F=1) = ## Add weight `w` to bin `i`
     d.cnt.tot *= scl; d.w *= scl          #..and meta-data.
   d.w *= d.grow
 
-proc scale*[F](d: EMDist[F]; age: int): F = 1/d.grow^age
+proc scale*[F](d: EMBist[F]; age: int): F = 1/d.grow^age
   ## Scale for more rare un-count old; Can re-use if dec @same relative age.
-proc dec*[F](d: var EMDist[F]; i: int; w, scale: F) = d.cnt.dec i, w*scale
+proc dec*[F](d: var EMBist[F]; i: int; w, scale: F) = d.cnt.dec i, w*scale
   ## Un-count-old operation for more rare EW with strict windows
 
-proc cdf*[F](d: EMDist[F], i: int): F = d.cnt.cdf(i) / d.count ## wrap Bist.cdf
-proc pmf*[F](d: EMDist[F], i: int): F = d.cnt.pmf(i) / d.count ## wrap Bist.pdf
-proc invCDF*[F](d: EMDist[F], s: F; s0: var F): int = d.cnt.invCDF s, s0
+proc cdf*[F](d: EMBist[F], i: int): F = d.cnt.cdf(i) / d.count ## wrap Bist.cdf
+proc pmf*[F](d: EMBist[F], i: int): F = d.cnt.pmf(i) / d.count ## wrap Bist.pdf
+proc invCDF*[F](d: EMBist[F], s: F; s0: var F): int = d.cnt.invCDF s, s0
   ## wrap Bist.invCDF
-proc invCDF*[F](d: EMDist[F]; s: F; s0,s1: var F): int = d.cnt.invCDF s, s0,s1
+proc invCDF*[F](d: EMBist[F]; s: F; s0,s1: var F): int = d.cnt.invCDF s, s0,s1
   ## wrap Bist.invCDF
-proc min*[F](d: EMDist[F]): int = d.cnt.min ## Simple wrapper of `Bist.min`.
-proc max*[F](d: EMDist[F]): int = d.cnt.max ## Simple wrapper of `Bist.max`.
-proc quantile*[F](d: EMDist[F]; q: float; iL,iH: var int): float = ## wrap Bist.quantile
+proc min*[F](d: EMBist[F]): int = d.cnt.min ## Simple wrapper of `Bist.min`.
+proc max*[F](d: EMBist[F]): int = d.cnt.max ## Simple wrapper of `Bist.max`.
+proc quantile*[F](d: EMBist[F]; q: float; iL,iH: var int): float = ## wrap Bist.quantile
   d.cnt.quantile q, iL,iH
-proc quantile*[F](d: EMDist[F]; q: float): float = d.cnt.quantile q ## wrap Bist.quantile
+proc quantile*[F](d: EMBist[F]; q: float): float = d.cnt.quantile q ## wrap Bist.quantile
 
-proc counts*[F](d: EMDist[F]): seq[F] =
+proc counts*[F](d: EMBist[F]): seq[F] =
   result.setLen d.cnt.len; for i, r in mpairs result: r = d.pmf(i).F
 
-proc cumuls*[F](d: EMDist[F]): seq[F] =
+proc cumuls*[F](d: EMBist[F]): seq[F] =
   result.setLen d.cnt.len; for i, r in mpairs result: r = d.cdf(i).F
 
 when isMainModule:
@@ -98,7 +98,7 @@ when isMainModule:
     if wOld <= 0: raise Value !! "wOld " & $wOld & " too small"
     if wOld >= 1: raise Value !! "wOld " & $wOld & " too big"
     when slow: (var d = initBist[F](xMx - xMn + 1))
-    else     : (var d = initEMDist[F](xMx - xMn + 1, wOld))
+    else     : (var d = initEMBist[F](xMx - xMn + 1, wOld))
     let t0 = epochTime()
     var tQ = 0.0            # Report avg qtl to ensure compiler cannot elide
     for t, x in xs:
