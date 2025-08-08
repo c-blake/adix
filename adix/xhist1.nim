@@ -14,7 +14,7 @@ when not declared addFloat: import std/formatfloat; export formatfloat
 from math import isNaN; export isNaN
 import cligen/sysUt; export sysUt
 
-template def*(T, H, X, X⁻¹) =
+template def*(T, X, X⁻¹, H; Hini: typed = 0) =
   ##[ Here `T` is the type that will be defined along with an `init T`, `H` is
   the type of histogram (e.g. bist[uint32]), X is an expression transforming
   monotonically over (0,+Inf) some input `x`, e.g. `ln`, while `X⁻¹` is its
@@ -68,7 +68,8 @@ template def*(T, H, X, X⁻¹) =
     s.aX   = a.X
     s.h    = (b.X - s.aX)/float(n - 1)
     s.hInv = 1.0/s.h
-    s.hist.init 2*n + 1
+    when Hini == 0: s.hist.init 2*n + 1
+    else          : s.hist.init 2*n + 1, Hini
 
   func `init T`*(a=1e-16, b=1e20, n=8300): `T` = result.init a, b, n
     ## Get Histo w/2n+1 X-spaced bins: `[-inf..<-b; -b..<-a; 0; a..<b; b..inf]`.
@@ -155,15 +156,15 @@ template def*(T, H, X, X⁻¹) =
     for i in 0..2*src.n: dst.hist.inc i, src.hist.pmf(i) # Flat array prob fastr
 
 when isMainModule:
-  import adix/[bist, lna]                   # Could do /embist, /lmbist
-  from std/math import isNaN, exp           #, sqrt, `^`
-  xhist1.def Histo, Bist[uint32], lna, exp  # Matches lghisto exactly
+  import adix/[bist, lna]                   # embist lmbist
+  from std/math import exp                  #, sqrt
+  xhist1.def Histo, lna, exp, Bist[uint32]  # Matches lghisto exactly
 # template sqr(x: untyped) = x*x
-# template ident(x): untyped = x
-# xhist1.def Histo, Bist[uint32], sqrt, sqr
-# xhist1.def Histo, Bist[uint32], ident, ident
-# xhist1.def Histo, EMBist[float32], lna, exp
-# xhist1.def Histo, LMBist[uint32], lna, exp
+# template Id(x): untyped  = x
+# xhist1.def Histo, Id   , Id   , Bist[uint32]   
+# xhist1.def Histo, sqrt , sqr  , Bist[uint32]   
+# xhist1.def Histo, lna  , exp  , EMBist[float32], 0.9375
+# xhist1.def Histo, lna  , exp  , LMBist[uint32] 
   when defined(test): # Helpful to run against: -- -12 -8 -4 -1 0 1 4 8 12
     proc lghist(a=0.125, b=10.0, n=8, qs = @[0.25, 0.5, 0.75], xs: seq[float]) =
       var lh = initHisto(a, b, n)
