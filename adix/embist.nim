@@ -33,7 +33,7 @@ It seems likely someone doing big data analytics has this somewhere, though and
 I am happy to give credit when due.  Similarly, please cite this github repo if
 this code inspires your work. ]##
 when not declared assert: import std/assertions # debugging
-import adix/bist, std/math, cligen/sysUt
+import adix/bist, std/math
 template maxFinite(T: typedesc[SomeFloat]): T = # Should be in std/math, IMO
   when T is float32: 3.4028235e+38'f32
   elif T is float64 or T is float: 1.7976931348623157e+308'f64
@@ -91,7 +91,7 @@ when isMainModule:
   type F = float64
   const slow {.booldefine.} = false     # VERY limited differences below
   when not declared addFloat: import std/[syncio, formatFloat]
-  import std/[times, strformat], cligen
+  import std/[times, strformat], cligen, cligen/sysUt
   proc embist(xs: seq[int], wOld=0.75, q = -2.0, pdf=false,cdf=false,time=false,
               xMn=0,xMx=7) =
     template toI(x): untyped = max(xMn, min(xMx, x)) - xMn   # Clip & shift
