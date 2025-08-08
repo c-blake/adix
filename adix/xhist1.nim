@@ -20,27 +20,27 @@ template def*(T, X, X⁻¹, H; Hini: typed = 0) =
   monotonically over (0,+Inf) some input `x`, e.g. `ln`, while `X⁻¹` is its
   inverse function expression, e.g. `exp`.  Besides defining the type, this
   also defines a pile of procedures upon it:
-    func underflows*(s: T): type(s.hist.cdf 0)
-    func overflows*(s: T) : type(s.hist.cdf 0)
-    func low*(s: T): float
-    func high*(s: T): float
-    func nBin*(s: T): int
-    func hist*(s: T): H
-    func init*(s: var T, a=1e-16, b=1e20, n=8300)
-    func `init T`*(a=1e-16, b=1e20, n=8300): T
-    func space*(s: T): int
-    func tot*(s: T): auto
-    func toIx*[F](s: T, x: F): int
-    func fromIx*[F](s: T, i: int, offset: F=0.5): F
-    func binAB*[F](s: T, x: F): (float, float)
-    func add*[F](s: var T, x: F, w: type(s.hist.cdf 0) = 1)
-    func pop*[F](s: var T, x: F, w: type(s.hist.cdf 0) = 1)
-    iterator bins*(s: T): (float, float, type(s.hist.cdf 0))
-    proc `$`*(s: T, nonZero=true): string
-    func quantile*[F](s: T, q: F): F
-    func cdf*[F](s: T, x: F): type(s.hist.cdf 0)
-    func merge*(dst: var T, src: T)
-  So, e.g.: `def Histo, Bist[uint32], ln, exp` is one instantiation. ]##
+    func underflows\*(s: T): type(s.hist.cdf 0)
+    func overflows\*(s: T) : type(s.hist.cdf 0)
+    func low\*(s: T): float
+    func high\*(s: T): float
+    func nBin\*(s: T): int
+    func hist\*(s: T): H
+    func init\*(s: var T, a=1e-16, b=1e20, n=8300)
+    func `init T`\*(a=1e-16, b=1e20, n=8300): T
+    func space\*(s: T): int
+    func tot\*(s: T): auto
+    func toIx\*[F](s: T, x: F): int
+    func fromIx\*[F](s: T, i: int, offset: F=0.5): F
+    func binAB\*[F](s: T, x: F): (float, float)
+    func add\*[F](s: var T, x: F, w: type(s.hist.cdf 0) = 1)
+    func pop\*[F](s: var T, x: F, w: type(s.hist.cdf 0) = 1)
+    iterator bins\*(s: T): (float, float, type(s.hist.cdf 0))
+    proc `$`\*(s: T, nonZero=true): string
+    func quantile\*[F](s: T, q: F): F
+    func cdf\*[F](s: T, x: F): type(s.hist.cdf 0)
+    func merge\*(dst: var T, src: T)
+  So, e.g.: `def Histo, ln, exp, Bist[uint32]` is one instantiation. ]##
 
   type `T`* = object      ## histogram(X(x[])) with backing histogram `H`
     n*: int               ## number of bins
