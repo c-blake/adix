@@ -30,28 +30,26 @@ template def*(T, X, X⁻¹, H; Hini: typed = 0) =
   inverse function expression, e.g. `exp`.  So, `def Histo,ln,exp,Bist[uint32]`
   is one instantiation.  Besides defining the type, this also defines routines
   documented in detail over in https://c-blake.github.io/adix/adix/lghisto.html
-   * func underflows(s: T): type(s.hist.cdf 0)
-   * func overflows(s: T) : type(s.hist.cdf 0)
-   * func low(s: T): float
-   * func high(s: T): float
-   * func nBin(s: T): int
-   * func hist(s: T): H
-   * func init(s: var T, a=1e-16, b=1e20, n=8300)
-   * func initT(a=1e-16, b=1e20, n=8300): T
-   * func space(s: T): int
-   * func tot(s: T): auto
-   * func toIx[F](s: T, x: F): int
-   * func fromIx[F](s: T, i: int, offset: F=0.5): F
-   * func binAB[F](s: T, x: F): (float, float)
-   * func add[F](s: var T, x: F, w: type(s.hist.cdf 0) = 1)
-   * func pop[F](s: var T, x: F, w: type(s.hist.cdf 0) = 1)
-   * iterator bins(s: T): (float, float, type(s.hist.cdf 0))
-   * proc `$`(s: T, nonZero=true): string
-   * func quantile[F](s: T, q: F): F
-   * func cdf[F](s: T, x: F): type(s.hist.cdf 0)
-   * func merge(dst: var T, src: T)
-  They're also documented in the `xhist1.nim` code, but `nim doc` won't cover
-  them even when instantiated. ]##
+   * func underflows(s: T): type(s.hist.cdf 0)      # bin[0]
+   * func overflows(s: T) : type(s.hist.cdf 0)      # bin[^1]
+   * func low(s: T): float                          # `.a`
+   * func high(s: T): float                         # `.b`
+   * func nBin(s: T): int                           # `.n` - 2*n+1 is num.bins
+   * func hist(s: T): H                             # `.hist` - backing histo
+   * func init(s: var T, a=1e-16, b=1e20, n=8300)   # init w/2*n+1 bins
+   * func initT(a=1e-16, b=1e20, n=8300): T         # Same, but w/TypeName
+   * func space(s: T): int                          # Est.of total bytes used
+   * func tot(s: T): auto                           # Total count weight
+   * func toIx[F](s: T, x: F): int                  # x -> bin index
+   * func fromIx[F](s: T, i: int, offset: F=0.5): F # bin index -> bin center
+   * func binAB[F](s: T, x: F): (float, float)      # whole range for bin(`x`)
+   * func add[F](s: var T, x: F, w: type(s.hist.cdf 0) = 1)  # inc wt by w
+   * func pop[F](s: var T, x: F, w: type(s.hist.cdf 0) = 1)  # dec wt by w
+   * iterator bins(s: T): (float, float, type(s.hist.cdf 0)) # yield (lo,hi,cnt)
+   * proc `$`(s: T, nonZero=true): string                    # format histo
+   * func quantile[F](s: T, q: F): F                # Basic quantile
+   * func cdf[F](s: T, x: F): type(s.hist.cdf 0)    # Raw count; Callers /s.tot
+   * func merge(dst: var T, src: T)                 # Cnts from src into dst ]##
 
   type `T` = object       ## histogram(X(x[])) with backing histogram `H`
     n*: int               ## number of bins
