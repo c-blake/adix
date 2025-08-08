@@ -23,5 +23,6 @@ when defined(nimdoc):
   import adix/tdigest
   import adix/topk
   import adix/uniqce
+  import adix/xhist1
 else:
   {.error: "use `import adix/{module of interest}`".}
