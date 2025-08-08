@@ -23,7 +23,7 @@ when not declared addFloat: import std/formatfloat; export formatfloat
 from math import isNaN; export isNaN
 import cligen/sysUt; export sysUt
 
-template def*(T, X, X⁻¹, H; Hini: typed = 0) =
+template def*(T, X, X⁻¹, H; Hini: typed = false; Harg=0.0) =
   ##[ Here `T` is the type that will be defined along with an `init T`, `H` is
   the type of histogram (e.g. `Bist[uint32]`), `X` is an expression transforming
   monotonically over `(0, +Inf)` some input `x`, e.g. `ln`, while `X⁻¹` is its
@@ -36,8 +36,8 @@ template def*(T, X, X⁻¹, H; Hini: typed = 0) =
    * func high(s: T): float                         # `.b`
    * func nBin(s: T): int                           # `.n` - 2*n+1 is num.bins
    * func hist(s: T): H                             # `.hist` - backing histo
-   * func init(s: var T, a=1e-16, b=1e20, n=8300)   # init w/2*n+1 bins
-   * func initT(a=1e-16, b=1e20, n=8300): T         # Same, but w/TypeName
+   * proc init(s: var T, a=1e-16, b=1e20, n=8300)   # init w/2*n+1 bins
+   * proc initT(a=1e-16, b=1e20, n=8300): T         # Same, but w/TypeName
    * func space(s: T): int                          # Est.of total bytes used
    * func tot(s: T): auto                           # Total count weight
    * func toIx[F](s: T, x: F): int                  # x -> bin index
@@ -66,7 +66,7 @@ template def*(T, X, X⁻¹, H; Hini: typed = 0) =
   func nBin(s: `T`): int       = s.n
   func hist(s: `T`): H         = s.hist
 
-  func init(s: var `T`, a=1e-16, b=1e20, n=8300) =
+  proc init(s: var `T`, a=1e-16, b=1e20, n=8300) =
     ## Init histo w/2n+1 X-spaced bins: `[-∞..-b; -b..-a; 0; a..<b; b..∞]`.
     if b <= a: Value !! "inverted: [" & $a & "," & $b & "]"
     if a <= 0.0 or b <= 0.0: Value !! "a,b must both be >0"
@@ -77,10 +77,10 @@ template def*(T, X, X⁻¹, H; Hini: typed = 0) =
     s.aX   = a.X
     s.h    = (b.X - s.aX)/float(n - 1)
     s.hInv = 1.0/s.h
-    when Hini == 0: s.hist.init 2*n + 1
-    else          : s.hist.init 2*n + 1, Hini
+    when Hini: s.hist.init 2*n + 1, Harg
+    else     : s.hist.init 2*n + 1
 
-  func `init T`(a=1e-16, b=1e20, n=8300): `T` = result.init a, b, n
+  proc `init T`(a=1e-16, b=1e20, n=8300): `T` = result.init a, b, n
     ## Get Histo w/2n+1 X-spaced bins: `[-inf..<-b; -b..<-a; 0; a..<b; b..inf]`.
 
   func space(s: `T`): int = s.sizeof + s.hist.space
@@ -167,12 +167,12 @@ template def*(T, X, X⁻¹, H; Hini: typed = 0) =
 when isMainModule:
   import adix/[bist, lna]                   # embist lmbist
   from std/math import exp                  #, sqrt
-  xhist1.def Histo, lna, exp, Bist[uint32]  # Matches lghisto exactly
+  xhist1.def Histo, lna, exp, Bist[uint32]  # Match LgHisto up to concrete [C]
 # template sqr(x: untyped) = x*x
 # template Id(x): untyped  = x
 # xhist1.def Histo, Id   , Id   , Bist[uint32]   
 # xhist1.def Histo, sqrt , sqr  , Bist[uint32]   
-# xhist1.def Histo, lna  , exp  , EMBist[float32], 0.9375
+# xhist1.def Histo, lna  , exp  , EMBist[float32], true, 0.9375
 # xhist1.def Histo, lna  , exp  , LMBist[uint32] 
   when defined(test): # Helpful to run against: -- -12 -8 -4 -1 0 1 4 8 12
     proc lghist(a=0.125, b=10.0, n=8, qs = @[0.25, 0.5, 0.75], xs: seq[float]) =
