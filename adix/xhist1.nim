@@ -27,8 +27,9 @@ template def*(T, X, X⁻¹, H; Hini: typed = 0) =
   ##[ Here `T` is the type that will be defined along with an `init T`, `H` is
   the type of histogram (e.g. `Bist[uint32]`), `X` is an expression transforming
   monotonically over `(0, +Inf)` some input `x`, e.g. `ln`, while `X⁻¹` is its
-  inverse function expression, e.g. `exp`.  Besides defining the type, this also
-  defines a pile of procedures upon it:
+  inverse function expression, e.g. `exp`.  So, `def Histo,ln,exp,Bist[uint32]`
+  is one instantiation.  Besides defining the type, this also defines routines
+  documented in detail over in https://c-blake.github.io/adix/adix/lghisto.html
    * func underflows(s: T): type(s.hist.cdf 0)
    * func overflows(s: T) : type(s.hist.cdf 0)
    * func low(s: T): float
@@ -36,7 +37,7 @@ template def*(T, X, X⁻¹, H; Hini: typed = 0) =
    * func nBin(s: T): int
    * func hist(s: T): H
    * func init(s: var T, a=1e-16, b=1e20, n=8300)
-   * func `init T`(a=1e-16, b=1e20, n=8300): T
+   * func initT(a=1e-16, b=1e20, n=8300): T
    * func space(s: T): int
    * func tot(s: T): auto
    * func toIx[F](s: T, x: F): int
@@ -49,7 +50,8 @@ template def*(T, X, X⁻¹, H; Hini: typed = 0) =
    * func quantile[F](s: T, q: F): F
    * func cdf[F](s: T, x: F): type(s.hist.cdf 0)
    * func merge(dst: var T, src: T)
-  So, e.g.: `def Histo, ln, exp, Bist[uint32]` is one instantiation. ]##
+  They're also documented in the `xhist1.nim` code, but `nim doc` won't cover
+  them even when instantiated. ]##
 
   type `T` = object       ## histogram(X(x[])) with backing histogram `H`
     n*: int               ## number of bins
