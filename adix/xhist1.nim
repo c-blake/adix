@@ -104,7 +104,7 @@ template def*(T, X, X⁻¹, H; Hini: typed = false; Harg=0.0) =
     elif i > s.n: +X⁻¹(s.aX + s.h*(F(i - s.n - 1) + offset))
     else: 0.0 # Bin containing x=zero cannot really be offset in the same way
 
-  func binAB*[F](s: `T`, x: F): (float, float) =
+  func binAB[F](s: `T`, x: F): (float, float) =
     ## Range in data space of the bin containing `x`; Costs 2 `fromIx`s.
     let i = s.toIx(x)
     if   i == 0      : result[0] = -Inf           ; result[1] = -s.b
