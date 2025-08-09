@@ -168,12 +168,12 @@ when isMainModule:
   import adix/[bist, lna]                   # embist lmbist
   from std/math import exp                  #, sqrt
   xhist1.def Histo, lna, exp, Bist[uint32]  # Match LgHisto up to concrete [C]
-# template sqr(x: untyped) = x*x
-# template Id(x): untyped  = x
-# xhist1.def Histo, Id   , Id   , Bist[uint32]   
-# xhist1.def Histo, sqrt , sqr  , Bist[uint32]   
-# xhist1.def Histo, lna  , exp  , EMBist[float32], true, 0.9375
-# xhist1.def Histo, lna  , exp  , LMBist[uint32] 
+# template sqr(x: untyped) = x*x            # The sqrt-sqr transform
+# template Id(x): untyped  = x              # The identity/linear transform
+# xhist1.def Histo, Id  , Id , Bist[uint32]   
+# xhist1.def Histo, sqrt, sqr, Bist[uint32]   
+# xhist1.def Histo, lna , exp, EMBist[float32], true, 0.9375
+# xhist1.def Histo, lna , exp, LMBist[uint32] 
   when defined(test): # Helpful to run against: -- -12 -8 -4 -1 0 1 4 8 12
     proc lghist(a=0.125, b=10.0, n=8, qs = @[0.25, 0.5, 0.75], xs: seq[float]) =
       var lh = initHisto(a, b, n)
