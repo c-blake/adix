@@ -8,7 +8,7 @@ needs `SomeFloat`).  The example program at the bottom of the module should
 mostly show how to use this.
 
 This generalizes `adix/lghisto`.  Quantile error is bounded by quantization
-error which is <~1/2 transformed bin width - eg. ~10^(log10(b/a)/n/2) w/X=log.
+error which is <~1/2 transformed bin width - eg. ~10^(log10(b/a)/n) w/X=log.
 Space-time trade-offs depend on how boundable data ranges are, but underflows &
 overflows are at least counted (until counters saturate!).
 

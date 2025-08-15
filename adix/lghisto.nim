@@ -3,7 +3,7 @@ dynamic quantiles.  Logs give high dynamic range at low cost while Fenwick/BIST
 supports dynamic membership w/operation-balanced perf.
 
 Quantile error is absolute { not relative to `q*(1-q)` like t-Digests } & easily
-bounded as <~ 1/2 bin width { about 10^(lg(b/a)/n/2) }.  If you need 3 places or
+bounded as <~ 1/2 bin width { ~ 10^(log_10(b/a)/n) }.  If you need 3 places or
 your data is clustered within a few orders of magnitude then you can likely just
 use 1e4 bins & counters will remain L1 cache resident, depending on resource
 competition.  Cache is the main cost Re: speed.  Re: space, since 99% of bins
