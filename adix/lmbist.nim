@@ -59,7 +59,8 @@ proc cdf*[T](d: LMBist[T], i: int): T = d.cnt.cdf(i) - d.zero*d.nLag.cdf(i)
 proc pmf*[T](d: LMBist[T], i: int): T = d.cnt.pmf(i) - d.zero*d.nLag.pmf(i)
 
 proc invCDF*[T](d: LMBist[T], s: T; s0: var T): int =
-  var c = s                             #NOTE: s==0 | s > tot are invalid inputs
+  assert 0<=s and s<=d.tot, "LMBist.invCDF OORange sum " & $s & " of " & $d.tot
+  var c = s                             #NOTE: s<0|s>tot are invalid inputs
   cfor (var half = d.cnt.data.len.ceilPow2 shr 1), half != 0, half >>= 1:
     var m = result + half - 1           # midpoint in binary search
     if m < d.cnt.data.len and d.cnt[m] - d.zero*d.nLag[m] < c:
