@@ -115,7 +115,7 @@ proc quantile*[T](t: Bist[T]; q: float; iL,iH: var int): float =
   ## Unlike other (broken!) quantile-interpolation methods, Parzen's connects
   ## midpoints of vertical CDF jumps, not horizontal.  This makes more sense,
   ## corresponding to Wilcoxon 1945 & later tie mid-ranking recommendations.
-  assert t.tot > 0, "quantile(Bist[T]) requires non-empty bist."
+  assert t.tot > 0, "quantile(Bist[T]) requires non-empty Bist."
   var sL0, sL1, sH0, sH1: T                 #You probably want to draw a CDF to
   let n  = t.tot.float                      #..fully understand this code.
   let qN = q*n

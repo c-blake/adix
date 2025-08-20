@@ -73,7 +73,8 @@ proc invCDF*[T](d: LMBist[T]; s: T; s0, s1: var T): int =
 proc min*[T](d: LMBist[T]): int = d.nLag.min ## Simple wrapper of `d.nLag.min`.
 proc max*[T](d: LMBist[T]): int = d.nLag.max ## Simple wrapper of `d.nLag.max`.
 
-proc quantile*[T](d: LMBist[T]; q:float; iL,iH: var int): float=
+proc quantile*[T](d: LMBist[T]; q:float; iL,iH: var int): float =
+  assert d.tot > 0, "quantile(LMBist[T]) requires non-empty LMBist."
   var sL0, sL1, sH0, sH1: T                 #You probably want to draw a CDF to
   let tot = d.tot; let n = tot.float        #..fully understand this code.
   let qN = q*n
