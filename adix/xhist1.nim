@@ -56,7 +56,6 @@ template def*(T, X, X⁻¹, H; Hini: typed = false; Harg=0.0) =
     a*, b*: float         ## histogram covers [-b, -a], (-a, a) in zero, [a, b]
     aX*, h*, hInv*: float ## pre-computes for index scale conversion
     hist*: H              ## actual smart array of counters: [0, 2*n] -> PMF/CDF
-#2DO^ Faster flat array option w/cumsum for "final" qtls; LowPrec `ln`=>DataDog.
 #Could also take option like `noNegative`, but untouched cache matters little.
 
   func underflows(s: `T`): type(s.hist.cdf 0) = s.hist.pmf 0
@@ -133,19 +132,18 @@ template def*(T, X, X⁻¹, H; Hini: typed = false; Harg=0.0) =
    yield (s.fromIx(2*s.n-1,0.0), +s.b, s.hist.pmf 1)
    yield (+s.b, +Inf, s.hist.pmf 2*s.n)
 
-  proc `$`(s: `T`, nonZero=true): string =
-    ## Formatting operator; Warning: output can be large, esp. if nonZero=false
+  from std/fenv import epsilon
+  proc `$`(s: `T`, minP=2.0*float32.epsilon): string =
+    ## Formatting operator; Warning: output can be large, esp. if minP <= 0
     result.add "n: "  & $s.n  & "\ta: " & $s.a & "\tb: "    & $s.b    & "\n"
     result.add "aX: " & $s.aX & "\th: " & $s.h & "\thInv: " & $s.hInv & "\n"
-    result.add "bins,cnts:\n"
-    var tot = 0; var n = 0
+    result.add "totalCount:" & $s.tot & " bins,cnts:\n"
+    var n = 0; let t = s.tot.float*minP
     for (a, b, c) in s.bins:
-      let c = int c; tot += c
-      if nonZero:
-       if c != 0: result.add "  [ " & $a & " , " & $b & " ): " & $c & "\n";inc n
-      else      : result.add "  [ " & $a & " , " & $b & " ): " & $c & "\n"
+      if c.float >= t:
+        result.add "  [ " & $a & " , " & $b & " ): " & $c & "\n"; inc n
     result[^1] = '\n'
-    result.add "totalCount: " & $tot & (if nonZero: " non0Bins: " & $n else: "")
+    result.add $n & " bins>=" & $t
 
   func quantile[F](s: `T`, q: F): F =
     ## Basic quantile; XXX More accurate X-spacing-savvy interpolation?
@@ -165,23 +163,27 @@ template def*(T, X, X⁻¹, H; Hini: typed = false; Harg=0.0) =
     for i in 0..2*src.n: dst.hist.inc i, src.hist.pmf(i) # Flat array prob fastr
 
 when isMainModule:
-  import adix/[bist, lna]                   # embist lmbist
-  from std/math import exp                  #, sqrt
-  xhist1.def Histo, lna, exp, Bist[uint32]  # Match LgHisto up to concrete [C]
-# template sqr(x: untyped) = x*x            # The sqrt-sqr transform
-# template Id(x): untyped  = x              # The identity/linear transform
-# xhist1.def Histo, Id  , Id , Bist[uint32]   
-# xhist1.def Histo, sqrt, sqr, Bist[uint32]   
-# xhist1.def Histo, lna , exp, EMBist[float32], true, 0.9375
-# xhist1.def Histo, lna , exp, LMBist[uint32] 
+  {.push warning[UnusedImport]:off.}; {.push hint[DuplicateModuleImport]:off.}
+  import adix/[hist, bist,embist,lmbist, lna] # Import everything we *might*..
+  from std/math import exp, sqrt              #..need rather than condition.
+  template Id(x): untyped  = x              # The identity/linear transform
+  template sqr(x: untyped) = x*x            # The sqrt-sqr transform
+  const mode {.intdefine.} = 0
+  when mode == 0: xhist1.def Histo, Id  , Id , Hist[uint32]
+  elif mode == 1: xhist1.def Histo, lna , exp, Bist[uint32]  # Match LgHisto
+  elif mode == 2: xhist1.def Histo, Id  , Id , Bist[uint32]
+  elif mode == 3: xhist1.def Histo, sqrt, sqr, Bist[uint32]
+  elif mode == 4: xhist1.def Histo, lna , exp, EMBist[float32], true, 0.9375
+  elif mode == 5: xhist1.def Histo, lna , exp, LMBist[uint32]
   when defined(test): # Helpful to run against: -- -12 -8 -4 -1 0 1 4 8 12
     proc lghist(a=0.125, b=10.0, n=8, qs = @[0.25, 0.5, 0.75], xs: seq[float]) =
       var lh = initHisto(a, b, n)
       for x in xs: lh.add x
-      echo `$`(lh, nonZero=false)
+      echo `$`(lh, minP=0)
       for (a, b, c) in lh.bins:
         if (a,b) != lh.binAB((a+b)/2) or a >= b:
           echo "a: ",a," b: ",b," c: ",c," ab(mid(a,b)): ",lh.binAB((a+b)/2)
+      lh.hist.up
       if lh.tot > 0: (for q in qs: echo "q",q,": ",lh.quantile(q))
     import cligen; dispatch lghist
   else:
@@ -193,6 +195,7 @@ when isMainModule:
     var s = initHisto(b=10, n=128)
     let t0 = epochTime()
     for x in data: s.add x
+    s.hist.up
     let t1 = epochTime()
     for q in [0.001, 0.01, 0.05, 0.25, 0.50, 0.75, 0.95, 0.99, 0.999]:
       res.add s.quantile(q)
