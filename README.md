@@ -45,10 +45,10 @@ to the point.  In particular, as an overview/index, here be:
         [xhist1](https://c-blake.github.io/adix/adix/xhist1.html), its
         generalization to any transform|backing histogram/time kernel.
    - An amalgam: [`mvstat`](https://c-blake.github.io/adix/adix/mvstat.html)
-   that works like `std/stats` but supports `del`, i.e. sliding/moving windows
-   over data streams (like a moving average) as well as running|moving quantiles
-   via `lghisto`.  Also includes bulk array stats that in some compile modes get
-   fully SIMD vectorized inner loops.
+   that works like `std/stats` but supports `del`, i.e. sliding/moving/rolling
+   windows over data streams (like moving averages) as well as running/dynamic
+   quantiles via `lghisto`.  Also includes bulk array stats that in some compile
+   modes get fully SIMD vectorized inner loops.
 
 And some utility modules:
   - [althash](https://c-blake.github.io/adix/adix/althash.html): salt-able
