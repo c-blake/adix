@@ -30,19 +30,20 @@ to the point.  In particular, as an overview/index, here be:
    (aka approximate top-K most frequent | heavy-hitters)
 
    - Distributions/Quantiles:
-      * [tdigest](https://c-blake.github.io/adix/adix/tdigest.html) (for
-        slower, more accurate in tail only quantiles (generalization of medians).
+      * [tdigest](https://c-blake.github.io/adix/adix/tdigest.html) (for slower,
+        more accurate in tail only quantiles (medians generalized).
       * for a more complete & adaptive picture, you want accuracy-everywhere /
-        full histograms able to realize fast moving quantile (e.g. moving
-        median) transforms backed by possibly [Fenwick/BIST
-        trees](https://c-blake.github.io/adix/adix/bist.html) with time kernels
-        that are flat, [linear](https://c-blake.github.io/adix/adix/lmbist.html)
-        or [exponential](https://c-blake.github.io/adix/adix/embist.html).
+        full histograms able to realize fast moving quantile transforms backed
+        by [Fenwick/BIST trees](https://c-blake.github.io/adix/adix/bist.html)
+        with time kernels that are flat,
+        [linear](https://c-blake.github.io/adix/adix/lmbist.html) or
+        [exponential](https://c-blake.github.io/adix/adix/embist.html) or [simple
+        histograms](https://c-blake.github.io/adix/adix/hist.html).
       * Optional discretizing for binning via logs/sqrt/whatever values gives
         [lghisto](https://c-blake.github.io/adix/adix/lghisto.html), a high
         dynamic range (HDR) module that handles that one-stop shopping style or
         [xhist1](https://c-blake.github.io/adix/adix/xhist1.html), its
-        generalization to any transform|time kernel.
+        generalization to any transform|backing histogram/time kernel.
    - An amalgam: [`mvstat`](https://c-blake.github.io/adix/adix/mvstat.html)
    that works like `std/stats` but supports `del`, i.e. sliding/moving windows
    over data streams (like a moving average) as well as running|moving quantiles
