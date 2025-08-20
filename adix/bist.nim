@@ -46,6 +46,8 @@ proc dec*[T](t: var Bist[T]; i: int; d: T) =
   t.tot -= d
   cfor (var i = i.int), i < t.len, i |= i + 1: t[i] -= d    #Go down update tree
 
+proc up*[T](t: var Bist[T]) = discard ## Simple no-op for BISTs
+
 proc cdf*[T](t: Bist[T], i: int): T =
   ## INCLUSIVE `sum(pmf[0..i])`, (rank,EDF,prefix sum,scan,..); Tm~1 bits in `i`
   cfor (var i = i + 1), i > 0, i &= i - 1:        #Go up interrogation tree
@@ -85,13 +87,13 @@ proc toCnts*[T](t: var Bist[T]) =
     cfor (var j = 2*i - 1), j < t.len, j += 2*i:  #*Might* be slower than just
       t[j] -= t[j - i]                            #..looping & calling `pmf`.
 
-proc counts*[T](t: Bist[T]): seq[float32] = ## Return classic PMF from read-only BIST
-  result.setLen t.len; let s=1/t.tot.float32; for i in 0..<t.len: result[i] = t.pmf(i).float32*s
+proc nPDF*[T](t: Bist[T]): seq[float32] = ## Return classic PMF from read-only BIST
+  result.setLen t.len; let s=1/t.tot.float32;for i,r in mpairs result:r=s*t.pmf(i).float32
 
-proc cumuls*[T](t: Bist[T]): seq[float32] = ## Return classic CDF from read-only BIST
-  result = t.counts; for i in 1 ..< t.len: result[i] += result[i - 1] # .cumsum?
+proc nCDF*[T](t: Bist[T]): seq[float32] = ## Return classic CDF from read-only BIST
+  result = t.nPDF; for i in 1 ..< t.len: result[i] += result[i - 1] # .cumsum?
 
-proc `$`*[T](t: Bist[T]): string = "tot: " & $t.count & " pmf: " & $t.counts
+proc `$`*[T](t: Bist[T]): string = "tot: " & $t.count & " pmf: " & $t.nPDF
 
 proc invCDF*[T](t: Bist[T], s: T): (int, T) = result[0] = t.invCDF(s, result[1])
   ## For `0 < s <= tot` return `(i0,s0)` so `sum(..<i0)=s0 < s and sum(..i0)>=s`

@@ -65,8 +65,10 @@ proc inc*[F](d: var EMBist[F]; i: int, w: F=1) = ## Add weight `w` to bin `i`
 
 proc scale*[F](d: EMBist[F]; age: int): F = 1/d.grow^age
   ## Scale for more rare un-count old; Can re-use if dec @same relative age.
-proc dec*[F](d: var EMBist[F]; i: int; w, scale: F=1) = d.cnt.dec i, w*scale
-  ## Un-count-old operation for more rare EW with strict windows
+proc dec*[F](d: var EMBist[F]; i: int; w: F=1) = d.cnt.dec i, w
+  ## Un-count-old operation for more rare EW with strict windows; Use .scale!
+
+proc up*[F](d: var EMBist[F]) = discard ## Simple no-op for EMBist
 
 proc cdf*[F](d: EMBist[F], i: int): F = d.cnt.cdf(i) / d.count ## wrap Bist.cdf
 proc pmf*[F](d: EMBist[F], i: int): F = d.cnt.pmf(i) / d.count ## wrap Bist.pdf
@@ -80,11 +82,11 @@ proc quantile*[F](d: EMBist[F]; q: float; iL,iH: var int): float = ## wrap Bist.
   d.cnt.quantile q, iL,iH
 proc quantile*[F](d: EMBist[F]; q: float): float = d.cnt.quantile q ## wrap Bist.quantile
 
-proc counts*[F](d: EMBist[F]): seq[F] =
-  result.setLen d.cnt.len; for i, r in mpairs result: r = d.pmf(i).F
+proc nPDF*[F](d: EMBist[F]): seq[F] =
+  result.setLen d.cnt.len;let s=1.0/d.tot;for i,r in mpairs result:r = s*d.pmf(i).F
 
-proc cumuls*[F](d: EMBist[F]): seq[F] =
-  result.setLen d.cnt.len; for i, r in mpairs result: r = d.cdf(i).F
+proc nCDF*[F](d: EMBist[F]): seq[F] =
+  result.setLen d.cnt.len;let s=1.0/d.tot;for i,r in mpairs result:r = s*d.cdf(i).F
 
 when isMainModule:
   type F = float64
@@ -108,8 +110,8 @@ when isMainModule:
         d.inc x, 1.0                    # Unit entering weight
       else:                             # Remove weight for leaving data point
         d.inc x, 1.0                    # Unit entering weight
-      if pdf: echo t," b: tot: ",d.tot," ewmPMF: ",d.counts
-      if cdf: echo t," b: tot: ",d.tot," ewmCDF: ",d.cumuls
+      if pdf: echo t," b: tot: ",d.tot," ewmPMF: ",d.nPDF
+      if cdf: echo t," b: tot: ",d.tot," ewmCDF: ",d.nCDF
       if q > -2.0:
         if time: tQ += d.quantile(q)    # `formatFloat` slow=>just total
         else: echo d.quantile(q)        # Report inverseCDF(q)

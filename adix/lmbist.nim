@@ -55,6 +55,15 @@ proc init*[T](d: var LMBist[T]; len: int) = d.cnt.init len; d.nLag.init len
 proc initLMBist*[T](len: int): LMBist[T] = result.init len
 proc clear*[T](d: var LMBist[T]) = d.cnt.clear; d.nLag.clear; d.zero = 0
 
+proc inc*[T](d: var LMBist[T]; i: int, w: T) =
+  d.cnt.inc i, w; d.nLag.inc i, 1       # track both weight & membership
+
+proc dec*[T](d: var LMBist[T]; i: int, w: T) =
+  d.cnt.dec i, w; d.nLag.dec i, 1       # track both weight & membership
+  d.zero += 1                           # & the bottom or virtual zero.
+
+proc up*[T](d: var LMBist[T]) = discard ## Simple no-op for LMBist
+
 proc cdf*[T](d: LMBist[T], i: int): T = d.cnt.cdf(i) - d.zero*d.nLag.cdf(i)
 proc pmf*[T](d: LMBist[T], i: int): T = d.cnt.pmf(i) - d.zero*d.nLag.pmf(i)
 
@@ -97,20 +106,11 @@ proc quantile*[T](d: LMBist[T]; q: float): float =
   let fL = d.quantile(q, iL, iH)
   fL*iL.float + (1 - fL)*iH.float
 
-proc counts*[T](d: LMBist[T]): seq[float32] =
-  result.setLen d.cnt.len; let s = 1/d.tot.float32
-  for i, r in mpairs result: r = d.pmf(i).float32*s
+proc nPDF*[T](d: LMBist[T]): seq[float32] =
+  result.setLen d.cnt.len;let s=1/d.tot.float32;for i,r in mpairs result:r=s*d.pmf(i).float32
 
-proc cumuls*[T](d: LMBist[T]): seq[float32] =
-  result.setLen d.cnt.len; let s = 1/d.tot.float32
-  for i, r in mpairs result: r = d.cdf(i).float32*s
-
-proc inc*[T](d: var LMBist[T]; i: int, w: T) =
-  d.cnt.inc i, w; d.nLag.inc i, 1       # track both weight & membership
-
-proc dec*[T](d: var LMBist[T]; i: int, w: T) =
-  d.cnt.dec i, w; d.nLag.dec i, 1       # track both weight & membership
-  d.zero += 1                           # & the bottom or virtual zero.
+proc nCDF*[T](d: LMBist[T]): seq[float32] =
+  result.setLen d.cnt.len;let s=1/d.tot.float32;for i,r in mpairs result:r=s*d.cdf(i).float32
 
 when isMainModule:
   const slow {.booldefine.} = false     # VERY limited differences below
@@ -132,8 +132,8 @@ when isMainModule:
       else:                             # Remove weight for leaving data point
         if t >= win: d.dec xs[t - win].toI, uint32(t + 1 - win)
         d.inc x, uint32(t + 1)          # Large entering weight
-      if pdf: echo t," b: tot: ",d.tot," lwmPMF: ",d.counts
-      if cdf: echo t," b: tot: ",d.tot," lwmCDF: ",d.cumuls
+      if pdf: echo t," b: tot: ",d.tot," lwmPMF: ",d.nPDF
+      if cdf: echo t," b: tot: ",d.tot," lwmCDF: ",d.nCDF
       if q > -2.0:
         if time: tQ += d.quantile(q)    # `formatFloat` slow=>just total
         else: echo d.quantile(q)        # Report inverseCDF(q)
