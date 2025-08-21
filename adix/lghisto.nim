@@ -10,9 +10,9 @@ competition.  Cache is the main cost Re: speed.  Re: space, since 99% of bins
 are 0 in many cases, simple run-length encoding can improve net/disk transfers.
 
 The way Fenwick BISTs work, the generic parameter `C` must be a wide enough int
-type to hold both elemental bin counts AND grand totals.  uint32 is likely
-enough for many applications, though some might sneak by with uint16 and a few
-might need uint64.  This scales bin size/space cost.
+type to hold both elemental bin counts AND cumulatives.  `uint32` is likely
+enough for many applications, though some might sneak by with `uint16` and a few
+might need `uint64`.  This scales bin size/space cost.
 
 t-Digests are a well marketed competitor using ~10X less space BUT with >>5X
 slower quantiles of similar accuracy.  Actual costs are sensitive to operation
