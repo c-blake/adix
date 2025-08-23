@@ -1,0 +1,27 @@
+nimTitle	bltab	adix/bltab.html	module adix/bltab		0
+nim	BLTab	adix/bltab.html#BLTab	object BLTab		11
+nim	blInitialSize	adix/bltab.html#blInitialSize	var blInitialSize		19
+nim	blValueBits	adix/bltab.html#blValueBits	var blValueBits		20
+nim	blSentinel	adix/bltab.html#blSentinel	var blSentinel		21
+nim	blNumer	adix/bltab.html#blNumer	var blNumer		22
+nim	blDenom	adix/bltab.html#blDenom	var blDenom		23
+nim	blMinFree	adix/bltab.html#blMinFree	var blMinFree		24
+nim	blGrowPow2	adix/bltab.html#blGrowPow2	var blGrowPow2		25
+nim	blRobinHood	adix/bltab.html#blRobinHood	var blRobinHood		26
+nim	blRehash	adix/bltab.html#blRehash	var blRehash		27
+nim	len	adix/bltab.html#len,BLTab	proc len(s: BLTab): int		38
+nim	getCap	adix/bltab.html#getCap,BLTab	proc getCap(s: BLTab): int		39
+nim	save	adix/bltab.html#save,BLTab,string	proc save(t: BLTab; pathStub: string)		41
+nim	load	adix/bltab.html#load,BLTab,string	proc load(t: var BLTab; path: string)		42
+nim	loadBLTab	adix/bltab.html#loadBLTab,string	proc loadBLTab(path: string): BLTab		43
+nim	mmap	adix/bltab.html#mmap,BLTab,string	proc mmap(t: var BLTab; path: string)		44
+nim	init	adix/bltab.html#init,BLTab,int,int	proc init(s: var BLTab; size, mask: int)		126
+nim	initBLTab	adix/bltab.html#initBLTab,int,int	proc initBLTab(size, mask: int): BLTab		130
+nim	contains	adix/bltab.html#contains,BLTab,Hash	proc contains(s: BLTab; hc: Hash): bool		132
+nim	containsOrIncl	adix/bltab.html#containsOrIncl,BLTab,Hash	proc containsOrIncl(s: var BLTab; hc: Hash): bool		136
+nim	missingOrExcl	adix/bltab.html#missingOrExcl,BLTab,Hash	proc missingOrExcl(s: var BLTab; hc: Hash): bool		148
+nim	clear	adix/bltab.html#clear,BLTab	proc clear(s: var BLTab)		158
+nim	items	adix/bltab.html#items.i,BLTab	iterator items(s: BLTab): Hash		162
+nim	pairs	adix/bltab.html#pairs.i,BLTab	iterator pairs(s: BLTab): tuple[a: int, b: Hash]		168
+nim	depths	adix/bltab.html#depths,BLTab	proc depths(s: BLTab): seq[int]		176
+nim	debugDump	adix/bltab.html#debugDump,BLTab,string	proc debugDump(s: BLTab; label = "")		182

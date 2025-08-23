@@ -1,0 +1,16 @@
+nimTitle	nsort	adix/nsort.html	module adix/nsort		0
+nim	xfNone	adix/nsort.html#xfNone	XForm.xfNone		86
+nim	xfRev	adix/nsort.html#xfRev	XForm.xfRev		86
+nim	xfSgn	adix/nsort.html#xfSgn	XForm.xfSgn		86
+nim	xfSgnRev	adix/nsort.html#xfSgnRev	XForm.xfSgnRev		86
+nim	xfFlt	adix/nsort.html#xfFlt	XForm.xfFlt		86
+nim	xfFltRev	adix/nsort.html#xfFltRev	XForm.xfFltRev		86
+nim	XForm	adix/nsort.html#XForm	enum XForm		86
+nim	verb	adix/nsort.html#verb	var verb		89
+nim	nsort	adix/nsort.html#nsort,pointer,pointer,int,int,uint8,XForm,int	proc nsort(obs, tmp: pointer; n, sz: int; off: uint8; xf: XForm; b0 = 0): pointer		359
+nim	nsort	adix/nsort.html#nsort,pointer,pointer,int,int,W,XForm,int	proc nsort[W: Ui248](obs, tmp: pointer; n, sz: int; off: W; xf: XForm; b0 = 0): pointer		367
+nim	nsort	adix/nsort.html#nsort,openArray[O],W,int	proc nsort[O, W](obs: var openArray[O]; off: W; xf = xfNone; b0 = 0)		426
+nim	nsortByRaw	adix/nsort.html#nsortByRaw.t,untyped,untyped,int	template nsortByRaw(x, field: untyped; b0 = 0): untyped		434
+nim	nsortByTag	adix/nsort.html#nsortByTag.t,untyped,untyped,int	template nsortByTag(x, field: untyped; b0 = 0): untyped		448
+nim	nsortBy	adix/nsort.html#nsortBy.t,untyped,untyped,int	template nsortBy(x, field: untyped; b0 = 0): untyped		458
+nimgrp	nsort	adix/nsort.html#nsort-procs-all	proc		359
