@@ -244,20 +244,20 @@ when isMainModule:
     for q in [0.01, 0.05, 0.25, 0.50, 0.75, 0.95, 0.99]: echo s.quantile(q)
     echo "s: ", s
   else:
-    import std/[random, times]; randomize()
-    var data: seq[float]
-    var res = newSeqOfCap[float](9)
+    import std/[random, times, strformat]
+    when defined danger: randomize()
     const N = 750_000
-#   for i in 1 .. N: data.add rand(0.0 .. 1.0)
-    for i in 1 .. N: data.add gauss()
+    var data = newSeq[float](N)
+    const Q = [0.001,0.01,0.05,0.1587,0.25,0.50,0.75,0.8413,0.95,0.99,0.999]
+    var res = newSeq[float](Q.len)
+    for i in 0..<N: data[i] = gauss() # rand(0.0 .. 1.0)
     var s = initDigesT()
     let t0 = epochTime()
     for x in data: s.add x
-    let dt = epochTime() - t0
-    let t00 = epochTime()
-    for q in [0.001, 0.01, 0.05, 0.25, 0.50, 0.75, 0.95, 0.99, 0.999]:
-      res.add s.quantile(q)
-    let dt0 = epochTime() - t00
-    for r in res: echo r  # do not time the formatting/echo part
-    echo "ns/add: ", dt*1e9/N.float, " ns/9qs: ", dt0*1e9
-    echo "space: ", s.space, " bytes"
+    let t1 = epochTime()
+    for j, q in Q: res[j] = s.quantile(q)
+    let t2 = epochTime()
+    let dtB = (t1 - t0)*1e9/N.float     # Build time
+    let dtQ = (t2 - t1)*1e9/Q.len.float # Query time
+    for r in res: echo r
+    echo &"ns/add: {dtB:.1f}  ns/q: {dtQ:.1f}  space: {s.space} bytes"

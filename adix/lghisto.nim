@@ -148,18 +148,20 @@ when isMainModule:
       if lh.tot > 0: (for q in qs: echo "q",q,": ",lh.quantile(q))
     import cligen; dispatch lghist
   else:
-    import std/[random, times, strformat]; randomize()
-    var data: seq[float32]
+    import std/[random, times, strformat]
+    when defined danger: randomize()
     const N = 750_000
-    var res = newSeqOfCap[float32](N)
-    for i in 1 .. N: data.add gauss().float32 # rand(0.0 .. 1.0)
+    var data = newSeq[float32](N)
+    const Q = [0.001,0.01,0.05,0.1587,0.25,0.50,0.75,0.8413,0.95,0.99,0.999]
+    var res = newSeq[float32](Q.len)
+    for i in 0..<N: data[i] = gauss().float32 # rand(0.0 .. 1.0)
     var s = initLgHisto[uint32](b=10, n=128)
     let t0 = epochTime()
     for x in data: s.add x
     let t1 = epochTime()
-    for q in [0.001, 0.01, 0.05, 0.25, 0.50, 0.75, 0.95, 0.99, 0.999]:
-      res.add s.quantile(q)
+    for j, q in Q: res[j] = s.quantile q
     let t2 = epochTime()
-    for r in res: echo r  # do not time the formatting/echo part
-    echo &"ns/add: {(t1-t0)*1e9/N.float:.1f}  ns/q: {(t2-t1)*1e9/9:.1f}"
-    echo "space: ", s.space, " bytes"
+    let dtB = (t1 - t0)*1e9/N.float     # Build time
+    let dtQ = (t2 - t1)*1e9/Q.len.float # Query time
+    for r in res: echo r
+    echo &"ns/add: {dtB:.1f}  ns/q: {dtQ:.1f}  space: {s.space} bytes"
