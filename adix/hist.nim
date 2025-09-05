@@ -1,21 +1,22 @@
 ##[ This provides a simple regular histogram with the `bist.nim` interface, but
 using vanilla bin counters mostly so it can be used with adix/xhist1.  Bin incs
 are fast & `adix/cumsum` can be at least tolerable via parallel prefix sum on
-x86_64.  Re-scaling|shifting bins can also be done (externally) pre-increment
-and is eminently vectorizable.  This enables general time weight kernels, not
-only exponential/linear/flat.  Performance break-even vs BIST methods depends on
-(at least!) counter size / vectorization, platform, time kernel, and work load.
-Ballpark expectations might be to use this <= ~300 bins for 1:1 ratios of dec,
-inc & quantile with this being about 4X faster for 8 bins & nBin/lg(nBin) slower
-for much larger nBin.  If your use case has many counter updates per quantile
-query this could be strictly faster.  This can also potentially be accelerated
-by GPUs (especially in the context of transforming whole, already existing
-arrays rather than online / incremental transformation).  The bottom of this
-module has a small test/timing program against a bist.
+x86_64.  Re-scaling|shifting bins can also be done (externally) post-decrement &
+pre-increment and is very vectorizable.  This enables general weight decay, not
+only exponential/linear/flat, but adds per-point expense proportional to nBin.
+For specific weight decays this could be ~2X optimized some by "always counting
+up", as with Fenwick-backed embist/lmbist, but we hold off on that for now to
+provide a distinct calculation with distinct FP math trade offs.
 
-For specific time weight kernels this could be ~2X optimized a little by "always
-counting up" as with Fenwick-backed embist/lmbist, but we hold off on that for
-now to provide a distinct calculation with distinct FP math trade offs. ]##
+Performance break-even vs BIST methods depends on (at least!) counter size /
+vectorization, platform, time kernel, and work load.  Ballpark expectations
+might be to use this <= ~300 bins for 1:1 ratios of dec, inc & quantile with
+this being about 4X faster for 8 bins & nBin/lg(nBin) slower for larger nBin.
+This can be strictly faster if your use case has many counter updates per
+quantile query.  This can also potentially be accelerated by GPUs (especially in
+the context of transforming whole, already existing arrays rather than online /
+incremental transformation).  The bottom of this module has a small test/timing
+program against a bist. ]##
 when not declared assert: import std/assertions
 import adix/cumsum, std/algorithm
 
