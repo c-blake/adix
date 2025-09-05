@@ -173,7 +173,7 @@ when isMainModule:
   elif mode == 1: xhist1.def Histo, lna , exp, Bist[uint32]  # Match LgHisto
   elif mode == 2: xhist1.def Histo, Id  , Id , Bist[uint32]
   elif mode == 3: xhist1.def Histo, sqrt, sqr, Bist[uint32]
-  elif mode == 4: xhist1.def Histo, lna , exp, EMBist[float32], true, 0.9375
+  elif mode == 4: xhist1.def Histo, lna , exp, EMBist[float32], Hini=true,0.9375
   elif mode == 5: xhist1.def Histo, lna , exp, LMBist[uint32]
   when defined(test): # Helpful to run against: -- -12 -8 -4 -1 0 1 4 8 12
     proc lghist(a=0.125, b=10.0, n=8, qs = @[0.25, 0.5, 0.75], xs: seq[float]) =
