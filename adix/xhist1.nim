@@ -115,13 +115,18 @@ template def*(T, X, X⁻¹, H; Hini: typed = false; Harg=0.0) =
     elif x >= +s.a   : result[0] = s.fromIx(i,0.0); result[1] = s.fromIx(i,1.0)
     else             : result[0] = -s.a           ; result[1] = +s.a
 
-  func add[F](s: var `T`, x: F, w: type(s.hist.cdf 0) = 1) =
-    ## Increment bin for value `x` by weight `w`
-    if not isNaN(x): s.hist.inc s.toIx(x), w
+  func add[F](s: var `T`, x: F, w: type(s.hist.cdf 0)=1): int {.discardable.} =
+    ## Increment bin for value `x` by weight `w`             #..caller can save
+    if not isNaN(x): result = s.toIx(x); s.hist.inc result, w
+    else: result = int.low
 
   func pop[F](s: var `T`, x: F, w: type(s.hist.cdf 0) = 1) =
     ## Alias for `add` with a negative weight argument
     if not isNaN(x): s.hist.dec s.toIx(x), w
+
+  func pop[F](s: var `T`, i: int, w: type(s.hist.cdf 0) = 1) =
+    ## `pop` that takes index output of `add` as an argument, to skip `toIx`.
+    if i != int.low: s.hist.dec i, w
 
   iterator bins(s: `T`): (float, float, type(s.hist.cdf 0)) =
    ## Yield `(lo, hi, count)` for each bin covered
