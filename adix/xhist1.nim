@@ -164,8 +164,44 @@ template def*(T, X, X⁻¹, H; Hini: typed = false; Harg=0.0) =
       Value !! "src-dst histogram parameter mismatch"
     for i in 0..2*src.n: dst.hist.inc i, src.hist.pmf(i) # Flat array prob fastr
 
-  when compiles(len(`init H`(n=1).csum)):
-    func up(s: var `T`) = s.hist.up
+  func up(s: var `T`) = s.hist.up
+
+template exportDefs*(T) =
+  export `T`, underflows, overflows, low, high, nBin, hist, init, `init T`, up,
+    space, tot, toIx, fromIx, binAB, add, pop, bins, `$`, quantile, cdf, merge
+
+template defMove*(T, X, wEntering, wLeaving; nMx=32767) =
+  type `T` = object ## Layer maybe-time-weighted moving win over transforming X
+    ix*: Deque[when nMx<=127:uint8 elif nMx<=32767:uint16 else:uint32] ## index
+    xwh*: X         ## Transformed, time-Weighted Histogram
+    t*, win*: int   ## Current time index, window length
+
+  proc `init T`(a=1e-16, b=1e20, n=8300, win=10): T =
+    if n > nMx: Value !! "`n` too large; max is " & $nMx
+    result.xwh = `init X`(a, b, n); result.win = win
+
+  func add[F](m: var T, x: F) =
+    template it: var `T` {.inject.} = m
+    if m.t >= m.win:
+      m.xwh.hist.dec m.ix.popFirst.int, type(m.xwh.hist.cdf 0)(wLeaving)
+    let i = m.xwh.add(x, type(m.xwh.hist.cdf 0)(wEntering))
+    m.ix.addLast (when nMx<=127:i.uint8 elif nMx<=32767:i.uint16 else: i.uint32)
+    m.t.inc
+
+  func quantile[F](m: `T`, q: F): F = m.xwh.quantile q
+
+  func space(m: `T`): int = m.sizeof + m.xwh.space + m.ix.len*m.ix[0].sizeof
+
+  func up(m: var `T`) = m.xwh.hist.up
+
+  func `$`(m: `T`, minP=2.0*float32.epsilon): string = `$`(m.xwh, minP)
+
+  iterator bins(m: `T`): (float, float, type(m.xwh.hist.cdf 0)) =
+    for tup in m.xwh.bins: yield tup
+
+  func binAB[F](m: `T`, x: F): (float, float) = m.xwh.binAB(x)
+
+  func tot(m: `T`): auto = m.xwh.hist.tot
 
 when isMainModule:
   {.push warning[UnusedImport]:off.}; {.push hint[DuplicateModuleImport]:off.}
@@ -174,21 +210,34 @@ when isMainModule:
   template Id(x): untyped  = x              # The identity/linear transform
   template sqr(x: untyped) = x*x            # The sqrt-sqr transform
   const mode {.intdefine.} = 0
-  when mode == 0: xhist1.def Histo, Id  , Id , Hist[uint32]
-  elif mode == 1: xhist1.def Histo, lna , exp, Bist[uint32]  # Match LgHisto
-  elif mode == 2: xhist1.def Histo, Id  , Id , Bist[uint32]
-  elif mode == 3: xhist1.def Histo, sqrt, sqr, Bist[uint32]
-  elif mode == 4: xhist1.def Histo, lna , exp, EMBist[float32], Hini=true,0.9375
-  elif mode == 5: xhist1.def Histo, lna , exp, LMBist[uint32]
+  when mode==0: xhist1.def Histo,  Id , Id , Hist[uint32]
+  elif mode==1: xhist1.def Histo,  lna, exp, Bist[uint32]   # Match LgHisto
+  elif mode==2: xhist1.def Histo,  Id , Id , Bist[uint32]
+  elif mode==3: xhist1.def Histo, sqrt, sqr, Bist[uint32]
+  elif mode==4: xhist1.def Histo,  lna, exp, EMBist[float32], Hini=true, 0.9375
+  elif mode==5: xhist1.def Histo,  lna, exp, LMBist[uint32]
+  elif mode==6:
+    xhist1.def FHist, lna, exp, Hist[uint32]
+    xhist1.defMove Histo, FHist, 1, 1
+  elif mode==7:
+    xhist1.def FBist, lna, exp, Bist[uint32]
+    xhist1.defMove Histo, FBist, 1, 1
+  elif mode==8:
+    xhist1.def LBist, lna, exp, LMBist[uint32]
+    xhist1.defMove Histo, LBist, it.t + 1, it.t + 1 - it.win
+  elif mode==9:
+    xhist1.def EBist, lna, exp, EMBist[float32], Hini=true, 0.9375
+    xhist1.defMove Histo, EBist, 1.0, it.xwh.hist.scale(it.win)
   when defined(test): # Helpful to run against: -- -12 -8 -4 -1 0 1 4 8 12
-    proc lghist(a=0.125, b=10.0, n=8, qs = @[0.25, 0.5, 0.75], xs: seq[float]) =
-      var lh = initHisto(a, b, n)
+    proc lghist(a=0.125,b=10.0,n=8, win=9,qs = @[0.25,0.5,0.75], xs:seq[float])=
+      when compiles(initHisto(a, b, n, win)): (var lh = initHisto(a, b, n, win))
+      else: (var lh = initHisto(a, b, n))
       for x in xs: lh.add x
       echo `$`(lh, minP=0)
       for (a, b, c) in lh.bins:
         if (a,b) != lh.binAB((a+b)/2) or a >= b:
           echo "a: ",a," b: ",b," c: ",c," ab(mid(a,b)): ",lh.binAB((a+b)/2)
-      when declared lh.up: lh.up
+      lh.up     # Must call `up` before quantile query if *possibly* `Hist`.
       if lh.tot > 0: (for q in qs: echo "q",q,": ",lh.quantile(q))
     import cligen; dispatch lghist
   else:
@@ -201,7 +250,7 @@ when isMainModule:
     for i in 0..<N: data[i] = gauss().float32 # rand(0.0 .. 1.0)
     var s = initHisto(b=10, n=128)
     let t0 = epochTime()
-    (for x in data: s.add x); when declared s.up: s.up
+    (for x in data: s.add x); s.up
     let t1 = epochTime()
     for j, q in Q: res[j] = s.quantile q
     let t2 = epochTime()
