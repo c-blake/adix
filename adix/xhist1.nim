@@ -132,7 +132,7 @@ template def*(T, X, X⁻¹, H; Hini: typed = false; Harg=0.0) =
    for i in  2   ..<  s.n  :yield (s.fromIx(i,0.0),s.fromIx(i,1.0),s.hist.pmf i)
    yield (-s.a, s.a, s.hist.pmf s.n) # middle bin breaks X⁻¹-mean formula
    for i in s.n+1..<2*s.n-1:yield (s.fromIx(i,0.0),s.fromIx(i,1.0),s.hist.pmf i)
-   yield (s.fromIx(2*s.n-1,0.0), +s.b, s.hist.pmf 1)
+   yield (s.fromIx(2*s.n-1,0.0), +s.b, s.hist.pmf 2*s.n-1)
    yield (+s.b, +Inf, s.hist.pmf 2*s.n)
 
   func `$`(s: `T`, minP=2.0*float32.epsilon): string =
