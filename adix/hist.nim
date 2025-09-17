@@ -53,7 +53,7 @@ proc invCDF*[N](h: Hist[N], s: N; s0: var N): int =
   ## sum(..< i0) < s yet sum(..i0) >= s` in `lgCeil n` array probes.
   assert 0<=s and s<=h.tot, "Hist.invCDF OORange sum " & $s & " of " & $h.tot
   result = h.csum.lowerBound(s)         #NOTE: s<0|s>tot are invalid inputs
-  if result == h.cnt.high: s0 = h.csum[result]
+  if result >= h.cnt.high: result = h.cnt.high; s0 = h.tot
   else: s0 = h.csum[result] - h.cnt[result]
 
 proc `$`*[N](h: Hist[N]): string = "tot: " & $h.count & " pmf: " & $h.nPDF
