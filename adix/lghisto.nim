@@ -102,7 +102,7 @@ iterator bins*[C](s: LgHisto[C]): (float, float, C) =
   for i in  2   ..<  s.n: yield (s.fromIx(i,0.0),s.fromIx(i,1.0),s.bist.pmf i)
   yield (-s.a, s.a, s.bist.pmf s.n) # middle bin breaks geometric mean formula
   for i in s.n+1..<2*s.n-1: yield (s.fromIx(i,0.0),s.fromIx(i,1.0),s.bist.pmf i)
-  yield (s.fromIx(2*s.n-1,0.0), +s.b, s.bist.pmf 1)
+  yield (s.fromIx(2*s.n-1,0.0), +s.b, s.bist.pmf 2*s.n-1)
   yield (+s.b, +Inf, s.bist.pmf 2*s.n)
 
 proc `$`*[C](s: LgHisto[C], nonZero=true): string =
