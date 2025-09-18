@@ -1,5 +1,5 @@
-## Summary stats via an running/rolling/sliding/moving window/online/incremental
-## algo (as std/stats). Unlike std/stats we support deletion (*moving* windows)
+## Online/incremental summary stats by cumulative|running/rolling|sliding|moving
+## window algos, like std/stats. Unlike that, supports deletion (MOVING windows)
 ## via `pop` and are (sometimes) a million X more accurate & 50X faster.  Speed
 ## up comes from SIMD auto-vectorization in whole `openArray[]` calls aided by
 ## "shift" idea at en.wikipedia.org/wiki/Algorithms_for_calculating_variance
