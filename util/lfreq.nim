@@ -55,7 +55,7 @@ proc incFailed(h: var Counts, ms: MSlice): bool =
       wTot *= sclInv; wTot *= sclInv  #..near top of repr to near bottom.
 
 proc lfreq(n=10, count=false, size=9999, dSize=81920, recTerm='\n',
-           format="@c @k", RecTerm="\n", old=1.0, tm=false) =
+           format="@f @k", RecTerm="\n", old=1.0, tm=false) =
   ## Histogram `stdin` lines (read w/non-memory mapped IO to be pipe friendly).
   ## Limits: <4 GiB unique data; <16 KiB lines; <4 GiCount.  If `old < 1.0`,
   ## frequency -> simple 1-parameter "frecency" where counts are decayed by a
