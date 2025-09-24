@@ -1,5 +1,5 @@
 # Package
-version     = "0.7.2"
+version     = "0.7.3"
 author      = "Charles Blake"
 description = "An Adaptive Index Library for Nim"
 license     = "MIT/ISC"
