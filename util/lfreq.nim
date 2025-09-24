@@ -5,13 +5,13 @@ const bLen {.intdefine.} = 16   # <16K long;  RT params better but more work
 const bOff {.intdefine.} = 32   # <4G UNIQUE line data
 const bCnt {.intdefine.} = 32   # <4 GiCount; Must be 32 for -d=frecent
 type
-  Counter = (when defined frecent: float32 else: uint32)
+  Counter = (when defined intCnt: uint32 else: float32)
   Count {.packed.} = object     # Dense-ish hash Count type
     when defined hashCache: hc: uint32 # 10B|14B per cell
     len {.bitsize: bLen.}: uint32 # Cmp goes hc, len, key
     off {.bitsize: bOff.}: uint32
-    when defined frecent: cnt: Counter
-    else                : cnt {.bitsize: bCnt.}: Counter
+    when defined intCnt: cnt {.bitsize: bCnt.}: Counter
+    else               : cnt: Counter
   Counts = object
     dat: seq[Count]
     nUsed: int
@@ -37,7 +37,7 @@ proc incFailed(h: var Counts, ms: MSlice): bool =
   if ms.len > (1 shl bLen) - 1: # Careful to not overflow XXX rate limit msgs
     erru "truncating too long (", $ms.len, ") line: ", ($ms)[0..<128], "...\n"
   h.upSert(ms, i):              # Found key @i:
-    if (when defined frecent: false else: h.dat[i].cnt == (1 shl bCnt) - 1):
+    if (when defined intCnt: h.dat[i].cnt == (1 shl bCnt) - 1 else: false):
       erru "counter overflow for: ",$ms,"\n" # no update XXX rate limit msgs
     else: h.dat[i].cnt += w; wTot += w  # bump
   do:                           # Novel key->i:
@@ -46,7 +46,7 @@ proc incFailed(h: var Counts, ms: MSlice): bool =
       return true               # Cannot go on GLOBALLY
     h.dat[i].len = ms.len.uint32 # Init
     h.dat[i].cnt = w; wTot += w
-  when defined frecent:         # Do 1-param frecency idea; Simpler than firefox
+  when not defined(intCnt):     # Do 1-param frecency idea; Simpler than firefox
     w *= wMul                   # Always-grow-for-new-data EWMA update
     if w > wMax:                # Nearing per-key weight repr limit..
       let sclInv = 1.0/wMax     # *= twice since this pushes FP repr limits
@@ -55,13 +55,15 @@ proc incFailed(h: var Counts, ms: MSlice): bool =
       wTot *= sclInv; wTot *= sclInv  #..near top of repr to near bottom.
 
 proc lfreq(n=10, count=false, size=9999, dSize=81920, recTerm='\n',
-           format="@c @k", RecTerm="\n", old=0.99, tm=false) =
+           format="@c @k", RecTerm="\n", old=1.0, tm=false) =
   ## Histogram `stdin` lines (read w/non-memory mapped IO to be pipe friendly).
-  ## Limits: <4 GiB unique data; <16 KiB lines; <4 GiCount.
+  ## Limits: <4 GiB unique data; <16 KiB lines; <4 GiCount.  If `old < 1.0`,
+  ## frequency -> simple 1-parameter "frecency" where counts are decayed by a
+  ## factor `old` (virtually) after each line (i.e. by index not wall time).
   let t0 = if tm: epochTime() else: 0.0
   var h: Counts; h.setCap size  # pre-size table & data
   s.setLen dSize; s.setLen 1    # `1` here lets us encode empty as 0-offset
-  when defined frecent: wMul = 1.0/old
+  when not defined(intCnt): wMul = 1.0/old
   block IO:
     for (line, nLine) in stdin.getDelims(recTerm):
       let ms = MSlice(mem: line, len: nLine - 1)
@@ -74,8 +76,8 @@ proc lfreq(n=10, count=false, size=9999, dSize=81920, recTerm='\n',
       if id.idIsLiteral: outu MSlice(mem: format[arg.a].addr, len: arg.len)
       elif format[id.a] == 'k': outu k
       elif format[id.a] == 'c':
-        when defined frecent: cs.setLen 0; cs.ecvt c.float, 6; outu cs
-        else                : cs.setLen 0; cs.addInt c; outu cs
+        when defined intCnt: cs.setLen 0; cs.addInt c; outu cs
+        else               : cs.setLen 0; cs.ecvt c.float, 6; outu cs
       elif format[id.a] == 'f': fs.setLen 0; fs.fcvt c.float*wInv, 9; outu fs
       else: outu MSlice(mem: format[call.a].addr, len: call.len)
     outu RecTerm
@@ -92,5 +94,5 @@ when isMainModule: dispatch lfreq, help={
   "recTerm": "input record terminator",
   "RecTerm": "output record terminator",
   "format" : "output format: @k=key @c=count @f=fraction",
-  "old"  : "exponen.weight for 'old' ages (if frecent)",
+  "old"  : "exponen.weight for 'old' ages (if not intCnt)",
   "tm"   : "emit wall time of counting to stderr & quit"}
