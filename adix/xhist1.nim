@@ -17,7 +17,7 @@ that adds a noticeable overhead in tight loops over big data. ]##
 
 when not declared addFloat: import std/formatfloat; export formatfloat
 from std/math import isNaN; from std/fenv import epsilon; export isNaN, epsilon
-import cligen/sysUt; export sysUt
+import cligen/sysUt; export sysUt; import lna; export lna
 import std/deques; export deques
 
 template def*(T, X, X⁻¹, H; Hini: typed = false; Harg=0.0) =
@@ -205,8 +205,8 @@ template defMove*(T, X, wEntering, wLeaving; nMx=32767) =
 
 when isMainModule:
   {.push warning[UnusedImport]:off.}; {.push hint[DuplicateModuleImport]:off.}
-  import adix/[hist, bist,embist,lmbist, lna] # Import everything we *might*..
-  from std/math import exp, sqrt              #..need rather than condition.
+  import adix/[hist, bist, embist, lmbist]  # Import everything we *might*..
+  from std/math import exp, sqrt            #..need rather than condition.
   template Id(x): untyped  = x              # The identity/linear transform
   template sqr(x: untyped) = x*x            # The sqrt-sqr transform
   const mode {.intdefine.} = 0
