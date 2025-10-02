@@ -25,5 +25,6 @@ when defined(nimdoc):
   import adix/topk
   import adix/uniqce
   import adix/xhist1
+  import adix/ways
 else:
   {.error: "use `import adix/{module of interest}`".}
