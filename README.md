@@ -70,6 +70,8 @@ And some utility modules:
   always faster, but is more reliably fast and more tunable than libc using 2
   simple ideas: IEEE exponent to narrow problem & two series for the remaining
   near-unity interval.
+  - [ways](https://c-blake.github.io/adix/adix/ways.html): Various algos.
+  Presently, scalable, k-way ordered merge.
 
 A Word/Paragraph Of Caution
 ===========================
