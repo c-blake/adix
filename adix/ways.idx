@@ -1,0 +1,2 @@
+nimTitle	ways	adix/ways.html	module adix/ways		0
+nim	kWayMerge	adix/ways.html#kWayMerge.i,openArray[]	iterator kWayMerge[T](itrs: openArray[iterator (): T]): T		4
