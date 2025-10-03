@@ -2,7 +2,7 @@
 import std/heapqueue
 
 iterator kWayMerge*[T](itrs: openArray[iterator(): T]): T =
-  ## k-way merge of ordered itr yields with `std/heapqueue`.
+  ## k-way merge of ordered `itrs[i]` yields using `std/heapqueue`.
   if itrs.len > 1: 
     type HeapItem = (T, int)
     var hq = initHeapQueue[HeapItem]()
