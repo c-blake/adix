@@ -1,4 +1,4 @@
-## To paraphrase Mandalorians: These are the ways, meaning various algorithms.
+## To paraphrase Mandalorians: "These are the ways" (various algorithms).
 import std/heapqueue
 
 iterator kWayMerge*[T](itrs: openArray[iterator(): T]): T =
