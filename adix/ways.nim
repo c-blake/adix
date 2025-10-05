@@ -6,18 +6,18 @@ iterator kWayMerge*[T](itrs: openArray[iterator(): T]): T =
   if itrs.len > 1: 
     type HeapItem = (T, int)
     var hq = initHeapQueue[HeapItem]()
-    for i, it in itrs:
+    for i, it in itrs:      # Load min-heap with the first yield of each.
       let vNext = it()      # Must call for system to know exhaustion
       if not it.finished:   #..but want if-guard before push to avoid
         hq.push (vNext, i)  #..having exhausted iterators in the heap.
-    while hq.len > 0:
-      let (v, i) = hq.pop
+    while hq.len > 0:       # While heap is not empty:
+      let (v, i) = hq.pop   #   get & yield the next min.
       yield v
-      let it = itrs[i]
+      let it = itrs[i]      #   push next item from just yielded..
       let vNext = it()
-      if not it.finished:
+      if not it.finished:   #  ..(unless it's exhausted)
         hq.push (vNext, i)
-  elif itrs.len == 1:
+  elif itrs.len == 1:       # special case of only 1 (elif=>or 0) iter
     for v in itrs[0](): yield v
 
 when isMainModule:
