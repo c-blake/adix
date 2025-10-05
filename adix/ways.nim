@@ -25,4 +25,4 @@ when isMainModule:
   iterator i1: int {.closure.} = yield 3
   iterator i2: int {.closure.} = yield 1; yield 5
   iterator i3: int {.closure.} = yield 2; yield 4; yield 6
-  for i in [i1, i2, i3].kWayMerge: echo i
+  for i in [i0, i1, i2, i3].kWayMerge: echo i
