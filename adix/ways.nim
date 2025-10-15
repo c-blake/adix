@@ -3,7 +3,7 @@ import std/heapqueue
 
 iterator kWayMerge*[T](itrs: openArray[iterator(): T]): T =
   ## k-way merge of ordered `itrs[i]` yields using `std/heapqueue`.
-  if itrs.len > 1: 
+  if itrs.len > 1:
     type HeapItem = (T, int)
     var hq = initHeapQueue[HeapItem]()
     for i, it in itrs:      # Load min-heap with the first yield of each.
