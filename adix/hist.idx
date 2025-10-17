@@ -1,0 +1,27 @@
+nimTitle	hist	adix/hist.html	module adix/hist		0
+nim	Hist	adix/hist.html#Hist	object Hist		23
+nim	len	adix/hist.html#len,Hist[N]	proc len[N](h: Hist[N]): int		28
+nim	size	adix/hist.html#size,Hist[N]	proc size[N](h: Hist[N]): int		29
+nim	space	adix/hist.html#space,Hist[N]	proc space[N](h: Hist[N]): int		30
+nim	tot	adix/hist.html#tot,Hist[N]	proc tot[N](h: Hist[N]): N		31
+nim	count	adix/hist.html#count,Hist[N]	proc count[N](h: Hist[N]): N		32
+nim	init	adix/hist.html#init,Hist[N],int	proc init[N](h: var Hist[N]; len: int)		34
+nim	initHist	adix/hist.html#initHist,int	proc initHist[N](len: int): Hist[N]		35
+nim	clear	adix/hist.html#clear,Hist[N]	proc clear[N](h: var Hist[N])		36
+nim	inc	adix/hist.html#inc,Hist[N],int,N	proc inc[N](h: var Hist[N]; i: int; w: N = 1)		39
+nim	dec	adix/hist.html#dec,Hist[N],int,N	proc dec[N](h: var Hist[N]; i: int; w: N = 1)		41
+nim	up	adix/hist.html#up,Hist[N]	proc up[N](h: var Hist[N])		43
+nim	cdf	adix/hist.html#cdf,Hist[N],int	proc cdf[N](h: Hist[N]; i: int): N		48
+nim	pmf	adix/hist.html#pmf,Hist[N],int	proc pmf[N](h: Hist[N]; i: int): N		49
+nim	invCDF	adix/hist.html#invCDF,Hist[N],N,N	proc invCDF[N](h: Hist[N]; s: N; s0: var N): int		51
+nim	`$`	adix/hist.html#$,Hist[N]	proc `$`[N](h: Hist[N]): string		59
+nim	invCDF	adix/hist.html#invCDF,Hist[N],N	proc invCDF[N](h: Hist[N]; s: N): (int, N)		61
+nim	invCDF	adix/hist.html#invCDF,Hist[N],N,N,N	proc invCDF[N](h: Hist[N]; s: N; s0, s1: var N): int		64
+nim	min	adix/hist.html#min,Hist[N]	proc min[N](h: Hist[N]): int		70
+nim	max	adix/hist.html#max,Hist[N]	proc max[N](h: Hist[N]): int		73
+nim	quantile	adix/hist.html#quantile,Hist[N],float,int,int	proc quantile[N](h: Hist[N]; q: float; iL, iH: var int): float		77
+nim	quantile	adix/hist.html#quantile,Hist[N],float	proc quantile[N](h: Hist[N]; q: float): float		107
+nim	nPDF	adix/hist.html#nPDF,Hist[N]	proc nPDF[N](h: Hist[N]): seq[float32]		113
+nim	nCDF	adix/hist.html#nCDF,Hist[N]	proc nCDF[N](h: Hist[N]): seq[float32]		116
+nimgrp	quantile	adix/hist.html#quantile-procs-all	proc		77
+nimgrp	invcdf	adix/hist.html#invCDF-procs-all	proc		51
