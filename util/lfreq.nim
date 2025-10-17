@@ -58,8 +58,8 @@ proc lfreq(n=10, count=false, size=9999, dSize=81920, recTerm='\n',
            format="@f @k", RecTerm="\n", old=1.0, tm=false) =
   ## Histogram `stdin` lines (read w/non-memory mapped IO to be pipe friendly).
   ## Limits: <4 GiB unique data; <16 KiB lines; <4 GiCount.  If `old < 1.0`,
-  ## frequency -> simple 1-parameter "frecency" where counts are decayed by a
-  ## factor `old` (virtually) after each line (i.e. by index not wall time).
+  ## frequency -> simple 1-parameter "frecency" where counts are virtual-decayed
+  ## by a factor `old`  after each line (i.e. by index not by wall time).
   let t0 = if tm: epochTime() else: 0.0
   var h: Counts; h.setCap size  # pre-size table & data
   s.setLen dSize; s.setLen 1    # `1` here lets us encode empty as 0-offset
