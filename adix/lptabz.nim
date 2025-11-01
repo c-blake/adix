@@ -11,10 +11,11 @@
 ## scans just as hash collisions do and is thus misuse/self-attack.  If this is
 ## likely then use `V=seq[T]` instead.  We provide a few mitigations triggered,
 ## like table growth itself, by overlong scans on underfull tables:
-##   A) automatic rehash of user `hash` output with a strong integer hash,
-##   B) overlong scan warnings (disabled in `danger` mode),
-##   C) automatic Robin Hood re-org activation, and
-##   D) use `althash.getSalt` to allow hard to predict per-table hash salt.
+##   A) Messages via `-d=lpWarn`; ACTIVATING THIS IS A FIRST LINE OF INQUIRY,
+##   B) automatic rehash of user `hash` output with a strong integer hash,
+##   C) overlong scan warnings (disabled in `danger` mode),
+##   D) automatic Robin Hood re-org activation, and
+##   E) use `althash.getSalt` to allow hard to predict per-table hash salt.
 ## Program-wide-tunable defaults are to rehash, warn, re-org & salt with vmAddr
 ## since this is a safe-ish portable mode, but most can also be set via module
 ## globals consulted @init time.  `-d:unstableHash` makes the default `getSalt`
@@ -82,8 +83,9 @@ when defined(hashStats):    # Power user inspectable/zeroable stats.  These are
   var lpTooSparse* = 0  ## Counts skips of depth-triggered resize from sparsity
 else:
   template ifStats(x) = discard
-when defined(lpWarn) or not defined(danger):
-  var lpWarn* = stderr  ## Set to wherever you want warnings to go
+const lpWarn* {.booldefine.} = false ## define to maybe help explain poor perf
+when lpWarn:
+  var lpWarn* = stderr  ## Set to File you want to send warnings to; `nil` is ok
   var lpMaxWarn* = 10   ## Most warnings per program invocation
   var lpWarnCnt = 0     # Running counter of warnings issued
 
@@ -364,10 +366,11 @@ proc tooFull[K,V,Z;z:static int](t: var LPTabz[K,V,Z,z]; d: int;
     else:                       # Turn on re-hashing hash() output
       t.robin = true
       ext = "; Adapting by Robin Hood re-org"
-    when defined(lpWarn) or not defined(danger):
+    when lpWarn:
       lpWarnCnt.inc
       if lpWarnCnt <= lpMaxWarn:
-        lpWarn.write "LPTabz: Weak hash/too many dups(d=" & $d & ")", ext, '\n'
+        if not lpWarn.isNil:
+          lpWarn.write "LPTabz: Weak hash/too many dups(d=" & $d & ")",ext,'\n'
 
 proc rawPut1[K,V,Z;z:static int](t: var LPTabz[K,V,Z,z]; i: Hash; d: var int):
     int {.inline.} =
