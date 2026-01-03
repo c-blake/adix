@@ -68,8 +68,6 @@ proc scale*[F](d: EMBist[F]; age: int): F = d.grow^(-age)
 proc dec*[F](d: var EMBist[F]; i: int; w: F=1) = d.cnt.dec i, w*d.w
   ## Un-count-old operation for more rare EW with strict windows; Use .scale!
 
-proc up*[F](d: var EMBist[F]) = discard ## Simple no-op for EMBist
-
 proc cdf*[F](d: EMBist[F], i: int): F = d.cnt.cdf(i) / d.count ## wrap Bist.cdf
 proc pmf*[F](d: EMBist[F], i: int): F = d.cnt.pmf(i) / d.count ## wrap Bist.pdf
 proc invCDF*[F](d: EMBist[F], s: F; s0: var F): int = d.cnt.invCDF s, s0

@@ -46,8 +46,6 @@ proc dec*[T](t: var Bist[T]; i: int; d: T) =
   t.tot -= d
   cfor (var i = i.int), i < t.len, i |= i + 1: t[i] -= d    #Go down update tree
 
-proc up*[T](t: var Bist[T]) = discard ## Simple no-op for BISTs
-
 proc cdf*[T](t: Bist[T], i: int): T =
   ## INCLUSIVE `sum(pmf[0..i])`, (rank,EDF,prefix sum,scan,..); Tm~1 bits in `i`
   cfor (var i = i + 1), i > 0, i &= i - 1:        #Go up interrogation tree

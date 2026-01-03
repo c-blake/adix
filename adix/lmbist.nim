@@ -62,8 +62,6 @@ proc dec*[T](d: var LMBist[T]; i: int, w: T) =
   d.cnt.dec i, w; d.nLag.dec i, 1       # track both weight & membership
   d.zero += 1                           # & the bottom or virtual zero.
 
-proc up*[T](d: var LMBist[T]) = discard ## Simple no-op for LMBist
-
 proc cdf*[T](d: LMBist[T], i: int): T = d.cnt.cdf(i) - d.zero*d.nLag.cdf(i)
 proc pmf*[T](d: LMBist[T], i: int): T = d.cnt.pmf(i) - d.zero*d.nLag.pmf(i)
 
