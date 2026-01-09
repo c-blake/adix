@@ -1,0 +1,23 @@
+nimTitle	lmbist	adix/lmbist.html	module adix/lmbist		0
+nim	LMBist	adix/lmbist.html#LMBist	object LMBist		45
+nim	len	adix/lmbist.html#len,LMBist[T]	proc len[T](d: LMBist[T]): int		49
+nim	space	adix/lmbist.html#space,LMBist[T]	proc space[T](d: LMBist[T]): int		50
+nim	tot	adix/lmbist.html#tot,LMBist[T]	proc tot[T](d: LMBist[T]): T		51
+nim	count	adix/lmbist.html#count,LMBist[T]	proc count[T](d: LMBist[T]): T		52
+nim	init	adix/lmbist.html#init,LMBist[T],int	proc init[T](d: var LMBist[T]; len: int)		54
+nim	initLMBist	adix/lmbist.html#initLMBist,int	proc initLMBist[T](len: int): LMBist[T]		55
+nim	clear	adix/lmbist.html#clear,LMBist[T]	proc clear[T](d: var LMBist[T])		56
+nim	inc	adix/lmbist.html#inc,LMBist[T],int,T	proc inc[T](d: var LMBist[T]; i: int; w: T)		58
+nim	dec	adix/lmbist.html#dec,LMBist[T],int,T	proc dec[T](d: var LMBist[T]; i: int; w: T)		61
+nim	cdf	adix/lmbist.html#cdf,LMBist[T],int	proc cdf[T](d: LMBist[T]; i: int): T		65
+nim	pmf	adix/lmbist.html#pmf,LMBist[T],int	proc pmf[T](d: LMBist[T]; i: int): T		66
+nim	invCDF	adix/lmbist.html#invCDF,LMBist[T],T,T	proc invCDF[T](d: LMBist[T]; s: T; s0: var T): int		68
+nim	invCDF	adix/lmbist.html#invCDF,LMBist[T],T,T,T	proc invCDF[T](d: LMBist[T]; s: T; s0, s1: var T): int		78
+nim	min	adix/lmbist.html#min,LMBist[T]	proc min[T](d: LMBist[T]): int		80
+nim	max	adix/lmbist.html#max,LMBist[T]	proc max[T](d: LMBist[T]): int		81
+nim	quantile	adix/lmbist.html#quantile,LMBist[T],float,int,int	proc quantile[T](d: LMBist[T]; q: float; iL, iH: var int): float		83
+nim	quantile	adix/lmbist.html#quantile,LMBist[T],float	proc quantile[T](d: LMBist[T]; q: float): float		102
+nim	nPDF	adix/lmbist.html#nPDF,LMBist[T]	proc nPDF[T](d: LMBist[T]): seq[float32]		107
+nim	nCDF	adix/lmbist.html#nCDF,LMBist[T]	proc nCDF[T](d: LMBist[T]): seq[float32]		110
+nimgrp	quantile	adix/lmbist.html#quantile-procs-all	proc		83
+nimgrp	invcdf	adix/lmbist.html#invCDF-procs-all	proc		68

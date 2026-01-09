@@ -1,0 +1,7 @@
+nimTitle	cpuCT	adix/cpuCT.html	module adix/cpuCT		0
+nim	ccPreDefs	adix/cpuCT.html#ccPreDefs	const ccPreDefs		9
+nim	x86sse2	adix/cpuCT.html#x86sse2	X86Feature.x86sse2		14
+nim	x86ssse3	adix/cpuCT.html#x86ssse3	X86Feature.x86ssse3		14
+nim	x86bmi2	adix/cpuCT.html#x86bmi2	X86Feature.x86bmi2		14
+nim	X86Feature	adix/cpuCT.html#X86Feature	enum X86Feature		14
+nim	x86features	adix/cpuCT.html#x86features	const x86features		16

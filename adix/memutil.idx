@@ -1,0 +1,3 @@
+nimTitle	memutil	adix/memutil.html	module adix/memutil		0
+nim	pushUp	adix/memutil.html#pushUp,seq[T],int,int	proc pushUp[T](x: var seq[T]; i, n: int)		23
+nim	pullDown	adix/memutil.html#pullDown,seq[T],int,int	proc pullDown[T](x: var seq[T]; i, n: int)		29
