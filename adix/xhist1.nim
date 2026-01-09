@@ -44,8 +44,8 @@ template def*(T, X, X⁻¹, H; Hini: typed = false; Harg=0.0) =
    * func pop[F](s: var T, x: F, w: type(s.hist.cdf 0) = 1)  # dec wt by w
    * iterator bins(s: T): (float, float, type(s.hist.cdf 0)) # yield (lo,hi,cnt)
    * func `$`(s: T, nonZero=true): string                    # format histo
-   * func quantile[F](s: T, q: F): F                # Basic quantile
    * func cdf[F](s: T, x: F): type(s.hist.cdf 0)    # Raw count; Callers /s.tot
+   * func quantile[F](s: T, q: F): F                # Basic quantile
    * func merge(dst: var T, src: T)                 # Cnts from src into dst ]##
 
   type `T` = object       ## histogram(X(x[])) with backing histogram `H`
@@ -147,6 +147,13 @@ template def*(T, X, X⁻¹, H; Hini: typed = false; Harg=0.0) =
     result[^1] = '\n'
     result.add $n & " bins>=" & $t
 
+  func cdf[F](s: `T`, x: F): type(s.hist.cdf 0) =
+    ## Raw count; Leave to caller to multiply by 1/s.hist.count;XXX Interpolate?
+    when type(s.hist.cdf 0) is SomeInteger: # ints HAVE NO NaN -> result.low
+      if x.isNaN: low(type(result)) else: s.hist.cdf(s.toIx(x)) #!!! unsigned==0
+    else:
+      if x.isNaN: NaN else: s.hist.cdf(s.toIx(x))
+
   func quantile[F](s: `T`, q: F): F =
     ## Basic quantile; XXX More accurate X-spacing-savvy interpolation?
     if q < 0.0 or q > 1.0: return NaN
@@ -154,21 +161,15 @@ template def*(T, X, X⁻¹, H; Hini: typed = false; Harg=0.0) =
     let fL = s.hist.quantile(q, iL, iH)
     fL*s.fromIx(iL) + (1 - fL)*s.fromIx(iH)
 
-  func cdf[F](s: `T`, x: F): type(s.hist.cdf 0) =
-    ## Raw count; Leave to caller to multiply by 1/s.hist.count;XXX Interpolate?
-    if x.isNaN: NaN else: s.hist.cdf(s.toIx(x))
-
   proc merge(dst: var `T`, src: `T`) =
     ## Merge counts from src into dst.
     if src.n != dst.n or src.a != dst.a or src.b != dst.b:
       Value !! "src-dst histogram parameter mismatch"
     for i in 0..2*src.n: dst.hist.inc i, src.hist.pmf(i) # Flat array prob fastr
 
-  func up(s: var `T`) = s.hist.up
-
 template exportDefs*(T) =
-  export `T`, underflows, overflows, low, high, nBin, hist, init, `init T`, up,
-    space, tot, toIx, fromIx, binAB, add, pop, bins, `$`, quantile, cdf, merge
+  export `T`, underflows, overflows, low, high, nBin, hist, init, `init T`, tot,
+    space, toIx, fromIx, binAB, add, pop, bins, `$`, cdf, quantile, merge
 
 template defMove*(T, X, wEntering, wLeaving; nMx=32767) =
   type `T` = object ## Layer maybe-time-weighted moving win over transforming X
@@ -188,11 +189,11 @@ template defMove*(T, X, wEntering, wLeaving; nMx=32767) =
     m.ix.addLast (when nMx<=127:i.uint8 elif nMx<=32767:i.uint16 else: i.uint32)
     m.t.inc
 
+  func cdf[F](m: `T`, x: F): type(m.xwh.hist.cdf 0) = m.xwh.cdf x
+
   func quantile[F](m: `T`, q: F): F = m.xwh.quantile q
 
   func space(m: `T`): int = m.sizeof + m.xwh.space + m.ix.len*m.ix[0].sizeof
-
-  func up(m: var `T`) = m.xwh.hist.up
 
   func `$`(m: `T`, minP=2.0*float32.epsilon): string = `$`(m.xwh, minP)
 
@@ -209,48 +210,43 @@ when isMainModule:
   from std/math import exp, sqrt            #..need rather than condition.
   template Id(x): untyped  = x              # The identity/linear transform
   template sqr(x: untyped) = x*x            # The sqrt-sqr transform
-  const mode {.intdefine.} = 0
-  when mode==0: xhist1.def Histo,  Id , Id , Hist[uint32]
-  elif mode==1: xhist1.def Histo,  lna, exp, Bist[uint32]   # Match LgHisto
-  elif mode==2: xhist1.def Histo,  Id , Id , Bist[uint32]
-  elif mode==3: xhist1.def Histo, sqrt, sqr, Bist[uint32]
-  elif mode==4: xhist1.def Histo,  lna, exp, EMBist[float32], Hini=true, 0.9375
-  elif mode==5: xhist1.def Histo,  lna, exp, LMBist[uint32]
-  elif mode==6:
-    xhist1.def FHist, lna, exp, Hist[uint32]
-    xhist1.defMove Histo, FHist, 1, 1
-  elif mode==7:
-    xhist1.def FBist, lna, exp, Bist[uint32]
-    xhist1.defMove Histo, FBist, 1, 1
-  elif mode==8:
-    xhist1.def LBist, lna, exp, LMBist[uint32]
-    xhist1.defMove Histo, LBist, it.t + 1, it.t + 1 - it.win
-  elif mode==9:
-    xhist1.def EBist, lna, exp, EMBist[float32], Hini=true, 0.9375
-    xhist1.defMove Histo, EBist, 1.0, it.xwh.hist.scale(it.win)
-  when defined(test): # Helpful to run against: -- -12 -8 -4 -1 0 1 4 8 12
-    proc lghist(a=0.125,b=10.0,n=8, win=9,qs = @[0.25,0.5,0.75], xs:seq[float])=
-      when compiles(initHisto(a, b, n, win)): (var lh = initHisto(a, b, n, win))
-      else: (var lh = initHisto(a, b, n))
+  const mo {.intdefine.} = 0
+  type U4 = uint32; type F4 = float32
+  when mo==0:def His  ,Id ,Id ,Hist[U4]
+  elif mo==1:def His  ,Id ,Id ,CHist[U4]
+  elif mo==2:def His  ,Id ,Id ,Bist[U4]
+  elif mo==3:def His  ,lna,exp,Bist[U4]  # Match LgHisto
+  elif mo==4:def His ,sqrt,sqr,Bist[U4]
+  elif mo==5:def His  ,lna,exp,EMBist[F4], Hini=true, 0.9375
+  elif mo==6:def FHist,lna,exp,Hist[U4]  ;defMove His,FHist, 1, 1
+  elif mo==7:def FCist,lna,exp,CHist[U4] ;defMove His,FCist, 1, 1
+  elif mo==8:def FBist,lna,exp,Bist[U4]  ;defMove His,FBist, 1, 1
+  elif mo==9:def LBist,lna,exp,LMBist[U4];defMove His,LBist,it.t+1,it.t+1-it.win
+  elif mo==10:(def(EBist,lna,exp,EMBist[F4], Hini=true, 0.9375); # Need all ()s
+                 defMove(His, EBist, 1.0, 1.0/it.xwh.hist.scale(it.win)))
+  when defined test: # Helpful to run against: -- -12 -8 -4 -1 0 1 4 8 12 [ 8 ]
+    proc lghist(a=0.125,b=10.0,n=8, win=8,qs = @[0.25,0.5,0.75], xs:seq[float])=
+      when compiles(initHis(a, b, n, win)): (var lh = initHis(a, b, n, win))
+      else: (var lh = initHis(a, b, n))
       for x in xs: lh.add x
       echo `$`(lh, minP=0)
       for (a, b, c) in lh.bins:
         if (a,b) != lh.binAB((a+b)/2) or a >= b:
           echo "a: ",a," b: ",b," c: ",c," ab(mid(a,b)): ",lh.binAB((a+b)/2)
-      lh.up     # Must call `up` before quantile query if *possibly* `Hist`.
       if lh.tot > 0: (for q in qs: echo "q",q,": ",lh.quantile(q))
     import cligen; dispatch lghist
   else:
     import std/[random, times, strformat]
     when defined danger: randomize()
     const N = 750_000
-    var data = newSeq[float32](N)
+    var data = newSeq[F4](N)
     const Q = [0.001,0.01,0.05,0.1587,0.25,0.50,0.75,0.8413,0.95,0.99,0.999]
-    var res = newSeq[float32](Q.len)
-    for i in 0..<N: data[i] = gauss().float32 # rand(0.0 .. 1.0)
-    var s = initHisto(b=10, n=128)
+    var res = newSeq[F4](Q.len)
+    for i in 0..<N: data[i] = gauss().F4 # rand(0.0 .. 1.0)
+    var s = initHis(b=10, n=128)
     let t0 = epochTime()
-    (for x in data: s.add x); s.up
+    for x in data: s.add x
+    when mo in [0, 7]: discard s.cdf(0.0) # Done for the s.up refresh effect
     let t1 = epochTime()
     for j, q in Q: res[j] = s.quantile q
     let t2 = epochTime()
