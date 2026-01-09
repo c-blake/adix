@@ -1,18 +1,19 @@
-## Online/incremental summary stats by cumulative|running/rolling|sliding|moving
-## window algos, like std/stats. Unlike that, supports deletion (MOVING windows)
-## via `pop` and are (sometimes) a million X more accurate & 50X faster.  Speed
-## up comes from SIMD auto-vectorization in whole `openArray[]` calls aided by
-## "shift" idea at en.wikipedia.org/wiki/Algorithms_for_calculating_variance
-## (both simpler & faster than Welford).  Both `var` & non-var overloads are
-## provided to allow caching 1.0/n which may be identical-but-expensive (eg.
-## reporting at each cycle of a 1 pop per push (so fixed `n`) window over data).
-##
-## Note: this all costs *more* in both time & space than exponentially weighted
-## equivalents but has precise rather than infinite memory which can be nice.
-## I.e., it can perfectly "forget" a large spike when it leaves a window, and
-## space usage is bounded by window size while time is generally ~O(lg nBins),
-## both of which seem to be at their respective efficiency limits.  Anyway, by
-## default `options` does not include `OrderStats`.
+##[ D)ynamic { cumulative/running | moving/rolling/sliding/streaming/windowed }
+O)nline/incremental/recursively-updated T)ime S)eries/S)ummary S)tats.  Like
+`std/stats`, but unlike that, supports deletion (MOVING windows) via `pop` and
+is (sometimes) a million X more accurate & 50X faster.  Speed up comes from SIMD
+auto-vectorization in whole `openArray[]` calls aided by the "shift" idea at
+en.wikipedia.org/wiki/Algorithms_for_calculating_variance (both simpler & faster
+than Welford).  Both `var` & non-var overloads are provided to allow caching
+1.0/n which may be identical-but-expensive (eg.  reporting at each cycle of a 1
+pop per push (so fixed `n`) window over data).
+
+Note: this all costs *more* in both time & space than exponentially weighted
+equivalents but has precise rather than infinite memory which can be nice.
+I.e., it can perfectly "forget" a large spike when it leaves a window, and space
+usage is bounded by window size while time is generally ~O(lg nBins), both of
+which seem to be at their respective efficiency limits.  Anyway, by default
+`options` does not include `OrderStats`. ]##
 
 when not declared(addFloat): import std/objectdollar
 from std/math     import sqrt, sum, `^`
