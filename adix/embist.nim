@@ -68,23 +68,23 @@ proc scale*[F](d: EMBist[F]; age: int): F = d.grow^age
 proc dec*[F](d: var EMBist[F]; i: int; w: F=1) = d.cnt.dec i, w*d.w
   ## Un-count-old operation for more rare EW with strict windows; Use .scale!
 
-proc cdf*[F](d: EMBist[F], i: int): F = d.cnt.cdf(i) / d.count ## wrap Bist.cdf
-proc pmf*[F](d: EMBist[F], i: int): F = d.cnt.pmf(i) / d.count ## wrap Bist.pdf
+proc cdf*[F](d:EMBist[F], i:int):F=max(0.F,d.cnt.cdf(i)/d.count)## wrap Bist.cdf
+proc pmf*[F](d:EMBist[F], i:int):F=max(0.F,d.cnt.pmf(i)/d.count)## wrap Bist.pdf
 proc invCDF*[F](d: EMBist[F], s: F; s0: var F): int = d.cnt.invCDF s, s0
   ## wrap Bist.invCDF
 proc invCDF*[F](d: EMBist[F]; s: F; s0,s1: var F): int = d.cnt.invCDF s, s0,s1
   ## wrap Bist.invCDF
 proc min*[F](d: EMBist[F]): int = d.cnt.min ## Simple wrapper of `Bist.min`.
 proc max*[F](d: EMBist[F]): int = d.cnt.max ## Simple wrapper of `Bist.max`.
-proc quantile*[F](d: EMBist[F]; q: float; iL,iH: var int): float = ## wrap Bist.quantile
+proc quantile*[F](d: EMBist[F]; q: float; iL,iH: var int): float = ## wrap Bist
   d.cnt.quantile q, iL,iH
-proc quantile*[F](d: EMBist[F]; q: float): float = d.cnt.quantile q ## wrap Bist.quantile
+proc quantile*[F](d: EMBist[F]; q: float): float = d.cnt.quantile q ## wrap Bist
 
 proc nPDF*[F](d: EMBist[F]): seq[F] =
-  result.setLen d.cnt.len;let s=1.0/d.tot;for i,r in mpairs result:r = s*d.pmf(i).F
+ result.setLen d.cnt.len;let s=1.0/d.tot;for i,r in mpairs result:r=s*d.pmf(i).F
 
 proc nCDF*[F](d: EMBist[F]): seq[F] =
-  result.setLen d.cnt.len;let s=1.0/d.tot;for i,r in mpairs result:r = s*d.cdf(i).F
+ result.setLen d.cnt.len;let s=1.0/d.tot;for i,r in mpairs result:r=s*d.cdf(i).F
 
 when isMainModule:
   type F = float64
