@@ -63,7 +63,7 @@ proc inc*[F](d: var EMBist[F]; i: int, w: F=1) = ## Add weight `w` to bin `i`
     d.cnt.tot *= scl; d.w *= scl          #..and meta-data.
   d.w *= d.grow
 
-proc scale*[F](d: EMBist[F]; age: int): F = d.grow^(-age)
+proc scale*[F](d: EMBist[F]; age: int): F = d.grow^age
   ## Scale for more rare un-count old; Can re-use if dec @same relative age.
 proc dec*[F](d: var EMBist[F]; i: int; w: F=1) = d.cnt.dec i, w*d.w
   ## Un-count-old operation for more rare EW with strict windows; Use .scale!
