@@ -1,5 +1,5 @@
-##[ D)ynamic { cumulative/running | moving/rolling/sliding/streaming/windowed }
-O)nline/incremental/recursively-updated T)ime S)eries/S)ummary S)tats.  Like
+##[ Dynamic { cumulative/running | moving/rolling/sliding/streaming/windowed }
+Online/incremental/recursively-updated Time Series/Summary Stats.  Like
 `std/stats`, but unlike that, supports deletion (MOVING windows) via `pop` and
 is (sometimes) a million X more accurate & 50X faster.  Speed up comes from SIMD
 auto-vectorization in whole `openArray[]` calls aided by the "shift" idea at
