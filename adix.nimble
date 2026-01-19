@@ -1,12 +1,12 @@
 # Package
-version     = "0.7.6"
+version     = "0.7.7"
 author      = "Charles Blake"
 description = "An Adaptive Index Library for Nim"
 license     = "MIT/ISC"
 
 # Deps
 requires    "nim >= 2.0.0"
-requires    "cligen >= 1.9.5"
+requires    "cligen >= 1.9.6"
 skipDirs    = @[ "tests" ]
 
 # Older Nim must use adix < 0.5.5 & comment out the below `bin`.
