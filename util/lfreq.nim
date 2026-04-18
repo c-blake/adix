@@ -1,7 +1,7 @@
 when not declared(stdin): import std/[syncio, formatfloat]
 import std/[hashes,times,strutils], adix/oats, cligen/[mslice,strUt,osUt],cligen
 
-const bLen {.intdefine.} = 16   # <16K long;  RT params better but more work
+const bLen {.intdefine.} = 16   # <64K long;  RT params better but more work
 const bOff {.intdefine.} = 32   # <4G UNIQUE line data
 const bCnt {.intdefine.} = 32   # <4 GiCount; Must be 32 for -d=frecent
 type
