@@ -36,6 +36,7 @@
 ## `seq[(K,V)]`.  6..8 bits avoids most "double cache misses" for miss
 ## lookups/inserts. `z=0` works if space matters more than time.
 
+when defined hashDebug: import std/formatfloat #NOTE Client code may also need.
 import althash, memutil, bitop, topk, sequint, std/[strutils, memfiles]
 export Hash, sequint, topk.TopKOrder
 when not declared(assert): import std/[assertions, objectdollar]
