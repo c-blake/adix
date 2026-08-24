@@ -55,7 +55,7 @@ proc incFailed(h: var Counts, ms: MSlice): bool =
       wTot *= sclInv; wTot *= sclInv  #..near top of repr to near bottom.
 
 proc lfreq(n=10, count=false, size=9999, dSize=81920, recTerm='\n',
-           format="@f @k", RecTerm="\n", old=1.0, tm=false) =
+           format="@f @k", FThresh=0.0, RecTerm="\n", old=1.0, tm=false) =
   ## Histogram `stdin` lines (read w/non-memory mapped IO to be pipe friendly).
   ## Limits: <4 GiB unique data; <16 KiB lines; <4 GiCount.  If `old < 1.0`,
   ## frequency -> simple 1-parameter "frecency" where counts are virtual-decayed
@@ -72,27 +72,31 @@ proc lfreq(n=10, count=false, size=9999, dSize=81920, recTerm='\n',
   let wInv = 1.0/wTot.float; var cs, fs: string # Setup for..
   let prs = format.tmplParsed('@')              #..nice output
   template output =
-    for (id, arg, call) in prs:
-      if id.idIsLiteral: outu MSlice(mem: format[arg.a].addr, len: arg.len)
-      elif format[id.a] == 'k': outu k
-      elif format[id.a] == 'c':
-        when defined intCnt: cs.setLen 0; cs.addInt c; outu cs
-        else               : cs.setLen 0; cs.ecvt c.float, 6; outu cs
-      elif format[id.a] == 'f': fs.setLen 0; fs.fcvt c.float*wInv, 9; outu fs
-      else: outu MSlice(mem: format[call.a].addr, len: call.len)
-    outu RecTerm
-  if   n == 0: (for (k, c) in pairs(h): output())
-  elif n > 0 : (for (k, c) in topByVal[MSlice,MSlice,Counter](h, n): output())
-  elif n < -1: (for (k, c) in topByVal[MSlice,MSlice,Counter](h, -n, order=Descending): output())
-  if tm: stderr.write epochTime() - t0, "\n"  # -n-1 for only time output
+    if (let f = c.float*wInv; f >= FThresh):
+      for (id, arg, call) in prs:
+        if id.idIsLiteral: outu MSlice(mem: format[arg.a].addr, len: arg.len)
+        elif format[id.a] == 'k': outu k
+        elif format[id.a] == 'c':
+          when defined intCnt: cs.setLen 0; cs.addInt c; outu cs
+          else               : cs.setLen 0; cs.ecvt c.float, 6; outu cs
+        elif format[id.a] == 'f':
+          if f < 1e-6: fs.setLen 0; fs.ecvt f, 6; outu fs
+          else: fs.setLen 0; fs.fcvt f, 9; outu fs
+        else: outu MSlice(mem: format[call.a].addr, len: call.len)
+      outu RecTerm
+  if   n == 0: (for (k, c) in pairs(h): output)
+  elif n > 0 : (for (k, c) in topByVal[MSlice,MSlice,Counter](h, n): output)
+  elif n < -1: (for (k, c) in topByVal[MSlice,MSlice,Counter](h, -n, order=Descending): output)
+  if tm: stderr.write epochTime() - t0, "\n"  # -n=-1 for only time output
 
 when isMainModule: dispatch lfreq, help={
-  "n"    : "emit `n`-most common  lines(0:all; <0 sorted)",
-  "count": "only emit counts: unique & grand total",
-  "size" : "pre-size hash table for size unique entries",
-  "dSize": "pre-size str data area to this many bytes",
+  "n"      : "emit `n`-most common  lines(0:all; <0 sorted)",
+  "count"  : "only emit counts: unique & grand total",
+  "size"   : "pre-size hash table for size unique entries",
+  "dSize"  : "pre-size str data area to this many bytes",
   "recTerm": "input record terminator",
   "RecTerm": "output record terminator",
   "format" : "output format: @k=key @c=count @f=fraction",
-  "old"  : "exponen.weight for 'old' ages (if not intCnt)",
-  "tm"   : "emit wall time of counting to stderr & quit"}
+  "FThresh": "only emit items with @f >= *THIS*",
+  "old"    : "exponen.weight for 'old' ages (if not intCnt)",
+  "tm"     : "emit wall time of counting to stderr & quit"}
