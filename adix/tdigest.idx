@@ -1,0 +1,17 @@
+nimTitle	tdigest	adix/tdigest.html	module adix/tdigest		0
+nim	scLog	adix/tdigest.html#scLog	Scale.scLog		12
+nim	Scale	adix/tdigest.html#Scale	enum Scale		12
+nim	Group	adix/tdigest.html#Group	object Group		14
+nim	DigesT	adix/tdigest.html#DigesT	object DigesT		18
+nim	init	adix/tdigest.html#init,DigesT,float,int,int	proc init(s: var DigesT; cpr = 100.0; scale = scLog; mainLen = 0; nBuf = 0)		29
+nim	initDigesT	adix/tdigest.html#initDigesT,float,int,int	proc initDigesT(cpr = 100.0; scale = scLog; mainLen = 0; nBuf = 0): DigesT		49
+nim	space	adix/tdigest.html#space,DigesT	proc space(s: DigesT): int		52
+nim	weight	adix/tdigest.html#weight,DigesT	proc weight(s: DigesT): int		54
+nim	mergeNew	adix/tdigest.html#mergeNew,DigesT,float	proc mergeNew(s: var DigesT; force = false; cpr = -1.0)		107
+nim	add	adix/tdigest.html#add,DigesT,float,int	proc add(s: var DigesT; x: float; w = 1)		115
+nim	compress	adix/tdigest.html#compress,DigesT	proc compress(s: var DigesT)		126
+nim	groups	adix/tdigest.html#groups.i,DigesT	iterator groups(s: DigesT): Group		129
+nim	add	adix/tdigest.html#add,DigesT,openArray[DigesT]	proc add(s: var DigesT; others: var openArray[DigesT])		132
+nim	quantile	adix/tdigest.html#quantile,DigesT,float	proc quantile(s: var DigesT; q: float): float		145
+nim	cdf	adix/tdigest.html#cdf,DigesT,float	proc cdf(s: var DigesT; x: float): float		185
+nimgrp	add	adix/tdigest.html#add-procs-all	proc		115

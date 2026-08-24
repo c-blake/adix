@@ -1,0 +1,9 @@
+nimTitle	cumsum	adix/cumsum.html	module adix/cumsum		0
+nim	cumsum	adix/cumsum.html#cumsum,ptr.UncheckedArray[T],uint	proc cumsum[T](c: ptr UncheckedArray[T]; n: uint)		6
+nim	cumsum	adix/cumsum.html#cumsum,ptr.UncheckedArray[uint8],uint	proc cumsum(c: ptr UncheckedArray[uint8]; n: uint)		38
+nim	cumsum	adix/cumsum.html#cumsum,ptr.UncheckedArray[uint16],uint	proc cumsum(c: ptr UncheckedArray[uint16]; n: uint)		63
+nim	cumsum	adix/cumsum.html#cumsum,ptr.UncheckedArray[uint32],uint	proc cumsum(c: ptr UncheckedArray[uint32]; n: uint)		87
+nim	cumsum	adix/cumsum.html#cumsum,ptr.UncheckedArray[uint64],uint	proc cumsum(c: ptr UncheckedArray[uint64]; n: uint)		110
+nim	cumsum	adix/cumsum.html#cumsum,openArray[T]	proc cumsum[T](c: var openArray[T])		114
+nim	cumsum	adix/cumsum.html#cumsum,ptr.T,uint	proc cumsum[T](c: ptr T; n: uint)		117
+nimgrp	cumsum	adix/cumsum.html#cumsum-procs-all	proc		6

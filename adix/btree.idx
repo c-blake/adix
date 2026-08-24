@@ -1,0 +1,7 @@
+nimTitle	btree	adix/btree.html	module adix/btree		0
+nim	orderFit	adix/btree.html#orderFit,int,int,int,int,int	proc orderFit(target, wtSz, ixSz, obSz, lnSz: int): int		74
+nim	btPool	adix/btree.html#btPool.t,type,type,int,type,type	template btPool(Ob, Pos: type; nodeSize: int; Ix, Ln: type)		79
+nim	btLinearNode	adix/btree.html#btLinearNode.t,type,type,type,untyped,type,type	template btLinearNode(Ob, K, Pos: type; M: untyped; Ix, Ln: type)		140
+nim	defBTree	adix/btree.html#defBTree.t,type,type,type,type,int,type,type	template defBTree(Ob: type; K: type = void; Pos: type = void; ObSize: type = void;\n         nodeSize: int = 16; Ix: type = int16; Ln: type = uint16;\n         allocProcs = btPool; nodeProcs = btLinearNode)		212
+heading	Notable implementation choices:	adix/btree.html#notable-implementation-choicescolon	 Notable implementation choices:		0
+heading	Limitations/future work:	adix/btree.html#limitationsslashfuture-workcolon	 Limitations/future work:		0

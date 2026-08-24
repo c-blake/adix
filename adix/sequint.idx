@@ -1,0 +1,17 @@
+nimTitle	sequint	adix/sequint.html	module adix/sequint		0
+nim	SeqUint	adix/sequint.html#SeqUint	object SeqUint		37
+nim	bits	adix/sequint.html#bits,SeqUint	proc bits(s: SeqUint): int		47
+nim	low	adix/sequint.html#low,SeqUint	proc low(s: SeqUint): int		49
+nim	addr0	adix/sequint.html#addr0,SeqUint	proc addr0(s: SeqUint): pointer		51
+nim	len	adix/sequint.html#len,SeqUint	proc len(s: SeqUint): int		53
+nim	high	adix/sequint.html#high,SeqUint	proc high(s: SeqUint): int		55
+nim	clear	adix/sequint.html#clear,SeqUint	proc clear(s: var SeqUint)		57
+nim	init	adix/sequint.html#init,SeqUint,int,int	proc init(s: var SeqUint; initialSize = 0; numBound = 0)		61
+nim	initSeqUint	adix/sequint.html#initSeqUint,int,int	proc initSeqUint(initialSize = 0; numBound = 0): SeqUint		70
+nim	`[]`	adix/sequint.html#[],SeqUint,	proc `[]`(s: SeqUint; i: int | uint): uint		81
+nim	`[]=`	adix/sequint.html#[]=,SeqUint,,	proc `[]=`(s: var SeqUint; i: int | uint; x: int | uint)		104
+nim	setLen	adix/sequint.html#setLen,SeqUint,int	proc setLen(s: var SeqUint; size: int)		129
+nim	add	adix/sequint.html#add,SeqUint,uint	proc add(s: var SeqUint; v: uint)		134
+nim	items	adix/sequint.html#items.i,SeqUint	iterator items(s: SeqUint): uint		139
+nim	pairs	adix/sequint.html#pairs.i,SeqUint	iterator pairs(s: SeqUint): (int, uint)		142
+nim	`$`	adix/sequint.html#$,SeqUint	proc `$`(s: SeqUint): string		145

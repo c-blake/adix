@@ -1,0 +1,4 @@
+nimTitle	xhist1	adix/xhist1.html	module adix/xhist1		0
+nim	def	adix/xhist1.html#def.t,,,,,typed,float	template def(T, X, X⁻¹, H; Hini: typed = false; Harg = 0.0)		23
+nim	exportDefs	adix/xhist1.html#exportDefs.t	template exportDefs(T)		170
+nim	defMove	adix/xhist1.html#defMove.t,,,,,int	template defMove(T, X, wEntering, wLeaving; nMx = 32767)		174

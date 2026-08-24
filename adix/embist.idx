@@ -1,0 +1,24 @@
+nimTitle	embist	adix/embist.html	module adix/embist		0
+nim	EMBist	adix/embist.html#EMBist	object EMBist		40
+nim	len	adix/embist.html#len,EMBist[F]	proc len[F](d: EMBist[F]): int		44
+nim	space	adix/embist.html#space,EMBist[F]	proc space[F](d: EMBist[F]): int		45
+nim	tot	adix/embist.html#tot,EMBist[F]	proc tot[F](d: EMBist[F]): F		46
+nim	count	adix/embist.html#count,EMBist[F]	proc count[F](d: EMBist[F]): F		47
+nim	init	adix/embist.html#init,EMBist[F],int,float	proc init[F](d: var EMBist[F]; len: int; wOld: float = 0.9375)		49
+nim	initEMBist	adix/embist.html#initEMBist,int,float	proc initEMBist[F](len: int; wOld: float): EMBist[F]		51
+nim	clear	adix/embist.html#clear,EMBist[F]	proc clear[F](d: var EMBist[F])		52
+nim	inc	adix/embist.html#inc,EMBist[F],int,F	proc inc[F](d: var EMBist[F]; i: int; w: F = 1)		54
+nim	scale	adix/embist.html#scale,EMBist[F],int	proc scale[F](d: EMBist[F]; age: int): F		66
+nim	dec	adix/embist.html#dec,EMBist[F],int,F	proc dec[F](d: var EMBist[F]; i: int; w: F = 1)		68
+nim	cdf	adix/embist.html#cdf,EMBist[F],int	proc cdf[F](d: EMBist[F]; i: int): F		71
+nim	pmf	adix/embist.html#pmf,EMBist[F],int	proc pmf[F](d: EMBist[F]; i: int): F		72
+nim	invCDF	adix/embist.html#invCDF,EMBist[F],F,F	proc invCDF[F](d: EMBist[F]; s: F; s0: var F): int		73
+nim	invCDF	adix/embist.html#invCDF,EMBist[F],F,F,F	proc invCDF[F](d: EMBist[F]; s: F; s0, s1: var F): int		75
+nim	min	adix/embist.html#min,EMBist[F]	proc min[F](d: EMBist[F]): int		77
+nim	max	adix/embist.html#max,EMBist[F]	proc max[F](d: EMBist[F]): int		78
+nim	quantile	adix/embist.html#quantile,EMBist[F],float,int,int	proc quantile[F](d: EMBist[F]; q: float; iL, iH: var int): float		79
+nim	quantile	adix/embist.html#quantile,EMBist[F],float	proc quantile[F](d: EMBist[F]; q: float): float		81
+nim	nPDF	adix/embist.html#nPDF,EMBist[F]	proc nPDF[F](d: EMBist[F]): seq[F]		83
+nim	nCDF	adix/embist.html#nCDF,EMBist[F]	proc nCDF[F](d: EMBist[F]): seq[F]		86
+nimgrp	quantile	adix/embist.html#quantile-procs-all	proc		79
+nimgrp	invcdf	adix/embist.html#invCDF-procs-all	proc		73
