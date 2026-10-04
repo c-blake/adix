@@ -172,6 +172,9 @@ template exportDefs*(T) =
     space, toIx, fromIx, binAB, add, pop, bins, `$`, cdf, quantile, merge
 
 template defMove*(T, X, wEntering, wLeaving; nMx=32767) =
+  ## Defines an API for a fixed-size moving window.  Window sizes that vary over
+  ## a data set are easy for both flat and exponential time kernels, but I think
+  ## hard to make efficient for linearly weighted time kernels.
   type `T` = object ## Layer maybe-time-weighted moving win over transforming X
     ix*: Deque[when nMx<=127:uint8 elif nMx<=32767:uint16 else:uint32] ## index
     xwh*: X         ## Transformed, time-Weighted Histogram
