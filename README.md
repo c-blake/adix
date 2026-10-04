@@ -31,7 +31,7 @@ to the point.  In particular, as an overview/index, here be:
 
    - Distributions/Quantiles:
       * [tdigest](https://c-blake.github.io/adix/adix/tdigest.html) (for slower,
-        more accurate in tail only quantiles (medians generalized).
+        more accurate in-tail-only quantiles (medians generalized).
       * for a more complete & adaptive picture, you want accuracy-everywhere /
         full histograms able to realize fast moving quantile transforms backed
         by [Fenwick/BIST trees](https://c-blake.github.io/adix/adix/bist.html)
@@ -43,7 +43,10 @@ to the point.  In particular, as an overview/index, here be:
         [lghisto](https://c-blake.github.io/adix/adix/lghisto.html), a high
         dynamic range (HDR) module that handles that one-stop shopping style or
         [xhist1](https://c-blake.github.io/adix/adix/xhist1.html), its
-        generalization to any transform|backing histogram/time kernel.
+        generalization to any transform|backing histogram/time kernel.  Quantile
+        queries are a headliner thing, but many derived stats of interest
+        possible - IQRs, alpha-beta trimmed/Winsorized moments, empirical
+        weighted CDFs, etc.  (Not all are implemented presently.)
    - An amalgam: [`mvstat`](https://c-blake.github.io/adix/adix/mvstat.html)
    that works like `std/stats` but supports `del`, i.e. sliding/moving/rolling
    windows over data streams (like moving averages) as well as running/dynamic
