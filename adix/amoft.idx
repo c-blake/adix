@@ -1,0 +1,9 @@
+nimTitle	amoft	adix/amoft.html	module adix/amoft		0
+nim	CtMnSketch	adix/amoft.html#CtMnSketch	object CtMnSketch		13
+nim	AMOft	adix/amoft.html#AMOft	object AMOft		18
+nim	initCtMnSketch	adix/amoft.html#initCtMnSketch,int,int,seq[int]	proc initCtMnSketch[K, C](w: int; d = 4; salts: seq[int] = @[]): CtMnSketch[K, C]		25
+nim	inc	adix/amoft.html#inc,CtMnSketch[K,C],K,int	proc inc[K, C](cs: var CtMnSketch[K, C]; key: K; r = 1): C		38
+nim	initAMOft	adix/amoft.html#initAMOft,int,int,int,seq[int]	proc initAMOft[K, C](k, w: int; d = 4; salts: seq[int] = @[]): AMOft[K, C]		58
+nim	inc	adix/amoft.html#inc,AMOft[K,C],K,int	proc inc[K, C](a: var AMOft[K, C]; key: K; r = 1)		68
+nim	mostCommon	adix/amoft.html#mostCommon.i,AMOft[K,C],int	iterator mostCommon[K, C](a: AMOft[K, C]; k = 0): (K, C)		87
+nimgrp	inc	adix/amoft.html#inc-procs-all	proc		38

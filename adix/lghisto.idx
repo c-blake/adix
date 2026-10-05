@@ -1,0 +1,22 @@
+nimTitle	lghisto	adix/lghisto.html	module adix/lghisto		0
+nim	LgHisto	adix/lghisto.html#LgHisto	object LgHisto		29
+nim	underflows	adix/lghisto.html#underflows,LgHisto[C]	proc underflows[C](s: LgHisto[C]): int		35
+nim	overflows	adix/lghisto.html#overflows,LgHisto[C]	proc overflows[C](s: LgHisto[C]): int		36
+nim	low	adix/lghisto.html#low,LgHisto[C]	proc low[C](s: LgHisto[C]): float		37
+nim	high	adix/lghisto.html#high,LgHisto[C]	proc high[C](s: LgHisto[C]): float		38
+nim	nBin	adix/lghisto.html#nBin,LgHisto[C]	proc nBin[C](s: LgHisto[C]): int		39
+nim	bist	adix/lghisto.html#bist,LgHisto[C]	proc bist[C](s: LgHisto[C]): Bist[C]		40
+nim	init	adix/lghisto.html#init,LgHisto[C],float,float,int	proc init[C](s: var LgHisto[C]; a = 1e-16; b = 1e+20; n = 8300)		42
+nim	initLgHisto	adix/lghisto.html#initLgHisto,float,float,int	proc initLgHisto[C](a = 1e-16; b = 1e+20; n = 8300): LgHisto[C]		55
+nim	space	adix/lghisto.html#space,LgHisto[C]	proc space[C](s: LgHisto[C]): int		58
+nim	tot	adix/lghisto.html#tot,LgHisto[C]	proc tot[C](s: LgHisto[C]): C		61
+nim	toIx	adix/lghisto.html#toIx,LgHisto[C],F	proc toIx[F, C](s: LgHisto[C]; x: F): int		63
+nim	fromIx	adix/lghisto.html#fromIx,LgHisto[C],int,F	proc fromIx[F, C](s: LgHisto[C]; i: int; offset: F = 0.5): F		73
+nim	binAB	adix/lghisto.html#binAB,LgHisto[C],F	proc binAB[F, C](s: LgHisto[C]; x: F): (float, float)		79
+nim	add	adix/lghisto.html#add,LgHisto[C],F	proc add[F, C](s: var LgHisto[C]; x: F; w = 1.C)		90
+nim	pop	adix/lghisto.html#pop,LgHisto[C],F	proc pop[F, C](s: var LgHisto[C]; x: F; w = 1.C)		94
+nim	bins	adix/lghisto.html#bins.i,LgHisto[C]	iterator bins[C](s: LgHisto[C]): (float, float, C)		98
+nim	`$`	adix/lghisto.html#$,LgHisto[C]	proc `$`[C](s: LgHisto[C]; nonZero = true): string		108
+nim	quantile	adix/lghisto.html#quantile,LgHisto[C],F	proc quantile[F, C](s: LgHisto[C]; q: F): F		122
+nim	cdf	adix/lghisto.html#cdf,LgHisto[C],F	proc cdf[F, C](s: LgHisto[C]; x: F): C		129
+nim	merge	adix/lghisto.html#merge,LgHisto[C],LgHisto[C]	proc merge[C](dst: var LgHisto[C]; src: LgHisto[C])		133

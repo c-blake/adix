@@ -1,0 +1,30 @@
+nimTitle	oats	adix/oats.html	module adix/oats		0
+nim	Oat	adix/oats.html#Oat	type Oat		3
+nim	Resizable	adix/oats.html#Resizable	type Resizable		13
+nim	Valued	adix/oats.html#Valued	type Valued		18
+nim	VOat	adix/oats.html#VOat	type VOat		22
+nim	ROat	adix/oats.html#ROat	type ROat		25
+nim	VROat	adix/oats.html#VROat	type VROat		28
+nim	PutKey	adix/oats.html#PutKey	type PutKey		31
+nim	POat	adix/oats.html#POat	type POat		33
+nim	VPOat	adix/oats.html#VPOat	type VPOat		35
+nim	Counted	adix/oats.html#Counted	type Counted		38
+nim	SavedHash	adix/oats.html#SavedHash	type SavedHash		42
+nim	len	adix/oats.html#len,Oat[K,Q]	proc len[K, Q](t: Oat[K, Q]): int		46
+nim	oatSlots	adix/oats.html#oatSlots,int,int	proc oatSlots(n: int; mnFree = 600): int		54
+nim	oatSlot	adix/oats.html#oatSlot,Oat[K,Q],Q,Hash,Hash	proc oatSlot[K, Q](t: Oat[K, Q]; q: Q; h: Hash; d: var Hash): int		57
+nim	tooFull	adix/oats.html#tooFull,Oat[K,Q],int,int	proc tooFull[K, Q](t: Oat[K, Q]; d: int; newSize: var int): bool		68
+nim	setCap	adix/oats.html#setCap,ROat[K,Q],int	proc setCap[K, Q](t: var ROat[K, Q]; newSize = -1)		79
+nim	upSert	adix/oats.html#upSert.t,Oat[K,Q],,,,	template upSert[K, Q](t: var Oat[K, Q]; q, i, UP, SERT)		92
+nim	incl	adix/oats.html#incl,POat[K,Q],Q	proc incl[K, Q](t: var POat[K, Q]; q: Q)		108
+nim	`[]`	adix/oats.html#[],VOat[K,Q,V],Q	proc `[]`[K, Q, V](t: VOat[K, Q, V]; q: Q): V		111
+nim	`[]=`	adix/oats.html#[]=,VPOat[K,Q,V],Q,V	proc `[]=`[K, Q, V](t: var VPOat[K, Q, V]; q: Q; v: V)		115
+nim	mgetOrPut	adix/oats.html#mgetOrPut,VPOat[K,Q,V],Q,V	proc mgetOrPut[K, Q, V](t: var VPOat[K, Q, V]; q: Q; v: V): var V		118
+nim	getOrDefault	adix/oats.html#getOrDefault,VOat[K,Q,V],Q,typeof(default(V))	proc getOrDefault[K, Q, V](t: VOat[K, Q, V]; q: Q; def = default(V)): V		121
+nim	items	adix/oats.html#items.i,Oat[K,Q]	iterator items[K, Q](t: Oat[K, Q]): K		124
+nim	values	adix/oats.html#values.i,VOat[K,Q,V]	iterator values[K, Q, V](t: VOat[K, Q, V]): V		127
+nim	pairs	adix/oats.html#pairs.i,VOat[K,Q,V]	iterator pairs[K, Q, V](t: VOat[K, Q, V]): (K, V)		130
+nim	topByVal	adix/oats.html#topByVal.i,VOat[K,Q,V],int	iterator topByVal[K, Q, V](s: VOat[K, Q, V]; n = 10; min = V.low; order = topk.Cheap): (\n    K, V)		133
+nim	oatKStack	adix/oats.html#oatKStack.t,,,,,,,	template oatKStack(s, Self, Cell, off, offT, K, Q)		139
+nim	oatSeq	adix/oats.html#oatSeq.t,,	template oatSeq(Self, dat)		155
+nim	oatCounted	adix/oats.html#oatCounted.t,,,	template oatCounted(t, Self, cDotPop)		161

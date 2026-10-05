@@ -1,0 +1,25 @@
+nimTitle	althash	adix/althash.html	module adix/althash		0
+nim	hashRoMu1	adix/althash.html#hashRoMu1	proc hashRoMu1(x: SomeOrdinal | Hash): Hash		58
+nim	hashRoMu2	adix/althash.html#hashRoMu2	proc hashRoMu2(x: SomeOrdinal | Hash): Hash		62
+nim	hashWangYi1	adix/althash.html#hashWangYi1,T	proc hashWangYi1[T: Ordinal | enum](x: T): Hash		125
+nim	hashWY0	adix/althash.html#hashWY0,T	proc hashWY0[T: Ordinal | enum](x: T): Hash		154
+nim	hashMoreMur	adix/althash.html#hashMoreMur,T	proc hashMoreMur[T: Ordinal | enum](x: T): Hash		162
+nim	hashNASAM	adix/althash.html#hashNASAM,T	proc hashNASAM[T: Ordinal | enum](x: T): Hash		172
+nim	hashIdentity	adix/althash.html#hashIdentity,T	proc hashIdentity[T: Ordinal | enum](x: T): Hash		184
+nim	hashSplitMix	adix/althash.html#hashSplitMix,T	proc hashSplitMix[T: Ordinal | enum](x: T): Hash		186
+nim	hashSplit64	adix/althash.html#hashSplit64,T	proc hashSplit64[T: Ordinal | enum](x: T): Hash		194
+nim	hashDegski	adix/althash.html#hashDegski,T	proc hashDegski[T: Ordinal | enum](x: T): Hash		204
+nim	hashRevFib	adix/althash.html#hashRevFib	proc hashRevFib(x: int32 | uint32): Hash		214
+nim	hashRevFib	adix/althash.html#hashRevFib_2	proc hashRevFib(x: int64 | uint64): Hash		217
+nim	secureSalt	adix/althash.html#secureSalt,pointer	proc secureSalt(x: pointer): Hash		221
+nim	vmaddrSalt	adix/althash.html#vmaddrSalt,pointer	proc vmaddrSalt(x: pointer): Hash		225
+nim	zeroSalt	adix/althash.html#zeroSalt,pointer	proc zeroSalt(x: pointer): Hash		229
+nim	getSalt	adix/althash.html#getSalt	var getSalt		234
+nim	hashRoMu1	adix/althash.html#hashRoMu1,uint	proc hashRoMu1(x: uint): Hash		237
+nim	hashRevFib	adix/althash.html#hashRevFib,uint	proc hashRevFib(x: uint): Hash		238
+nim	hash	adix/althash.html#hash,Hash,Hash	proc hash(hsh, salt: Hash): Hash		243
+nim	dbg	adix/althash.html#dbg.t	template dbg(x)		248
+nim	raiseNotFound	adix/althash.html#raiseNotFound,K	proc raiseNotFound[K](key: K)		251
+nim	normalized	adix/althash.html#normalized,openArray[T]	proc normalized[T](x: openArray[T]): seq[float]		257
+nimgrp	hashromu1	adix/althash.html#hashRoMu1-procs-all	proc		58
+nimgrp	hashrevfib	adix/althash.html#hashRevFib-procs-all	proc		214

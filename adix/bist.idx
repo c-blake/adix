@@ -1,0 +1,30 @@
+nimTitle	bist	adix/bist.html	module adix/bist		0
+nim	Bist	adix/bist.html#Bist	object Bist		24
+nim	init	adix/bist.html#init,Bist[T],int	proc init[T](t: var Bist[T]; len: int)		28
+nim	initBist	adix/bist.html#initBist,int	proc initBist[T](len: int): Bist[T]		29
+nim	len	adix/bist.html#len,Bist[T]	proc len[T](t: Bist[T]): int		30
+nim	space	adix/bist.html#space,Bist[T]	proc space[T](t: Bist[T]): int		31
+nim	count	adix/bist.html#count,Bist[T]	proc count[T](t: Bist[T]): T		32
+nim	`[]`	adix/bist.html#[],Bist[T],int	proc `[]`[T](t: Bist[T]; i: int): T		33
+nim	`[]`	adix/bist.html#[],Bist[T],int_2	proc `[]`[T](t: var Bist[T]; i: int): var T		34
+nim	`[]=`	adix/bist.html#[]=,Bist[T],int,T	proc `[]=`[T](t: var Bist[T]; i: int; x: T)		35
+nim	clear	adix/bist.html#clear,Bist[T]	proc clear[T](t: var Bist[T])		36
+nim	inc	adix/bist.html#inc,Bist[T],int,T	proc inc[T](t: var Bist[T]; i: int; d: T)		39
+nim	dec	adix/bist.html#dec,Bist[T],int,T	proc dec[T](t: var Bist[T]; i: int; d: T)		44
+nim	cdf	adix/bist.html#cdf,Bist[T],int	proc cdf[T](t: Bist[T]; i: int): T		49
+nim	pmf	adix/bist.html#pmf,Bist[T],int	proc pmf[T](t: Bist[T]; i: int): T		54
+nim	invCDF	adix/bist.html#invCDF,Bist[T],T,T	proc invCDF[T](t: Bist[T]; s: T; s0: var T): int		60
+nim	fromCnts	adix/bist.html#fromCnts,Bist[T]	proc fromCnts[T](t: var Bist[T])		72
+nim	toCnts	adix/bist.html#toCnts,Bist[T]	proc toCnts[T](t: var Bist[T])		81
+nim	nPDF	adix/bist.html#nPDF,Bist[T]	proc nPDF[T](t: Bist[T]): seq[float32]		88
+nim	nCDF	adix/bist.html#nCDF,Bist[T]	proc nCDF[T](t: Bist[T]): seq[float32]		91
+nim	`$`	adix/bist.html#$,Bist[T]	proc `$`[T](t: Bist[T]): string		94
+nim	invCDF	adix/bist.html#invCDF,Bist[T],T	proc invCDF[T](t: Bist[T]; s: T): (int, T)		96
+nim	invCDF	adix/bist.html#invCDF,Bist[T],T,T,T	proc invCDF[T](t: Bist[T]; s: T; s0, s1: var T): int		99
+nim	min	adix/bist.html#min,Bist[T]	proc min[T](t: Bist[T]): int		104
+nim	max	adix/bist.html#max,Bist[T]	proc max[T](t: Bist[T]): int		107
+nim	quantile	adix/bist.html#quantile,Bist[T],float,int,int	proc quantile[T](t: Bist[T]; q: float; iL, iH: var int): float		111
+nim	quantile	adix/bist.html#quantile,Bist[T],float	proc quantile[T](t: Bist[T]; q: float): float		141
+nimgrp	quantile	adix/bist.html#quantile-procs-all	proc		111
+nimgrp	invcdf	adix/bist.html#invCDF-procs-all	proc		60
+nimgrp	[]	adix/bist.html#[]-procs-all	proc		33
