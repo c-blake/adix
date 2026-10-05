@@ -252,10 +252,8 @@ when isMainModule:
     var res = newSeq[float](Q.len)
     for i in 0..<N: data[i] = gauss() # rand(0.0 .. 1.0)
     var s = initDigesT()
-    let t0 = epochTime()
-    for x in data: s.add x
-    let t1 = epochTime()
-    for j, q in Q: res[j] = s.quantile(q)
+    let t0 = epochTime(); for x in data: s.add x
+    let t1 = epochTime(); for j, q in Q: res[j] = s.quantile(q)
     let t2 = epochTime()
     let dtB = (t1 - t0)*1e9/N.float     # Build time
     let dtQ = (t2 - t1)*1e9/Q.len.float # Query time

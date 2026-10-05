@@ -156,16 +156,10 @@ when isMainModule:
     var res = newSeq[float32](Q.len)
     for i in 0..<N: data[i] = gauss().float32 # rand(0.0 .. 1.0)
     var s = initLgHisto[uint32](b=10, n=128)
-    let t0 = epochTime()
-    for x in data: s.add x
-    let t1 = epochTime()
-    for j, q in Q: res[j] = s.quantile q
+    let t0 = epochTime(); for x in data: s.add x
+    let t1 = epochTime(); for j, q in Q: res[j] = s.quantile q
     let t2 = epochTime()
-    for j, q in Q: res[j] = s.quantile q
-    let t3 = epochTime()
-    for j, q in Q: res[j] = s.quantile q
-    let t4 = epochTime()
     let dtB = (t1 - t0)*1e9/N.float     # Build time
-    let dtQ = (t4 - t3)*1e9/Q.len.float # Query time
+    let dtQ = (t2 - t1)*1e9/Q.len.float # Query time
     for r in res: echo r
-    echo &"ns/add: {dtB:.1f}  ns/qHot: {dtQ:.1f}  space: {s.space} bytes"
+    echo &"ns/add: {dtB:.1f}  ns/q: {dtQ:.1f}  space: {s.space} bytes"
