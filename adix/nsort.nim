@@ -102,6 +102,7 @@ proc gKey[W](p: uint, off: W; xf: XForm): W {.inline.} =
     of xfFlt:         w xor (hi or (1.W + not (w shr b)))   #IEEE formats
     of xfFltRev: not (w xor (hi or (1.W + not (w shr b))))
 #NOTE:                Alternatively ^^ = cast[W](-cast[signed(W)](w shr b))
+# echo "xf = ",$xf," W = ",$W," result = ",result # is very wrong from nsortBy
 
 proc gDig[W: uint32|uint64](p: uint; msk, off: W; xf: XForm): W {.inline.} =
   pext(gKey(p, off, xf), msk)                   #gDig: get a digit out of a key
