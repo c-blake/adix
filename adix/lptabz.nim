@@ -517,15 +517,14 @@ template getPut(t, i, key, present, missing: untyped): untyped =
       d = 0
       i = t.rawGet(key, hc, d)
       j = t.rawPut1(-1 - i, d)
-    var k = t.rawPut2(-1 - i, j)        # Maybe allocate a slot
+    i = t.rawPut2(-1 - i, j)            # Maybe allocate a slot
     when compiles(t.count):
       t.count.inc
-    when compiles(t.data[k].hcode):
-      t.data[k].hcode = hc
+    when compiles(t.data[i].hcode):
+      t.data[i].hcode = hc
     when compiles(t.idx):
-      t.idx[k] = ixHc(t.data.len + 1, hc, z)
+      t.idx[i] = ixHc(t.data.len + 1, hc, z)
       t.data.setLen t.data.len + 1
-    let i = k # Create an alias so missing & present bodies can both use `i`
     missing
   else:
     present
