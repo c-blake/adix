@@ -48,7 +48,7 @@ proc len*[K,Q](t: Oat[K,Q]): int = ## stdlib-style slots in-use; Uncounted=>O(N)
   else: (for i in 0 ..< t.cap: (if t.used i: inc result))
 
 iterator probeSeq(h, mask: Hash): int =
-  var i: Hash = h and mask                # Start w/home address
+  var i = h and mask                      # Start w/home address
   while true: yield i; i = (i+1) and mask # Linear Probing
 
 func oatSlots*(n: int, mnFree=600): int = ceilPow2(n + max(1, mnFree))
