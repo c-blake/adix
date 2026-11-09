@@ -1,0 +1,60 @@
+nimTitle	hist	adix/hist.html	module adix/hist		0
+nim	CHist	adix/hist.html#CHist	object CHist		28
+nim	len	adix/hist.html#len,CHist[N]	proc len[N](c: CHist[N]): int		31
+nim	size	adix/hist.html#size,CHist[N]	proc size[N](c: CHist[N]): int		32
+nim	space	adix/hist.html#space,CHist[N]	proc space[N](c: CHist[N]): int		33
+nim	tot	adix/hist.html#tot,CHist[N]	proc tot[N](c: CHist[N]): N		34
+nim	count	adix/hist.html#count,CHist[N]	proc count[N](c: CHist[N]): N		35
+nim	init	adix/hist.html#init,CHist[N],int	proc init[N](c: var CHist[N]; len: int)		36
+nim	initCHist	adix/hist.html#initCHist,int	proc initCHist[N](len: int): CHist[N]		37
+nim	clear	adix/hist.html#clear,CHist[N]	proc clear[N](c: var CHist[N])		38
+nim	inc	adix/hist.html#inc,CHist[N],int,N	proc inc[N](c: var CHist[N]; i: int; w: N = 1)		39
+nim	dec	adix/hist.html#dec,CHist[N],int,N	proc dec[N](c: var CHist[N]; i: int; w: N = 1)		41
+nim	invCDF	adix/hist.html#invCDF,CHist[N],N,N	proc invCDF[N](c: CHist[N]; s: N; s0: var N): int		44
+nim	invCDF	adix/hist.html#invCDF,CHist[N],N	proc invCDF[N](c: CHist[N]; s: N): (int, N)		52
+nim	invCDF	adix/hist.html#invCDF,CHist[N],N,N,N	proc invCDF[N](c: CHist[N]; s: N; s0, s1: var N): int		55
+nim	min	adix/hist.html#min,CHist[N]	proc min[N](c: CHist[N]): int		61
+nim	max	adix/hist.html#max,CHist[N]	proc max[N](c: CHist[N]): int		64
+nim	quantile	adix/hist.html#quantile,CHist[N],float,int,int	proc quantile[N](c: CHist[N]; q: float; iL, iH: var int): float		68
+nim	quantile	adix/hist.html#quantile,CHist[N],float	proc quantile[N](c: CHist[N]; q: float): float		98
+nim	cdf	adix/hist.html#cdf,CHist[N],int	proc cdf[N](c: CHist[N]; i: int): N		104
+nim	pmf	adix/hist.html#pmf,CHist[N],int	proc pmf[N](c: CHist[N]; i: int): N		105
+nim	Hist	adix/hist.html#Hist	object Hist		107
+nim	len	adix/hist.html#len,Hist[N]	proc len[N](h: Hist[N]): int		113
+nim	size	adix/hist.html#size,Hist[N]	proc size[N](h: Hist[N]): int		114
+nim	space	adix/hist.html#space,Hist[N]	proc space[N](h: Hist[N]): int		115
+nim	tot	adix/hist.html#tot,Hist[N]	proc tot[N](h: Hist[N]): N		116
+nim	count	adix/hist.html#count,Hist[N]	proc count[N](h: Hist[N]): N		117
+nim	init	adix/hist.html#init,Hist[N],int	proc init[N](h: var Hist[N]; len: int)		118
+nim	initHist	adix/hist.html#initHist,int	proc initHist[N](len: int): Hist[N]		119
+nim	clear	adix/hist.html#clear,Hist[N]	proc clear[N](h: var Hist[N])		120
+nim	inc	adix/hist.html#inc,Hist[N],int,N	proc inc[N](h: var Hist[N]; i: int; w: N = 1)		123
+nim	dec	adix/hist.html#dec,Hist[N],int,N	proc dec[N](h: var Hist[N]; i: int; w: N = 1)		125
+nim	up	adix/hist.html#up,ptr.Hist[N]	proc up[N](h: ptr Hist[N])		127
+nim	invCDF	adix/hist.html#invCDF,Hist[N],N,N	proc invCDF[N](h: Hist[N]; s: N; s0: var N): int		131
+nim	cdf	adix/hist.html#cdf,Hist[N],int	proc cdf[N](h: Hist[N]; i: int): N		133
+nim	pmf	adix/hist.html#pmf,Hist[N],int	proc pmf[N](h: Hist[N]; i: int): N		134
+nim	invCDF	adix/hist.html#invCDF,Hist[N],N	proc invCDF[N](h: Hist[N]; s: N): (int, N)		136
+nim	invCDF	adix/hist.html#invCDF,Hist[N],N,N,N	proc invCDF[N](h: Hist[N]; s: N; s0, s1: var N): int		137
+nim	min	adix/hist.html#min,Hist[N]	proc min[N](h: Hist[N]): int		138
+nim	max	adix/hist.html#max,Hist[N]	proc max[N](h: Hist[N]): int		139
+nim	quantile	adix/hist.html#quantile,Hist[N],float,int,int	proc quantile[N](h: Hist[N]; q: float; iL, iH: var int): float		140
+nim	quantile	adix/hist.html#quantile,Hist[N],float	proc quantile[N](h: Hist[N]; q: float): float		142
+nim	nPDF	adix/hist.html#nPDF,H	proc nPDF[H: Hist | CHist](h: H): seq[float32]		144
+nim	nCDF	adix/hist.html#nCDF,H	proc nCDF[H: Hist | CHist](h: H): seq[float32]		147
+nim	`$`	adix/hist.html#$,H	proc `$`[H: Hist | CHist](h: H): string		150
+nimgrp	cdf	adix/hist.html#cdf-procs-all	proc		104
+nimgrp	space	adix/hist.html#space-procs-all	proc		33
+nimgrp	len	adix/hist.html#len-procs-all	proc		31
+nimgrp	max	adix/hist.html#max-procs-all	proc		64
+nimgrp	init	adix/hist.html#init-procs-all	proc		36
+nimgrp	count	adix/hist.html#count-procs-all	proc		35
+nimgrp	tot	adix/hist.html#tot-procs-all	proc		34
+nimgrp	quantile	adix/hist.html#quantile-procs-all	proc		68
+nimgrp	inc	adix/hist.html#inc-procs-all	proc		39
+nimgrp	dec	adix/hist.html#dec-procs-all	proc		41
+nimgrp	clear	adix/hist.html#clear-procs-all	proc		38
+nimgrp	pmf	adix/hist.html#pmf-procs-all	proc		105
+nimgrp	invcdf	adix/hist.html#invCDF-procs-all	proc		44
+nimgrp	size	adix/hist.html#size-procs-all	proc		32
+nimgrp	min	adix/hist.html#min-procs-all	proc		61

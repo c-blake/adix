@@ -1,0 +1,8 @@
+nimTitle	metab	adix/metab.html	module adix/metab		0
+nim	rightSz	adix/metab.html#rightSz,Natural	proc rightSz(x: Natural): int		16
+nim	Tab	adix/metab.html#Tab	type Tab		1
+nim	initTab	adix/metab.html#initTab	proc initTab[K, V](sz = lpInitialSize; numer = lpNumer; denom = lpDenom;\n              minFree = lpMinFree; growPow2 = lpGrowPow2; rehash = rDefault;\n              robinHood = rhDefault): Tab[K, V]		3
+nim	toTab	adix/metab.html#toTab,openArray[]	proc toTab[K, V](pairs: openArray[(K, V)]; dups = false): Tab[K, V]		8
+nim	Set	adix/metab.html#Set	type Set		15
+nim	initSet	adix/metab.html#initSet	proc initSet[K](sz = lpInitialSize; numer = lpNumer; denom = lpDenom;\n           minFree = lpMinFree; growPow2 = lpGrowPow2; rehash = rDefault;\n           robinHood = rhDefault): Set[K]		17
+nim	toSet	adix/metab.html#toSet,openArray[K]	proc toSet[K](keys: openArray[K]; dups = false): Set[K]		77

@@ -1,0 +1,2 @@
+nimTitle	lna	adix/lna.html	module adix/lna		0
+nim	lna	adix/lna.html#lna,float32	proc lna(x: float32): float32		22

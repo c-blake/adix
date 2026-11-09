@@ -1,0 +1,19 @@
+nimTitle	bitop	adix/bitop.html	module adix/bitop		0
+nim	`&=`	adix/bitop.html#&=,T,U	proc `&=`[T, U](a: var T; b: U)		4
+nim	`|=`	adix/bitop.html#|=,T,U	proc `|=`[T, U](a: var T; b: U)		5
+nim	`^=`	adix/bitop.html#^=,T,U	proc `^=`[T, U](a: var T; b: U)		6
+nim	`<<=`	adix/bitop.html#<<=,T,U	proc `<<=`[T, U](a: var T; b: U)		7
+nim	`>>=`	adix/bitop.html#>>=,T,U	proc `>>=`[T, U](a: var T; b: U)		8
+nim	ceilPow2	adix/bitop.html#ceilPow2,int	proc ceilPow2(x: int): int		10
+nim	floorPow2	adix/bitop.html#floorPow2,int	proc floorPow2(x: int): int		23
+nim	lgPow2	adix/bitop.html#lgPow2,int	proc lgPow2(x: int): int		46
+nim	lgCeil	adix/bitop.html#lgCeil,int	proc lgCeil(x: int): int		52
+nim	lgFloor	adix/bitop.html#lgFloor,int	proc lgFloor(x: int): int		55
+nim	lg	adix/bitop.html#lg,int	proc lg(x: int): int		58
+nim	rotateLeftBits	adix/bitop.html#rotateLeftBits,uint64,int	proc rotateLeftBits(a: uint64; numBits: int): uint64		60
+nim	rotateRightBits	adix/bitop.html#rotateRightBits,uint64,int	proc rotateRightBits(a: uint64; numBits: int): uint64		63
+nim	reverseBitsByte	adix/bitop.html#reverseBitsByte,uint8	proc reverseBitsByte(x: uint8): uint8		66
+nim	reverseBits	adix/bitop.html#reverseBits,uint32	proc reverseBits(x: uint32): uint32		79
+nim	reverseBits	adix/bitop.html#reverseBits,uint64	proc reverseBits(x: uint64): uint64		85
+nim	isPow2	adix/bitop.html#isPow2,int	proc isPow2(x: int): bool		95
+nimgrp	reversebits	adix/bitop.html#reverseBits-procs-all	proc		79

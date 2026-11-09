@@ -1,0 +1,10 @@
+nimTitle	uniqce	adix/uniqce.html	module adix/uniqce		0
+nim	UniqCe	adix/uniqce.html#UniqCe	object UniqCe		19
+nim	initUniqCe	adix/uniqce.html#initUniqCe,int	proc initUniqCe[F: SomeFloat](k = 1024): UniqCe[F]		24
+nim	push	adix/uniqce.html#push,UniqCe[F: SomeFloat],F	proc push[F: SomeFloat](uc: var UniqCe[F]; h: F)		27
+nim	nUnique	adix/uniqce.html#nUnique,UniqCe[F: SomeFloat]	proc nUnique[F: SomeFloat](uc: UniqCe[F]): float32		48
+nim	nUniqueErr	adix/uniqce.html#nUniqueErr,UniqCe[F: SomeFloat]	proc nUniqueErr[F: SomeFloat](uc: UniqCe[F]): float32		52
+nim	jaccard	adix/uniqce.html#jaccard,UniqCe[F: SomeFloat],UniqCe[F: SomeFloat]	proc jaccard[F: SomeFloat](a: UniqCe[F]; b: UniqCe[F]): float32		57
+nim	union	adix/uniqce.html#union,UniqCe[F: SomeFloat],UniqCe[F: SomeFloat]	proc union[F: SomeFloat](a: var UniqCe[F]; b: UniqCe[F])		69
+nim	union	adix/uniqce.html#union,UniqCe[F: SomeFloat],UniqCe[F: SomeFloat]_2	proc union[F: SomeFloat](a: UniqCe[F]; b: UniqCe[F]): UniqCe[F]		73
+nimgrp	union	adix/uniqce.html#union-procs-all	proc		69

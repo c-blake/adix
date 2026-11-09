@@ -1,0 +1,8 @@
+nimTitle	ways	adix/ways.html	module adix/ways		0
+nim	kWayMerge	adix/ways.html#kWayMerge.i,openArray[]	iterator kWayMerge[T](itrs: openArray[iterator (): T]): T		4
+nim	succPairs	adix/ways.html#succPairs.i,,int	iterator succPairs[T](src: iterator (): T; stride = 1): (T, T)		30
+nim	diffs	adix/ways.html#diffs.i,,int	iterator diffs[T](src: iterator (): T; stride = 1): T		46
+nim	diffs2	adix/ways.html#diffs2.i,,int	iterator diffs2[T](src: iterator (): T; stride = 1): T		51
+nim	ratios	adix/ways.html#ratios.i,,int	iterator ratios[T](src: iterator (): T; stride = 1): T		58
+nim	returns	adix/ways.html#returns.i,,int	iterator returns[T](src: iterator (): T; stride = 1): T		63
+nim	diffs	adix/ways.html#diffs,seq[T],int	proc diffs[T](src: seq[T]; stride = 1): seq[T]		71

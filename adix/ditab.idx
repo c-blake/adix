@@ -1,0 +1,101 @@
+nimTitle	ditab	adix/ditab.html	module adix/ditab		0
+nim	DITab	adix/ditab.html#DITab	object DITab		27
+nim	DISet	adix/ditab.html#DISet	type DISet		34
+nim	len	adix/ditab.html#len,DITab[K,V]	proc len[K, V](t: DITab[K, V]): int		41
+nim	depths	adix/ditab.html#depths,DITab[K,V]	proc depths[K, V](t: DITab[K, V]): seq[int]		89
+nim	diInitialSize	adix/ditab.html#diInitialSize	var diInitialSize		92
+nim	diNumer	adix/ditab.html#diNumer	var diNumer		93
+nim	diDenom	adix/ditab.html#diDenom	var diDenom		94
+nim	diMinFree	adix/ditab.html#diMinFree	var diMinFree		95
+nim	diGrowPow2	adix/ditab.html#diGrowPow2	var diGrowPow2		96
+nim	diRehash	adix/ditab.html#diRehash	var diRehash		97
+nim	diRobinHood	adix/ditab.html#diRobinHood	var diRobinHood		98
+nim	init	adix/ditab.html#init,DITab[K,V],int,int,int,int,int	proc init[K, V](t: var DITab[K, V]; initialSize = 0; numer = 0; denom = 0;\n           minFree = 0; growPow2 = 0; rehash = false; robinhood = false)		100
+nim	initDITab	adix/ditab.html#initDITab,int,int,int,int,int	proc initDITab[K, V](initialSize = 0; numer = 0; denom = 0; minFree = 0;\n                growPow2 = 0; rehash = false; robinhood = false): DITab[K, V]		112
+nim	setPolicy	adix/ditab.html#setPolicy,DITab[K,V],int,int,int,int,int,int	proc setPolicy[K, V](t: var DITab[K, V]; numer = 0; denom = 0; minFree = 0;\n                growPow2 = 0; rehash = 0; robinhood = 0)		116
+nim	rightSize	adix/ditab.html#rightSize,int,int,int,int	proc rightSize(count: int; numer = 0; denom = 0; minFree = 0): int		119
+nim	getCap	adix/ditab.html#getCap,DITab[K,V]	proc getCap[K, V](t: var DITab[K, V]): int		122
+nim	setCap	adix/ditab.html#setCap,DITab[K,V],int	proc setCap[K, V](t: var DITab[K, V]; newSize = -1)		124
+nim	contains	adix/ditab.html#contains,DITab[K,V],K	proc contains[K, V](t: DITab[K, V]; key: K): bool		126
+nim	containsOrIncl	adix/ditab.html#containsOrIncl,DITab[K,void],K	proc containsOrIncl[K](t: var DITab[K, void]; key: K): bool		128
+nim	setOrIncl	adix/ditab.html#setOrIncl,DITab[K,void],K	proc setOrIncl[K](t: var DITab[K, void]; key: K): bool		132
+nim	mgetOrPut	adix/ditab.html#mgetOrPut,DITab[K,V],K,V	proc mgetOrPut[K, V](t: var DITab[K, V]; key: K; val: V): var V		136
+nim	mgetOrPut	adix/ditab.html#mgetOrPut,DITab[K,V],K,V,bool	proc mgetOrPut[K, V](t: var DITab[K, V]; key: K; val: V; had: var bool): var V		140
+nim	editOrInit	adix/ditab.html#editOrInit.t,DITab[K,V],K,untyped,untyped,untyped	template editOrInit[K, V](t: var DITab[K, V]; key: K; v, body1, body2: untyped)		145
+nim	missingOrExcl	adix/ditab.html#missingOrExcl,DITab[K,V],K	proc missingOrExcl[K, V](t: var DITab[K, V]; key: K): bool		158
+nim	take	adix/ditab.html#take,DITab[K,void],K	proc take[K](t: var DITab[K, void]; key: var K): bool		162
+nim	take	adix/ditab.html#take,DITab[K: not void,V: not void],K,V	proc take[K, V: not void](t: var DITab[K, V]; key: K; val: var V): bool		166
+nim	pop	adix/ditab.html#pop,DITab[K,void]	proc pop[K](t: var DITab[K, void]): K		173
+nim	pop	adix/ditab.html#pop,DITab[K: not void,V: not void]	proc pop[K, V: not void](t: var DITab[K, V]): (K, V)		175
+nim	clear	adix/ditab.html#clear,DITab[K,V]	proc clear[K, V](t: var DITab[K, V])		178
+nim	items	adix/ditab.html#items.i,DITab[K,void]	iterator items[K](t: DITab[K, void]): K		180
+nim	mitems	adix/ditab.html#mitems.i,DITab[K,void]	iterator mitems[K](t: var DITab[K, void]): var K		183
+nim	pairs	adix/ditab.html#pairs.i,DITab[K,void]	iterator pairs[K](t: DITab[K, void]): (int, K)		189
+nim	pairs	adix/ditab.html#pairs.i,DITab[K: not void,V: not void]	iterator pairs[K, V: not void](t: DITab[K, V]): (K, V)		192
+nim	mpairs	adix/ditab.html#mpairs.i,DITab[K: not void,V: not void]	iterator mpairs[K, V: not void](t: DITab[K, V]): (K, var V)		195
+nim	hcodes	adix/ditab.html#hcodes.i,DITab[K,V]	iterator hcodes[K, V](t: DITab[K, V]): (int, Hash)		198
+nim	debugDump	adix/ditab.html#debugDump,DITab[K,V],string	proc debugDump[K, V](t: DITab[K, V]; label = "")		205
+nim	keys	adix/ditab.html#keys.i,DITab[K,V]	iterator keys[K, V](t: DITab[K, V]): K		212
+nim	values	adix/ditab.html#values.i,DITab[K,V]	iterator values[K, V](t: DITab[K, V]): V		215
+nim	mvalues	adix/ditab.html#mvalues.i,DITab[K,V]	iterator mvalues[K, V](t: var DITab[K, V]): var V		218
+nim	pop	adix/ditab.html#pop,DITab[K,void],K	proc pop[K](s: var DITab[K, void]; key: var K): bool		222
+nim	incl	adix/ditab.html#incl,DITab[K,void],K	proc incl[K](s: var DITab[K, void]; elt: K)		225
+nim	excl	adix/ditab.html#excl,DITab[K,void],K	proc excl[K](s: var DITab[K, void]; elt: K)		228
+nim	incl	adix/ditab.html#incl,DITab[K,void],DITab[K,void]	proc incl[K](s: var DITab[K, void]; other: DITab[K, void])		231
+nim	excl	adix/ditab.html#excl,DITab[K,void],DITab[K,void]	proc excl[K](s: var DITab[K, void]; other: DITab[K, void])		234
+nim	card	adix/ditab.html#card,DITab[K,void]	proc card[K](s: DITab[K, void]): int		237
+nim	union	adix/ditab.html#union,DITab[K,void],DITab[K,void]	proc union[K](s1, s2: DITab[K, void]): DITab[K, void]		239
+nim	intersection	adix/ditab.html#intersection,DITab[K,void],DITab[K,void]	proc intersection[K](s1, s2: DITab[K, void]): DITab[K, void]		243
+nim	difference	adix/ditab.html#difference,DITab[K,void],DITab[K,void]	proc difference[K](s1, s2: DITab[K, void]): DITab[K, void]		248
+nim	symmetricDifference	adix/ditab.html#symmetricDifference,DITab[K,void],DITab[K,void]	proc symmetricDifference[K](s1, s2: DITab[K, void]): DITab[K, void]		253
+nim	`+`	adix/ditab.html#+,DITab[K,void],DITab[K,void]	proc `+`[K](s1, s2: DITab[K, void]): DITab[K, void]		258
+nim	`*`	adix/ditab.html#*,DITab[K,void],DITab[K,void]	proc `*`[K](s1, s2: DITab[K, void]): DITab[K, void]		261
+nim	`-`	adix/ditab.html#-,DITab[K,void],DITab[K,void]	proc `-`[K](s1, s2: DITab[K, void]): DITab[K, void]		264
+nim	`-+-`	adix/ditab.html#-+-,DITab[K,void],DITab[K,void]	proc `-+-`[K](s1, s2: DITab[K, void]): DITab[K, void]		267
+nim	disjoint	adix/ditab.html#disjoint,DITab[K,void],DITab[K,void]	proc disjoint[K](s1, s2: DITab[K, void]): bool		270
+nim	`<=`	adix/ditab.html#<=,DITab[K,void],DITab[K,void]	proc `<=`[K](s, t: DITab[K, void]): bool		275
+nim	`<`	adix/ditab.html#<,DITab[K,void],DITab[K,void]	proc `<`[K](s, t: DITab[K, void]): bool		281
+nim	`==`	adix/ditab.html#==,DITab[K,void],DITab[K,void]	proc `==`[K](s, t: DITab[K, void]): bool		284
+nim	map	adix/ditab.html#map,DITab[K,void],proc(K)	proc map[K, A](data: DITab[K, void]; op: proc (x: K): A {.closure.}): DITab[A, void]		287
+nim	toDITab	adix/ditab.html#toDITab,openArray[K]	proc toDITab[K](keys: openArray[K]; dups = false): DITab[K, void]		292
+nim	`$`	adix/ditab.html#$,DITab[K,void]	proc `$`[K](s: DITab[K, void]): string		297
+nim	hash	adix/ditab.html#hash,DITab[K,void]	proc hash[K](s: DITab[K, void]): Hash		305
+nim	depthStats	adix/ditab.html#depthStats,DITab[K,V]	proc depthStats[K, V](s: DITab[K, V]): tuple[m1, m2: float, mx: int]		309
+nim	toDITab	adix/ditab.html#toDITab,openArray[]	proc toDITab[K, V: not void](pairs: openArray[(K, V)]; dups = false): DITab[K, V]		312
+nim	`$`	adix/ditab.html#$,DITab[K: not void,V: not void]	proc `$`[K, V: not void](t: DITab[K, V]): string		317
+nim	pop	adix/ditab.html#pop,DITab[K: not void,V: not void],K,V	proc pop[K, V: not void](t: var DITab[K, V]; key: K; val: var V): bool		327
+nim	withValue	adix/ditab.html#withValue.t,DITab[K,V],K,untyped,untyped	template withValue[K, V](t: var DITab[K, V]; key: K; value, body: untyped)		330
+nim	withValue	adix/ditab.html#withValue.t,DITab[K,V],K,untyped,untyped,untyped	template withValue[K, V](t: var DITab[K, V]; key: K; value, body1, body2: untyped)		337
+nim	`[]`	adix/ditab.html#[],DITab[K,V],K	proc `[]`[K, V](t: DITab[K, V]; key: K): V		345
+nim	`[]`	adix/ditab.html#[],DITab[K,V],K_2	proc `[]`[K, V](t: var DITab[K, V]; key: K): var V		351
+nim	`[]=`	adix/ditab.html#[]=,DITab[K,V],K,V	proc `[]=`[K, V](t: var DITab[K, V]; key: K; val: V)		357
+nim	`{}`	adix/ditab.html#{},DITab[K,V],K	proc `{}`[K, V](t: DITab[K, V]; key: K): V		361
+nim	`{}`	adix/ditab.html#{},DITab[K,V],K_2	proc `{}`[K, V](t: var DITab[K, V]; key: K): var V		362
+nim	`{}=`	adix/ditab.html#{}=,DITab[K,V],K,V	proc `{}=`[K, V](t: var DITab[K, V]; key: K; val: V)		363
+nim	hasKey	adix/ditab.html#hasKey,DITab[K,V],K	proc hasKey[K, V](t: DITab[K, V]; key: K): bool		365
+nim	hasKeyOrPut	adix/ditab.html#hasKeyOrPut,DITab[K,V],K,V	proc hasKeyOrPut[K, V](t: var DITab[K, V]; key: K; val: V): bool		367
+nim	getOrDefault	adix/ditab.html#getOrDefault,DITab[K,V],K,typeof(default(V))	proc getOrDefault[K, V](t: DITab[K, V]; key: K; def = default(V)): V		370
+nim	del	adix/ditab.html#del,DITab[K,V],K	proc del[K, V](t: var DITab[K, V]; key: K)		375
+nim	`==`	adix/ditab.html#==,DITab[K,V],DITab[K,V]	proc `==`[K, V](x, y: DITab[K, V]): bool		380
+nim	indexBy	adix/ditab.html#indexBy,A,proc(V)	proc indexBy[A, K, V](collection: A; index: proc (x: V): K): DITab[K, V]		388
+nim	editKey	adix/ditab.html#editKey,DITab[K,V],K,K	proc editKey[K, V](t: var DITab[K, V]; old, new: K)		392
+nim	nthKey	adix/ditab.html#nthKey,DITab[K,void],int	proc nthKey[K](t: DITab[K, void]; n: int): K		403
+nim	nthPair	adix/ditab.html#nthPair,DITab[K: not void,V: not void],int	proc nthPair[K, V: not void](t: DITab[K, V]; n: int): (K, V)		406
+nim	nthPair	adix/ditab.html#nthPair,DITab[K: not void,V: not void],int_2	proc nthPair[K, V: not void](t: var DITab[K, V]; n: int): (K, ptr V)		410
+nim	inc	adix/ditab.html#inc,DITab[K: SomeInteger,V: SomeInteger],K,SomeInteger	proc inc[K, V: SomeInteger](t: var DITab[K, V]; key: K; amount: SomeInteger = 1)		417
+nim	merge	adix/ditab.html#merge,DITab[K: SomeInteger,V: SomeInteger],DITab[K: SomeInteger,V: SomeInteger]	proc merge[K, V: SomeInteger](c: var DITab[K, V]; b: DITab[K, V])		425
+nim	topByVal	adix/ditab.html#topByVal.i,DITab[K,V],int	iterator topByVal[K, V](c: DITab[K, V]; n = 10; min = V.low; order = Cheap): (K, V)		428
+nim	initDISet	adix/ditab.html#initDISet,int	proc initDISet[K](initialSize = 0; numer = diNumer; denom = diDenom;\n             minFree = diMinFree; growPow2 = diGrowPow2; rehash = diRehash;\n             robinhood = diRobinHood): DISet[K]		433
+nimgrp	pop	adix/ditab.html#pop-procs-all	proc		173
+nimgrp	$	adix/ditab.html#$-procs-all	proc		297
+nimgrp	toditab	adix/ditab.html#toDITab-procs-all	proc		292
+nimgrp	incl	adix/ditab.html#incl-procs-all	proc		225
+nimgrp	nthpair	adix/ditab.html#nthPair-procs-all	proc		406
+nimgrp	take	adix/ditab.html#take-procs-all	proc		162
+nimgrp	mgetorput	adix/ditab.html#mgetOrPut-procs-all	proc		136
+nimgrp	{}	adix/ditab.html#{}-procs-all	proc		361
+nimgrp	excl	adix/ditab.html#excl-procs-all	proc		228
+nimgrp	==	adix/ditab.html#==-procs-all	proc		284
+nimgrp	[]	adix/ditab.html#[]-procs-all	proc		345
+nimgrp	pairs	adix/ditab.html#pairs-iterators-all	iterator		189
+nimgrp	withvalue	adix/ditab.html#withValue-templates-all	template		330
